@@ -1,5 +1,5 @@
-const { hashPassword, comparePassword } = require('../utils/bcrypt.util');
-const { generateToken } = require('../utils/jwt.util');
+const { hashPassword, comparePassword } = require('../common/utils/bcrypt.util');
+const { generateToken } = require('../common/utils/jwt.util');
 const User = require('../models/User');
 
 async function register(email, password){
