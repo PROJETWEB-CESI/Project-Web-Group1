@@ -64,7 +64,7 @@ if (-not (Test-Path "docker-compose.override.yml")) {
 services:
   nginx:
     volumes:
-      - ./nginx/certs:/etc/letsencrypt/live/novacampus.fr:ro
+      - ./infrastructure/nginx/certs:/etc/letsencrypt/live/novacampus.fr:ro
 "@
     Set-Content "docker-compose.override.yml" -Value $overrideContent -Encoding utf8
     Pass "Created docker-compose.override.yml"
