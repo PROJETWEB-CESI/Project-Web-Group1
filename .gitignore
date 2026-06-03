@@ -77,6 +77,9 @@ htmlcov/
 # Sometimes useful to ignore local Docker data
 # .docker/
 
+# Local TLS certs (self-signed, for dev only)
+infrastructure/nginx/certs/
+
 # ----------------------
 # IDEs and Editors
 # ----------------------

@@ -1,6 +1,28 @@
 version: '3.9'
 
 services:
+  # ===================== REVERSE PROXY =====================
+  nginx:
+    build: ./infrastructure/nginx
+    container_name: nova-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certbot_webroot:/var/www/certbot:ro
+    depends_on:
+      - frontend
+      - gateway
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: nova-certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
   # ===================== FRONTEND =====================
   frontend:
     build: ./frontend/nova-campus-web
@@ -96,3 +118,5 @@ services:
 volumes:
   postgres_data:
   mongo_data:
+  certbot_certs:
+  certbot_webroot:
