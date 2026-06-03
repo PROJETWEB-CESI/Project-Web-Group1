@@ -1,0 +1,176 @@
+﻿File Tree for: Project-Web-Group1
++-- .env
++-- .env.exemple
++-- .gitignore
++-- docker-compose.override.yml
++-- docker-compose.yml
++-- README.md
++-- .github
+|   +-- copilot-instructions.md
++-- .vscode
+|   +-- settings.json
++-- docs
+|   +-- NovaCampus_Git_Versioning_Guide.md
+|   +-- NovaCampus_Git_Versioning_Guide.pdf
++-- frontend
+|   +-- nova-campus-web
+|   |   +-- .gitignore
+|   |   +-- Dockerfile
+|   |   +-- jsconfig.json
+|   |   +-- next.config.mjs
+|   |   +-- package-lock.json
+|   |   +-- package.json
+|   |   +-- postcss.config.mjs
+|   |   +-- README.md
+|   |   +-- public
+|   |   |   +-- file.svg
+|   |   |   +-- globe.svg
+|   |   |   +-- next.svg
+|   |   |   +-- vercel.svg
+|   |   |   +-- window.svg
+|   |   +-- src
+|   |   |   +-- app
+|   |   |   |   +-- favicon.ico
+|   |   |   |   +-- globals.css
+|   |   |   |   +-- layout.js
+|   |   |   |   +-- page.js
+|   |   |   |   +-- dashboard
+|   |   |   |   |   +-- admin
+|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- executive
+|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- student
+|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- teacher
+|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   +-- login
+|   |   |   |   |   +-- .gitkeep
+|   |   |   +-- components
+|   |   |   |   +-- admin
+|   |   |   |   |   +-- .gitkeep
+|   |   |   |   +-- executive
+|   |   |   |   |   +-- .gitkeep
+|   |   |   |   +-- shared
+|   |   |   |   |   +-- .gitkeep
+|   |   |   |   +-- student
+|   |   |   |   |   +-- .gitkeep
+|   |   |   |   +-- teacher
+|   |   |   |   |   +-- .gitkeep
+|   |   |   +-- lib
+|   |   |   |   +-- .gitkeep
++-- infrastructure
+|   +-- k8s
+|   |   +-- base
+|   |   |   +-- .gitkeep
+|   |   +-- overlays
+|   |   |   +-- .gitkeep
+|   +-- monitoring
+|   |   +-- grafana
+|   |   |   +-- .gitkeep
+|   |   +-- prometheus
+|   |   |   +-- .gitkeep
+|   +-- nginx
+|   |   +-- Dockerfile
+|   |   +-- nginx.conf
+|   |   +-- proxy_params_common
+|   |   +-- security_headers.conf
+|   |   +-- certs
+|   |   |   +-- fullchain.pem
+|   |   |   +-- privkey.pem
++-- scripts
+|   +-- file-tree.ps1
+|   +-- file_tree.txt
+|   +-- setup-nginx.ps1
+|   +-- sync-gitkeep.ps1
+|   +-- seed
+|   |   +-- .gitkeep
+|   |   +-- Dockerfile
+|   |   +-- requirements.txt
+|   |   +-- schema.sql
+|   |   +-- seed.py
+|   |   +-- data
+|   |   |   +-- EN_-_NOVACAMPUS_ALLIANCE_DATABASE.xlsx
++-- services
+|   +-- academic-service
+|   |   +-- Dockerfile
+|   |   +-- package.json
+|   |   +-- src
+|   |   |   +-- common
+|   |   |   |   +-- utils
+|   |   |   |   |   +-- .gitkeep
+|   |   |   +-- config
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- grades
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- students
+|   |   |   |   +-- .gitkeep
+|   +-- ai-agent-service
+|   |   +-- Dockerfile
+|   |   +-- requirements.txt
+|   |   +-- agent
+|   |   |   +-- .gitkeep
+|   |   +-- docs
+|   |   |   +-- .gitkeep
+|   |   +-- mcp_server
+|   |   |   +-- .gitkeep
+|   |   +-- rag
+|   |   |   +-- .gitkeep
+|   +-- billing-service
+|   |   +-- Dockerfile
+|   |   +-- package.json
+|   |   +-- src
+|   |   |   +-- common
+|   |   |   |   +-- utils
+|   |   |   |   |   +-- .gitkeep
+|   |   |   +-- config
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- payments
+|   |   |   |   +-- .gitkeep
+|   +-- gateway
+|   |   +-- Dockerfile
+|   |   +-- nginx.conf
+|   +-- iam-service
+|   |   +-- Dockerfile
+|   |   +-- package-lock.json
+|   |   +-- package.json
+|   |   +-- src
+|   |   |   +-- index.js
+|   |   |   +-- auth
+|   |   |   |   +-- auth.controller.js
+|   |   |   |   +-- auth.middleware.js
+|   |   |   |   +-- auth.route.js
+|   |   |   |   +-- auth.service.js
+|   |   |   +-- common
+|   |   |   |   +-- utils
+|   |   |   |   |   +-- bcrypt.util.js
+|   |   |   |   |   +-- jwt.util.js
+|   |   |   +-- config
+|   |   |   |   +-- database.config.js
+|   |   |   +-- models
+|   |   |   |   +-- User.js
+|   |   |   +-- users
+|   |   |   |   +-- User.js
+|   +-- reporting-service
+|   |   +-- Dockerfile
+|   |   +-- package.json
+|   |   +-- src
+|   |   |   +-- common
+|   |   |   |   +-- utils
+|   |   |   |   |   +-- .gitkeep
+|   |   |   +-- config
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- kpis
+|   |   |   |   +-- .gitkeep
+|   +-- scheduling-service
+|   |   +-- Dockerfile
+|   |   +-- package.json
+|   |   +-- src
+|   |   |   +-- common
+|   |   |   |   +-- utils
+|   |   |   |   |   +-- .gitkeep
+|   |   |   +-- config
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- rooms
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- timetables
+|   |   |   |   +-- .gitkeep
