@@ -2,8 +2,6 @@
 
 This guide explains how to develop the frontend and backend correctly, following the project's architecture, conventions, and shared systems (themes, languages, components, etc.).
 
-**Always follow the rules in `AGENT.md` too** (branching, commits, English preference in code, full-stack docker testing, `.\scripts\sync-gitkeep.ps1` before every commit, etc.).
-
 ## Quick Start for Development
 
 ```ps
@@ -188,7 +186,6 @@ See the `environment` block in `docker-compose.yml` and the root `.env.exemple`.
   - Look at existing shared components and the login page for patterns.
   - Check `globals.css` for tokens before writing custom colors.
   - Read the service READMEs and the root `README.md`.
-  - Refer to `AGENT.md`.
 
 ## Common Pitfalls & Fixes
 
@@ -203,8 +200,7 @@ See the `environment` block in `docker-compose.yml` and the root `.env.exemple`.
 ## Further Reading
 
 - Root `README.md` (quick start, test credentials table)
-- `services/iam-service/README.md` (endpoints + test creds)
-- `AGENT.md` (process, git, English, reuse rules)
+- `services/<service-name>/README.md` (endpoints + test creds)
 - Workshop deliverables (for original requirements around accessibility, RGPD, microservices, etc.)
 
 Happy coding! When adding new UI, ask: "Is this using the shared theme tokens, shared components, and the language `t()` helper?"
