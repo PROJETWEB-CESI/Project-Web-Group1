@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
-import HighContrastToggle from '@/components/shared/HighContrastToggle';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -72,12 +71,9 @@ export default function LoginPage() {
             <span className="text-2xl font-semibold text-[var(--color-text)]">NovaCampus</span>
           </div>
 
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">Welcome back</h2>
-              <p className="text-[var(--color-text-muted)] mt-1">Sign in to access your dashboard</p>
-            </div>
-            <HighContrastToggle />
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">Welcome back</h2>
+            <p className="text-[var(--color-text-muted)] mt-1">Sign in to access your dashboard</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -118,16 +114,13 @@ export default function LoginPage() {
             </Button>
 
             <div className="text-center text-sm">
-              <a 
-                href="#forgot" 
-                className="text-[var(--color-primary)] hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert('Password reset will be available soon. Please contact your campus administrator.');
-                }}
+              <button
+                type="button"
+                onClick={() => alert('For security reasons, password resets must be requested through your campus administration office. Please contact support.')}
+                className="text-[var(--color-primary)] hover:underline focus:outline-none focus:underline"
               >
                 Forgot your password?
-              </a>
+              </button>
             </div>
           </form>
 

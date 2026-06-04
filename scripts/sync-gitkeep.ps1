@@ -9,7 +9,7 @@ Write-Host "Syncing .gitkeep files..." -ForegroundColor Cyan
 
 # 1. Create .gitkeep in empty folders
 Get-ChildItem -Directory -Recurse | Where-Object { 
-    (Get-ChildItem $_.FullName -Force).Count -eq 0 
+    @(Get-ChildItem $_.FullName -Force).Count -eq 0
 } | ForEach-Object {
     $gitkeepPath = Join-Path $_.FullName ".gitkeep"
     if (-not (Test-Path $gitkeepPath)) {
@@ -21,7 +21,7 @@ Get-ChildItem -Directory -Recurse | Where-Object {
 # 2. Remove .gitkeep from folders that are no longer empty
 Get-ChildItem -Path . -Filter .gitkeep -Recurse -File | ForEach-Object {
     $folder = $_.Directory
-    $itemCount = (Get-ChildItem -Path $folder.FullName -Force).Count
+    $itemCount = @(Get-ChildItem -Path $folder.FullName -Force).Count
 
     if ($itemCount -gt 1) {
         Remove-Item $_.FullName -Force
