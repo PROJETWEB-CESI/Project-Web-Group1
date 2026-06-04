@@ -49,6 +49,12 @@ const translations = {
     yourRights: 'Your Rights',
     rightsText: 'You may request access, rectification, erasure, restriction, or data portability at any time by contacting your campus data protection officer or via the contact link in the footer.',
     placeholderPolicy: 'This is a placeholder policy page. A full legal version will be provided by the institution’s legal team.',
+    // 404 page
+    pageNotFound: 'Page not found',
+    pageNotFoundDesc: 'Sorry, the page you are looking for does not exist or has been moved.',
+    backToLogin: 'Go back to login',
+    returnHome: 'Return to home',
+    contactSupport: 'If you believe this is an error, please contact your campus support.',
   },
   fr: {
     // Login page
@@ -119,6 +125,12 @@ const translations = {
     feedback: 'Retours et contact',
     feedbackText: 'Si vous rencontrez des obstacles d’accessibilité ou avez des suggestions, veuillez nous contacter via l’e-mail de support ou le lien de contact dans le pied de page. Nous visons à répondre aux retours d’accessibilité sous 5 jours ouvrés.',
     placeholderAccessibility: 'Ceci est une déclaration d’accessibilité placeholder. Un audit complet et une déclaration de conformité seront fournis par l’équipe accessibilité de l’établissement.',
+    // 404 page (French)
+    pageNotFound: 'Page non trouvée',
+    pageNotFoundDesc: 'Désolé, la page que vous recherchez n\'existe pas ou a été déplacée.',
+    backToLogin: 'Retour à la connexion',
+    returnHome: 'Retour à l\'accueil',
+    contactSupport: 'Si vous pensez qu\'il s\'agit d\'une erreur, veuillez contacter le support de votre campus.',
   },
 };
 
