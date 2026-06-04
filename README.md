@@ -86,7 +86,6 @@ The login page supports the full theme system (light/dark/high-contrast toggle, 
 
 - WCAG / RGAA friendly (high contrast mode, proper contrast calculation using relative luminance, keyboard accessible, ARIA).
 - GDPR/RGPD compliant auth flows with privacy notices.
-- See AGENT.md (local) and the frontend components for implementation details.
 
 ## Development Notes
 
@@ -94,6 +93,3 @@ The login page supports the full theme system (light/dark/high-contrast toggle, 
 - Prefer English everywhere (code, docs, messages).
 - Use shared components (`components/shared/`) and design tokens in `globals.css` to avoid duplication.
 - Test with the full `docker compose` stack when backend is involved.
-- See `AGENT.md` for the complete set of project conventions.
-
-Happy coding!
