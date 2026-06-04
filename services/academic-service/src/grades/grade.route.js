@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const service = require('./grade.service');
 
-// Prof : publier toutes les notes d'un cours
+// Prof/admin : publier toutes les notes d'un cours
 router.post('/course/:courseId/publish', async (req, res) => {
     if (!req.body.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
@@ -41,7 +41,7 @@ router.get('/student/:studentId', async (req, res) => {
     }
 });
 
-// Prof : saisir une note
+// Prof/admin : saisir une note
 router.post('/', async (req, res) => {
     const { studentId, courseId, campusId, evaluationName, evaluationDate, coefficient } = req.body;
     if (!studentId || !courseId || !campusId || !evaluationName || !evaluationDate || !coefficient) {
@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Prof : modifier une note
+// Prof/admin : modifier une note
 router.put('/:id', async (req, res) => {
     try {
         const grade = await service.updateGrade(req.params.id, req.body);
@@ -66,7 +66,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Prof : supprimer une note
+// Prof/admin : supprimer une note
 router.delete('/:id', async (req, res) => {
     try {
         const result = await service.deleteGrade(req.params.id);
