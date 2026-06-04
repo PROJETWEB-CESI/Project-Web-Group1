@@ -53,7 +53,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12">
         <div className="max-w-md">
           <div className="flex items-center gap-3 mb-8">
-            <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-xl font-semibold">
+            <div className="h-10 w-10 rounded-full bg-white/20 border border-[var(--color-on-primary)]/30 flex items-center justify-center text-xl font-semibold">
               NC
             </div>
             <span className="text-3xl font-semibold tracking-tight">NovaCampus</span>
@@ -62,11 +62,11 @@ export default function LoginPage() {
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
             Shaping Tomorrow’s Minds
           </h1>
-          <p className="text-xl text-white/80 max-w-sm">
+          <p className="text-xl opacity-80 max-w-sm">
             Secure access to schedules, grades, and academic services across all campuses.
           </p>
 
-          <div className="mt-10 text-sm text-white/60">
+          <div className="mt-10 text-sm opacity-60">
             GDPR compliant • Accessible to all • Multi-campus
           </div>
         </div>

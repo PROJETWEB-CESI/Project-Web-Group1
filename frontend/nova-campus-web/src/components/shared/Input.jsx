@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 
 const Input = forwardRef(function Input(
   { 
@@ -13,7 +13,8 @@ const Input = forwardRef(function Input(
   }, 
   ref
 ) {
-  const inputId = id || `input-${Math.random().toString(36).slice(2)}`;
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   return (
     <div className="w-full">
