@@ -3,6 +3,8 @@ const express = require('express');
 const sequelize = require('./config/database.config');
 const gradeRoutes = require('./grades/grade.route');
 const attendanceRoutes = require('./attendance/attendance.route');
+const studentRoutes = require('./students/student.route');
+require('./config/associations');
 
 const app = express();
 const port = process.env.API_PORT || 3000;
@@ -16,6 +18,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/grades', gradeRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/students', studentRoutes);
 
 async function startServer() {
     try {

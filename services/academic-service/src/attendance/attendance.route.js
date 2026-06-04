@@ -44,6 +44,19 @@ router.get('/course/:courseId', async (req, res) => {
     }
 });
 
+// Étudiant : taux de présence, total absences, non justifiées
+router.get('/student/:studentId/stats', async (req, res) => {
+    if (!req.query.campusId) {
+        return res.status(400).json({ error: 'campusId est obligatoire' });
+    }
+    try {
+        const stats = await service.getStudentAttendanceStats(req.params.studentId, req.query.campusId, req.query.courseId);
+        res.json(stats);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Étudiant : son historique de présences
 router.get('/student/:studentId', async (req, res) => {
     if (!req.query.campusId) {

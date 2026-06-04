@@ -43,10 +43,30 @@ const justifyAbsence = async (id, justificationNote) => {
     return record.update({ justified: true, justificationNote });
 };
 
+// Calcule le taux de présence, total absences et non justifiées d'un étudiant
+const getStudentAttendanceStats = async (studentId, campusId, courseId) => {
+    if (!studentId || !campusId) throw new Error('studentId et campusId sont obligatoires');
+    const where = { studentId, campusId };
+    if (courseId) where.courseId = courseId;
+
+    const records = await Attendance.findAll({ where });
+    const total = records.length;
+    if (total === 0) return { total: 0, present: 0, absent: 0, late: 0, unjustified: 0, attendanceRate: null };
+
+    const present = records.filter(r => r.status === 'present').length;
+    const absent  = records.filter(r => r.status === 'absent').length;
+    const late    = records.filter(r => r.status === 'late').length;
+    const unjustified = records.filter(r => r.status !== 'present' && !r.justified).length;
+    const attendanceRate = +((present / total) * 100).toFixed(1);
+
+    return { total, present, absent, late, unjustified, attendanceRate };
+};
+
 module.exports = {
     getAttendanceByCourse,
     getAttendanceByStudent,
     markAttendance,
     updateAttendance,
     justifyAbsence,
+    getStudentAttendanceStats,
 };
