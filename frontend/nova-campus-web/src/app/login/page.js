@@ -1,0 +1,149 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import Button from '@/components/shared/Button';
+import Input from '@/components/shared/Input';
+import HighContrastToggle from '@/components/shared/HighContrastToggle';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth();
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const loggedInUser = await login(email, password);
+      
+      // Role-based redirect (matches dashboard structure)
+      const role = loggedInUser.role || 'student';
+      const dashboardPath = `/dashboard/${role}`;
+      
+      router.push(dashboardPath);
+    } catch (err) {
+      setError(err.message || 'Unable to sign in. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex">
+      {/* Left panel - Branding (general style, reusable pattern) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-white flex-col justify-center px-12">
+        <div className="max-w-md">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-xl font-semibold">
+              NC
+            </div>
+            <span className="text-3xl font-semibold tracking-tight">NovaCampus</span>
+          </div>
+
+          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
+            Shaping Tomorrow’s Minds
+          </h1>
+          <p className="text-xl text-white/80 max-w-sm">
+            Secure access to schedules, grades, and academic services across all campuses.
+          </p>
+
+          <div className="mt-10 text-sm text-white/60">
+            GDPR compliant • Accessible to all • Multi-campus
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel - Login form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-[var(--color-bg)]">
+        <div className="w-full max-w-md">
+          {/* Mobile header */}
+          <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="h-9 w-9 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-lg font-semibold">
+              NC
+            </div>
+            <span className="text-2xl font-semibold text-[var(--color-text)]">NovaCampus</span>
+          </div>
+
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">Welcome back</h2>
+              <p className="text-[var(--color-text-muted)] mt-1">Sign in to access your dashboard</p>
+            </div>
+            <HighContrastToggle />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            <Input
+              label="Email address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@etu.novacampus.fr"
+              autoComplete="email"
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
+
+            {error && (
+              <div className="error-message" role="alert" aria-live="polite">
+                {error}
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              variant="primary" 
+              size="lg" 
+              loading={loading} 
+              className="w-full mt-2"
+            >
+              Sign in
+            </Button>
+
+            <div className="text-center text-sm">
+              <a 
+                href="#forgot" 
+                className="text-[var(--color-primary)] hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert('Password reset will be available soon. Please contact your campus administrator.');
+                }}
+              >
+                Forgot your password?
+              </a>
+            </div>
+          </form>
+
+          {/* GDPR / Privacy notice - important for compliance */}
+          <div className="mt-8 text-center text-xs text-[var(--color-text-muted)] leading-relaxed">
+            By signing in you agree to the processing of your personal data as described in our{' '}
+            <a href="/privacy" className="underline hover:text-[var(--color-text)]">Privacy Policy</a>. 
+            We only collect what is necessary for authentication and academic services (GDPR Art. 5).
+          </div>
+
+          <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
+            Need an account?{' '}
+            <span className="font-medium">Contact your educational administrator or campus office.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

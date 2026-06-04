@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Professional design tokens - NovaCampus education theme */
+  --color-primary: #1e3a8a;      /* Deep blue */
+  --color-primary-hover: #1e40af;
+  --color-accent: #0ea5e9;       /* Sky blue accent */
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+
+  /* Focus & accessibility */
+  --ring-color: #1e3a8a;
+  --ring-offset: #ffffff;
+}
+
+/* High contrast mode - toggleable for better accessibility (WCAG AAA) */
+.high-contrast {
+  --color-bg: #000000;
+  --color-surface: #111111;
+  --color-text: #ffffff;
+  --color-text-muted: #cccccc;
+  --color-border: #ffffff;
+  --color-primary: #ffff00;      /* High contrast yellow */
+  --color-primary-hover: #ffcc00;
+  --color-accent: #00ffff;
+  --color-error: #ff6666;
+  --color-success: #66ff66;
+  --ring-color: #ffff00;
+
+  font-size: 1.05em; /* Slightly larger base for readability */
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast a {
+  border-width: 2px !important;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-geist-sans);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Professional base form styles - reusable, low duplication */
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.high-contrast input[type="email"],
+.high-contrast input[type="password"] {
+  background: #000;
+  color: #fff;
+  border-color: #fff;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+/* General accessible link style */
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Error message style - consistent */
+.error-message {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
