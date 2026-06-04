@@ -39,6 +39,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - DEV_API_PROXY_TARGET=http://gateway:80
     volumes:
       - ./frontend/nova-campus-web/src:/app/src
     depends_on:
