@@ -94,10 +94,24 @@ services:
   academic-service:
     build: ./services/academic-service
     container_name: nova-academic
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: novacampus
+      DB_USER: nova
+      DB_PASSWORD: nova123
     volumes:
       - ./services/academic-service/src:/app/src
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   scheduling-service:
     build: ./services/scheduling-service
