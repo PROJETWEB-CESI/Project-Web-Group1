@@ -1,10 +1,15 @@
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'defaultSecret';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '15m';
+const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
 
-function generateToken(payload) {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+function generateAccessToken(payload) {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });
+}
+
+function generateRefreshToken(payload) {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
 }
 
 function verifyToken(token) {
@@ -24,7 +29,8 @@ function decodeToken(token) {
 }
 
 module.exports = {
-    generateToken,
+    generateAccessToken,
+    generateRefreshToken,
     verifyToken,
     decodeToken
 };
