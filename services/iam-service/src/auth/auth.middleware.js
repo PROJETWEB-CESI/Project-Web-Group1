@@ -9,14 +9,13 @@ function authenticate(req, res, next) {
     if (!token) {
         return res.status(401).json({ error: 'No token provided' });
     }
-    try {
-        const decoded = verifyToken(token);
-        req.user = decoded;
-        next();
-    }
-    catch (error) {
-        return res.status(401).json({ error: 'Invalid token' });
-    }
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  req.user = decoded;
+  next();
 }
 
 module.exports = { authenticate };
