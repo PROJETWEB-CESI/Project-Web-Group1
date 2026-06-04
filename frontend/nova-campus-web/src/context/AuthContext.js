@@ -8,35 +8,50 @@ const API_BASE = '/api/auth'; // Proxied through nginx in full stack
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load token and user from localStorage on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      setToken(storedToken);
-      // Optionally validate token by calling /me or /validate
-      fetch(`${API_BASE}/me`, {
-        headers: { Authorization: `Bearer ${storedToken}` },
-      })
-        .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error('Invalid session');
-        })
-        .then((data) => {
-          setUser(data.user);
-        })
-        .catch(() => {
-          // Invalid token, clear storage
-          localStorage.removeItem('authToken');
-          setToken(null);
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
+  // Helper to refresh access token using httpOnly refresh cookie
+  const refreshAccessToken = async () => {
+    const res = await fetch(`${API_BASE}/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error('Failed to refresh session');
     }
+    return true;
+  };
+
+  // Load user from cookie-based session on mount (no token in localStorage anymore)
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        let res = await fetch(`${API_BASE}/me`, {
+          credentials: 'include',
+        });
+
+        if (res.status === 401) {
+          // Access token expired (short lived), try refresh using httpOnly refresh cookie
+          await refreshAccessToken();
+          res = await fetch(`${API_BASE}/me`, {
+            credentials: 'include',
+          });
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
   }, []);
 
   const login = async (email, password) => {
@@ -44,6 +59,7 @@ export function AuthProvider({ children }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      credentials: 'include', // important for httpOnly cookies to be set by browser
     });
 
     if (!res.ok) {
@@ -52,24 +68,27 @@ export function AuthProvider({ children }) {
     }
 
     const data = await res.json();
-    const { token: newToken, user: newUser } = data;
+    setUser(data.user);
 
-    localStorage.setItem('authToken', newToken);
-    setToken(newToken);
-    setUser(newUser);
-
-    return newUser; // Return for redirect logic
+    return data.user; // Return for redirect logic
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch(`${API_BASE}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (e) {
+      // ignore network errors on logout
+    }
+    // clean up any legacy localStorage token
     localStorage.removeItem('authToken');
-    setToken(null);
     setUser(null);
   };
 
   const value = {
     user,
-    token,
     loading,
     login,
     logout,

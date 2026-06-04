@@ -1,5 +1,5 @@
 const { hashPassword, comparePassword } = require('../common/utils/bcrypt.util');
-const { generateToken } = require('../common/utils/jwt.util');
+const { generateAccessToken, generateRefreshToken, verifyToken } = require('../common/utils/jwt.util');
 const User = require('../models/User');
 
 async function register(email, password, opts = {}) {
@@ -41,15 +41,42 @@ async function login(email, password) {
     throw new Error('Invalid email or password');
   }
 
-  const token = generateToken({
+  const payload = {
     id: user.id,
     email: user.email,
     role: user.role,
     campusId: user.campusId,
-  });
+  };
+
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
 
   const { passwordHash: _ph, ...safeUser } = user.toJSON();
-  return { token, user: safeUser };
+  return { accessToken, refreshToken, user: safeUser };
+}
+
+async function refreshTokens(refreshToken) {
+  if (!refreshToken) {
+    throw new Error('No refresh token provided');
+  }
+
+  const decoded = verifyToken(refreshToken);
+  if (!decoded) {
+    throw new Error('Invalid refresh token');
+  }
+
+  // Optionally, you could check against a stored list of refresh tokens for revocation (e.g. in Redis)
+  const payload = {
+    id: decoded.id,
+    email: decoded.email,
+    role: decoded.role,
+    campusId: decoded.campusId,
+  };
+
+  const newAccessToken = generateAccessToken(payload);
+  const newRefreshToken = generateRefreshToken(payload); // rotate for better security
+
+  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 }
 
 async function getMe(payload) {
@@ -66,4 +93,4 @@ async function getMe(payload) {
   return user.toJSON();
 }
 
-module.exports = { register, login, getMe };
+module.exports = { register, login, refreshTokens, getMe };
