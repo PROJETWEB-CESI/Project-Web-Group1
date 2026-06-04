@@ -1,14 +1,16 @@
 'use client';
 
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ThemeToggle() {
   const { theme, setTheme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
 
   const labels = {
-    light: 'Light',
-    dark: 'Dark',
-    'high-contrast': 'High Contrast',
+    light: t('light'),
+    dark: t('dark'),
+    'high-contrast': t('highContrast'),
   };
 
   const icons = {

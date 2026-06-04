@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 /**
  * Root page acts as an auth guard + role-based router.
@@ -19,6 +20,7 @@ import { useAuth } from '@/context/AuthContext';
  */
 export default function RootRedirector() {
   const { user, loading, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function RootRedirector() {
       <div className="text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border)] border-t-[var(--color-primary)]" />
         <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-          Checking your session...
+          {t('checkingSession')}
         </p>
       </div>
     </div>

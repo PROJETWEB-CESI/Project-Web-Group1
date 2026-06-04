@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const { login, user, loading: authLoading, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   // If already authenticated, redirect away from login (prevents seeing login form when logged in)
@@ -60,14 +62,14 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
-            Shaping Tomorrow’s Minds
+            {t('shapingMinds')}
           </h1>
           <p className="text-xl opacity-80 max-w-sm">
-            Secure access to schedules, grades, and academic services across all campuses.
+            {t('secureAccess')}
           </p>
 
           <div className="mt-10 text-sm opacity-60">
-            GDPR compliant • Accessible to all • Multi-campus
+            {t('gdprTagline')}
           </div>
         </div>
       </div>
@@ -84,13 +86,13 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">Welcome back</h2>
-            <p className="text-[var(--color-text-muted)] mt-1">Sign in to access your dashboard</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">{t('welcomeBack')}</h2>
+            <p className="text-[var(--color-text-muted)] mt-1">{t('signInToAccess')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <Input
-              label="Email address"
+              label={t('emailAddress')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -100,7 +102,7 @@ export default function LoginPage() {
             />
 
             <Input
-              label="Password"
+              label={t('password')}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -122,30 +124,30 @@ export default function LoginPage() {
               loading={loading} 
               className="w-full mt-2"
             >
-              Sign in
+              {t('signIn')}
             </Button>
 
             <div className="text-center text-sm">
               <button
                 type="button"
-                onClick={() => alert('For security reasons, password resets must be requested through your campus administration office. Please contact support.')}
+                onClick={() => alert(t('forgotPasswordHelp'))}
                 className="text-[var(--color-link)] hover:underline focus:outline-none focus:underline"
               >
-                Forgot your password?
+                {t('forgotPassword')}
               </button>
             </div>
           </form>
 
           {/* GDPR / Privacy notice - important for compliance */}
           <div className="mt-8 text-center text-xs text-[var(--color-text-muted)] leading-relaxed">
-            By signing in you agree to the processing of your personal data as described in our{' '}
-            <a href="/privacy" className="underline hover:text-[var(--color-text)]">Privacy Policy</a>. 
-            We only collect what is necessary for authentication and academic services (GDPR Art. 5).
+            {t('privacyNoticePrefix')}{' '}
+            <a href="/privacy" className="underline hover:text-[var(--color-text)]">{t('privacyPolicy')}</a>.{' '}
+            {t('privacyNoticeSuffix')}
           </div>
 
           <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
-            Need an account?{' '}
-            <span className="font-medium">Contact your educational administrator or campus office.</span>
+            {t('needAccount')}{' '}
+            <span className="font-medium">{t('needAccountContact')}</span>
           </div>
         </div>
       </div>
