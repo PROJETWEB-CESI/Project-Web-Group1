@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { logContrastVerification } from '@/lib/contrast';
 
 const ThemeContext = createContext(null);
 
@@ -41,6 +42,17 @@ export function ThemeProvider({ children }) {
 
     setThemeState(initialTheme);
     applyTheme(initialTheme);
+
+    // Verify chosen theme colors actually deliver good contrast (uses luminance calc)
+    // Only logs in development; helps ensure high-contrast is not low-contrast pairs.
+    setTimeout(() => {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const primary = rootStyle.getPropertyValue('--color-primary').trim() || '#000000';
+      const onPrimary = rootStyle.getPropertyValue('--color-on-primary').trim() || '#ffffff';
+      const text = rootStyle.getPropertyValue('--color-text').trim() || '#000000';
+      const bg = rootStyle.getPropertyValue('--color-bg').trim() || '#ffffff';
+      logContrastVerification(initialTheme, primary, onPrimary, text, bg);
+    }, 50);
   }, []);
 
   const setTheme = (newTheme) => {
@@ -49,6 +61,16 @@ export function ThemeProvider({ children }) {
     setThemeState(newTheme);
     localStorage.setItem('theme', newTheme);
     applyTheme(newTheme);
+
+    // Re-verify after manual switch (calculation ensures we didn't pick bad pairs like white-on-yellow)
+    setTimeout(() => {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const primary = rootStyle.getPropertyValue('--color-primary').trim() || '#000000';
+      const onPrimary = rootStyle.getPropertyValue('--color-on-primary').trim() || '#ffffff';
+      const text = rootStyle.getPropertyValue('--color-text').trim() || '#000000';
+      const bg = rootStyle.getPropertyValue('--color-bg').trim() || '#ffffff';
+      logContrastVerification(newTheme, primary, onPrimary, text, bg);
+    }, 30);
   };
 
   const toggleTheme = () => {

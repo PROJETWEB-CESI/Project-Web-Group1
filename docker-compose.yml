@@ -79,6 +79,7 @@ services:
       DB_PASSWORD: nova123
       JWT_SECRET: super_long_random_secret_key_change_this_in_production_please
       JWT_EXPIRES_IN: 7d
+      ENABLE_TEST_CREDENTIALS: ${ENABLE_TEST_CREDENTIALS:-false}
     volumes:
       - ./services/iam-service/src:/app/src
     depends_on:

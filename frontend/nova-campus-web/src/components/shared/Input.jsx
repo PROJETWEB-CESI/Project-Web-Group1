@@ -31,7 +31,7 @@ const Input = forwardRef(function Input(
         type={type}
         aria-invalid={!!error}
         aria-describedby={error ? `${inputId}-error` : undefined}
-        className={`w-full rounded-lg border px-4 py-2.5 text-base transition focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] disabled:bg-gray-100 disabled:text-gray-500
+        className={`w-full rounded-lg border px-4 py-2.5 text-base transition focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:text-[var(--color-text-muted)]
           ${error ? 'border-[var(--color-error)] focus:ring-[var(--color-error)]' : 'border-[var(--color-border)]'}
           ${className}`}
         {...props}

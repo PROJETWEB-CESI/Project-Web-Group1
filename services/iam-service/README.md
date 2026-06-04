@@ -94,3 +94,16 @@ Authentication and user management service for NovaCampus Alliance.
 - The Gateway (nginx) strips the `/api/auth` prefix before forwarding requests to the service.
 
 For implementation details, see the files under `src/auth/` and `src/users/`.
+
+## Test / Dev Credentials
+
+When `ENABLE_TEST_CREDENTIALS=true` in the environment (see root `.env.exemple`), the IAM service automatically seeds the following test accounts on startup (in `startServer`):
+
+- Student: `student@test.com` / `student123` (role: `student`, campusId: `CAMP001`)
+- Teacher: `teacher@test.com` / `teacher123` (role: `teacher`, campusId: `CAMP001`)
+- Admin: `admin@test.com` / `admin123` (role: `admin`, campusId: `CAMP001`)
+- Executive: `executive@test.com` / `executive123` (role: `executive`, campusId: `CAMP001`)
+
+Use these via the login page at `/login` (or directly via POST /api/auth/login). You will be redirected to the corresponding dashboard based on role.
+
+**These credentials are for development and testing only. Set `ENABLE_TEST_CREDENTIALS=false` (or omit) in production.**

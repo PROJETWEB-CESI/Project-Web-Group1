@@ -36,7 +36,7 @@ export default function ThemeToggle() {
             onClick={() => setTheme(t)}
             className={`rounded px-2 py-0.5 text-xs transition-colors ${
               theme === t 
-                ? 'bg-[var(--color-primary)] text-white' 
+                ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' 
                 : 'hover:bg-[var(--color-border)]'
             }`}
             aria-label={`Switch to ${labels[t]} mode`}

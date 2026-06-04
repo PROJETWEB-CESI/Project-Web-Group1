@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex">
       {/* Left panel - Branding (general style, reusable pattern) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-white flex-col justify-center px-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12">
         <div className="max-w-md">
           <div className="flex items-center gap-3 mb-8">
             <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-xl font-semibold">
@@ -77,7 +77,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile header */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="h-9 w-9 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-lg font-semibold">
+            <div className="h-9 w-9 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center text-lg font-semibold">
               NC
             </div>
             <span className="text-2xl font-semibold text-[var(--color-text)]">NovaCampus</span>
@@ -129,7 +129,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => alert('For security reasons, password resets must be requested through your campus administration office. Please contact support.')}
-                className="text-[var(--color-primary)] hover:underline focus:outline-none focus:underline"
+                className="text-[var(--color-link)] hover:underline focus:outline-none focus:underline"
               >
                 Forgot your password?
               </button>

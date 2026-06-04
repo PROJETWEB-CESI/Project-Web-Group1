@@ -22,6 +22,66 @@ app.use(authRoutes);
 // (prefix-stripped) reaches here.
 app.use('/users', userRoutes);
 
+async function seedTestUsersIfEnabled() {
+  if (process.env.ENABLE_TEST_CREDENTIALS !== 'true') {
+    return;
+  }
+
+  const { hashPassword } = require('./common/utils/bcrypt.util');
+  const User = require('./models/User');
+
+  const testUsers = [
+    {
+      email: 'student@test.com',
+      password: 'student123',
+      role: 'student',
+      campusId: 'CAMP001',
+      firstName: 'Test',
+      lastName: 'Student',
+    },
+    {
+      email: 'teacher@test.com',
+      password: 'teacher123',
+      role: 'teacher',
+      campusId: 'CAMP001',
+      firstName: 'Test',
+      lastName: 'Teacher',
+    },
+    {
+      email: 'admin@test.com',
+      password: 'admin123',
+      role: 'admin',
+      campusId: 'CAMP001',
+      firstName: 'Test',
+      lastName: 'Admin',
+    },
+    {
+      email: 'executive@test.com',
+      password: 'executive123',
+      role: 'executive',
+      campusId: 'CAMP001',
+      firstName: 'Test',
+      lastName: 'Executive',
+    },
+  ];
+
+  for (const tu of testUsers) {
+    const existing = await User.findOne({ where: { email: tu.email } });
+    if (existing) continue;
+
+    const passwordHash = await hashPassword(tu.password);
+    await User.create({
+      email: tu.email,
+      passwordHash,
+      role: tu.role,
+      campusId: tu.campusId,
+      firstName: tu.firstName,
+      lastName: tu.lastName,
+    });
+    console.log(`[DEV] Seeded test user: ${tu.email} / ${tu.password} (role: ${tu.role})`);
+  }
+}
+
 async function startServer() {
   try {
     await sequelize.authenticate();
@@ -29,6 +89,8 @@ async function startServer() {
 
     await sequelize.sync({ alter: true });
     console.log('Database synced');
+
+    await seedTestUsersIfEnabled();
 
     app.listen(port, () => {
       console.log(`Auth service running on port ${port}`);
