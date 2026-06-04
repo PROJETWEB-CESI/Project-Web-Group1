@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const sequelize = require('./config/database.config');
 const gradeRoutes = require('./grades/grade.route');
+const attendanceRoutes = require('./attendance/attendance.route');
 
 const app = express();
 const port = process.env.API_PORT || 3000;
@@ -14,6 +15,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/grades', gradeRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 async function startServer() {
     try {
