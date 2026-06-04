@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+      <body className="min-h-dvh flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
         <ThemeProvider>
           <AuthProvider>
             {/* Global theme toggle - accessible from everywhere (will be moved to proper header later) */}
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
               <ThemeToggle />
             </div>
 
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-h-0">
               {children}
             </div>
             <Footer />

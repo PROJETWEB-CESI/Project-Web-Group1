@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex">
+    <div className="flex-1 flex min-h-0">
       {/* Left panel - Branding (general style, reusable pattern) */}
       <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12">
         <div className="max-w-md">
@@ -73,7 +73,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel - Login form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-[var(--color-bg)]">
+      <div className="w-full lg:w-1/2 flex min-h-0 overflow-auto items-start lg:items-center justify-center px-6 py-8 lg:py-12 bg-[var(--color-bg)]">
         <div className="w-full max-w-md">
           {/* Mobile header */}
           <div className="lg:hidden flex items-center gap-3 mb-8">

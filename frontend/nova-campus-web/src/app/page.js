@@ -50,7 +50,7 @@ export default function RootRedirector() {
   // While we check auth (or during the redirect), show a clean loading screen.
   // This is consistent with the loading state used in ProtectedRoute.
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)]">
+    <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border)] border-t-[var(--color-primary)]" />
         <p className="mt-4 text-sm text-[var(--color-text-muted)]">
