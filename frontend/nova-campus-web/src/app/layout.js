@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import Footer from "@/components/shared/Footer";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import LanguageToggle from "@/components/shared/LanguageToggle";
+import ProfileMenu from "@/components/shared/ProfileMenu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({ children }) {
               <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
                 <LanguageToggle />
                 <ThemeToggle />
+                <ProfileMenu />
               </div>
 
               <div className="flex-1 flex flex-col min-h-0">
