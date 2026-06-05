@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
           <ThemeProvider>
             <AuthProvider>
               {/* Global toggles (language + theme) - accessible from everywhere */}
-              <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+              <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
                 <LanguageToggle />
                 <ThemeToggle />
                 <ProfileMenu />
