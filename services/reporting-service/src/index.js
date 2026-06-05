@@ -8,8 +8,9 @@ require('./models/Grade');
 require('./models/Attendance');
 require('./models/Enrollment');
 
-const kpiRoutes        = require('./kpis/kpi.route');
-const comparisonRoutes = require('./comparison/comparison.route');
+const kpiRoutes         = require('./kpis/kpi.route');
+const comparisonRoutes  = require('./comparison/comparison.route');
+const programmeRoutes   = require('./programmes/programme.route');
 
 const app = express();
 const port = process.env.API_PORT || 3000;
@@ -23,6 +24,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/kpis', kpiRoutes);
 app.use('/api/comparison', comparisonRoutes);
+app.use('/api/programmes', programmeRoutes);
 
 async function startServer() {
     try {
