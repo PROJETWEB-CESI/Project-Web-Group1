@@ -147,6 +147,11 @@ The identity service is the source of truth for users, roles, JWTs, and campus t
      - etc.
   5. **Never** leave this enabled in production. Documented in root README and iam-service README.
 
+- **Scheduling service tests** (detailed classic + edge + security/injection):
+  Run `node scripts/test-scheduling.js` (after enabling test creds + full stack up).
+  It logs in with admin@test.com (using the httpOnly cookies through the gateway), then runs 40+ assertions on rooms/timetables (CRUD, every overlap scenario, filters, bad data, unauthed vs tampered cookies, SQL-ish injection attempts, large payloads, etc.).
+  The script only succeeds when test users exist (dev-only). It always cleans TST* data.
+
 - The gateway strips `/api/auth` prefix. Routes inside the service are mounted at root (see `auth.route.js`).
 
 ### Key Architecture Points

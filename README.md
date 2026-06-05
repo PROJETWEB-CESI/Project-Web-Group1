@@ -61,9 +61,26 @@ For rapid testing of role-based features and redirects (login page + dashboards)
    | Admin      | admin@test.com         | admin123     | /dashboard/admin         |
    | Executive  | executive@test.com     | executive123 | /dashboard/executive     |
 
-These accounts are **only seeded** when `ENABLE_TEST_CREDENTIALS=true` (and you recreated the container after setting it in .env) and **must never be enabled in production**.
+These accounts are **only seeded** when `ENABLE_TEST_CREDENTIALS=true` (and you recreated the container after setting it in .env). If the variable is missing/empty/other value in .env it defaults to false and no test accounts are seeded. These **must never be enabled in production**.
 
 See [services/iam-service/README.md](services/iam-service/README.md) for the full IAM API documentation, endpoints, and more details on test seeding.
+
+### Running the Scheduling Service Tests
+A detailed test script lives at `scripts/test-scheduling.js` (Node.js, uses native fetch).
+
+```ps
+node scripts/test-scheduling.js
+```
+
+It exercises:
+- Full rooms + timetables CRUD + all filters
+- Conflict detection (room/instructor, exact/partial/1-min/touching/different-sem/year, updates)
+- Edge cases (bad times, missing fields, duplicates, large payloads, inverted times, 0/negative values)
+- Security: login with test creds, httpOnly cookie capture & forwarding via gateway, unauthenticated calls, tampered cookies, bad logins, SQL-injection style payloads in IDs/bodies (verifies safe handling + no data loss)
+
+**It requires test credentials** (ENABLE_TEST_CREDENTIALS=true in .env + `docker compose up -d --force-recreate iam-service`). If not seeded the script aborts with instructions. This keeps it dev-only (works on develop/feature branches with local .env).
+
+Always run against a full rebuilt stack: `docker compose up -d --build`. The script cleans up its TST* test data.
 
 ## Documentation & Services
 
