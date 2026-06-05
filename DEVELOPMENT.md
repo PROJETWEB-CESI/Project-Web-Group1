@@ -91,6 +91,7 @@ Similar client-side persisted system to themes.
   2. Use Tailwind utility classes on top of the tokens.
   3. Component-specific styles only inside the shared component (or via props/variants).
   4. Page-specific overrides are the exception, not the rule.
+  5. **Button ordering (UI convention)**: For any buttons involving continue/confirm/primary action + cancel/undo/back/secondary, put the cancel/undo on the **left** and the continue/confirm on the **right**. Example: `[ Cancel ] [ Confirm ]` or `[ Undo ] [ Save ]`. Follows standard OS/web patterns and prevents accidental destructive actions.
 - The root layout provides the providers (`LanguageProvider`, `ThemeProvider`, `AuthProvider`) and the global fixed toggles + single Footer.
 - **Auth**: Use `useAuth()` from `AuthContext`. It handles token storage, automatic `/me` validation on load, `login()`, `logout()`, and `isAuthenticated`.
 - **Forms**: Prefer the shared `Input` + `Button`. They already handle labels, errors, focus, disabled states, and theme vars.
