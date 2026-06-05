@@ -26,6 +26,20 @@ export default function ProfileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
+  const toggleMenu = () => setIsOpen((prev) => !prev);
+  const closeMenu = () => setIsOpen(false);
+
+  // Close on outside click - must be called unconditionally (before any early returns)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        closeMenu();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (loading || !isAuthenticated || !user) {
     return null;
   }
@@ -98,21 +112,6 @@ export default function ProfileMenu() {
   };
 
   const menuItems = getRoleMenuItems();
-
-  const toggleMenu = () => setIsOpen(!isOpen);
-
-  const closeMenu = () => setIsOpen(false);
-
-  // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        closeMenu();
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleLogout = async (e) => {
     e.preventDefault();
