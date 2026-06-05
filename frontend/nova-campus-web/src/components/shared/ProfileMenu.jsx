@@ -96,7 +96,7 @@ export default function ProfileMenu() {
                   <button
                     key={index}
                     onClick={handleLogout}
-                    className="flex w-full items-center px-4 py-2 text-left text-red-600 hover:bg-[var(--color-surface)] focus:bg-[var(--color-surface)] focus:outline-none"
+                    className="block w-full px-4 py-2 text-left !text-[var(--color-error)] no-underline hover:bg-[var(--color-surface)] hover:!text-[var(--color-error)] focus:bg-[var(--color-surface)] focus:outline-none"
                     role="menuitem"
                   >
                     {item.label}
@@ -109,7 +109,7 @@ export default function ProfileMenu() {
                   key={index}
                   href={item.href}
                   onClick={closeMenu}
-                  className="flex w-full items-center px-4 py-2 text-[var(--color-text)] hover:bg-[var(--color-surface)] focus:bg-[var(--color-surface)] focus:outline-none"
+                  className="block w-full px-4 py-2 text-left !text-[var(--color-text)] no-underline hover:bg-[var(--color-surface)] hover:!text-[var(--color-primary)] focus:bg-[var(--color-surface)] focus:outline-none"
                   role="menuitem"
                 >
                   {item.label}
