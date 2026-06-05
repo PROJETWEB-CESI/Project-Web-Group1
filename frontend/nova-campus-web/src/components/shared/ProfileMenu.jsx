@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -25,6 +25,20 @@ export default function ProfileMenu() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+
+  const toggleMenu = useCallback(() => setIsOpen((prev) => !prev), []);
+  const closeMenu = useCallback(() => setIsOpen(false), []);
+
+  // Close on outside click - must be called unconditionally (before any early returns)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        closeMenu();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [closeMenu]);
 
   if (loading || !isAuthenticated || !user) {
     return null;
@@ -98,21 +112,6 @@ export default function ProfileMenu() {
   };
 
   const menuItems = getRoleMenuItems();
-
-  const toggleMenu = () => setIsOpen(!isOpen);
-
-  const closeMenu = () => setIsOpen(false);
-
-  // Close on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        closeMenu();
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleLogout = async (e) => {
     e.preventDefault();
