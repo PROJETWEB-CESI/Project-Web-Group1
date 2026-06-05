@@ -39,6 +39,10 @@ const translations = {
     checkingSession: 'Checking your session...',
     // Language toggle
     language: 'Language',
+    // Profile menu (used by ProfileMenu component)
+    myDashboard: 'My Dashboard',
+    settings: 'Settings',
+    logout: 'Logout',
     // Privacy / Accessibility additional keys (fallbacks are in the pages for now)
     yourDataRights: 'Your Data, Your Rights',
     privacyDataProcessing: 'NovaCampus Alliance processes personal data (email, name, academic records, campus affiliation) solely for the purpose of providing educational services, authentication, and academic administration.',
@@ -84,6 +88,10 @@ const translations = {
     // Misc
     checkingSession: 'Vérification de votre session...',
     language: 'Langue',
+    // Profile menu (used by ProfileMenu component)
+    myDashboard: 'Mon tableau de bord',
+    settings: 'Paramètres',
+    logout: 'Déconnexion',
     yourDataRights: 'Vos données, vos droits',
     privacyDataProcessing: 'L’Alliance NovaCampus traite les données personnelles (e-mail, nom, dossiers académiques, affiliation au campus) uniquement dans le but de fournir des services éducatifs, l’authentification et l’administration académique.',
     legalBasis: 'Base légale (RGPD)',
