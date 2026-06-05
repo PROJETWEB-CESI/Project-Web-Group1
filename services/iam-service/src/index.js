@@ -41,10 +41,6 @@ app.use(authRoutes);
 app.use('/users', userRoutes);
 
 async function seedTestUsersIfEnabled() {
-  if (!isTestCredentialsEnabled()) {
-    return;
-  }
-
   const { hashPassword } = require('./common/utils/bcrypt.util');
   const User = require('./models/User');
 
@@ -83,6 +79,22 @@ async function seedTestUsersIfEnabled() {
     },
   ];
 
+  const isEnabled = isTestCredentialsEnabled();
+
+  if (!isEnabled) {
+    // Fully disable test credentials: remove any existing test accounts.
+    // This ensures that after setting ENABLE_TEST_CREDENTIALS=false and recreating,
+    // login with the test accounts will fail (as expected by the user).
+    for (const tu of testUsers) {
+      const deleted = await User.destroy({ where: { email: tu.email } });
+      if (deleted > 0) {
+        console.log(`[DEV] Removed test user (ENABLE_TEST_CREDENTIALS disabled): ${tu.email}`);
+      }
+    }
+    return;
+  }
+
+  // Enabled: seed if not already present (idempotent)
   for (const tu of testUsers) {
     const existing = await User.findOne({ where: { email: tu.email } });
     if (existing) continue;

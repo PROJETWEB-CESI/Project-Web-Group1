@@ -140,12 +140,13 @@ The identity service is the source of truth for users, roles, JWTs, and campus t
   1. In `.env`: `ENABLE_TEST_CREDENTIALS=true`
   2. Recreate the iam service (required for env var to take effect): `docker compose up -d --force-recreate iam-service`
    (Add --build if you also changed source code.)
-  3. The users are seeded on startup (idempotent). See logs for `[DEV] Seeded test user...`.
-  4. Logins:
+  3. The users are seeded on startup. See logs for `[DEV] Seeded test user...`.
+  4. Setting `ENABLE_TEST_CREDENTIALS=false` (or omitting) + recreate will **remove** the test accounts (logins will then fail). See `[DEV] Removed test user...` in logs.
+  5. Logins (when enabled):
      - `student@test.com` / `student123` → student
      - `teacher@test.com` / `teacher123` → teacher
      - etc.
-  5. **Never** leave this enabled in production. Documented in root README and iam-service README.
+  6. **Never** leave this enabled in production. Documented in root README and iam-service README.
 
 - **Scheduling service tests** (detailed classic + edge + security/injection):
   Run `node scripts/test-scheduling.js` (after enabling test creds + full stack up).

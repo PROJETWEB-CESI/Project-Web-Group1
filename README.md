@@ -61,7 +61,7 @@ For rapid testing of role-based features and redirects (login page + dashboards)
    | Admin      | admin@test.com         | admin123     | /dashboard/admin         |
    | Executive  | executive@test.com     | executive123 | /dashboard/executive     |
 
-These accounts are **only seeded** when `ENABLE_TEST_CREDENTIALS=true` (and you recreated the container after setting it in .env). If the variable is missing/empty/other value in .env it defaults to false and no test accounts are seeded. These **must never be enabled in production**.
+These accounts are **seeded when `ENABLE_TEST_CREDENTIALS=true`** (and you recreated the container after setting it in .env). If the variable is missing/empty/"false"/other value it defaults to false **and any existing test accounts are removed on startup** (so the credentials will stop working after recreate). These **must never be enabled in production**.
 
 See [services/iam-service/README.md](services/iam-service/README.md) for the full IAM API documentation, endpoints, and more details on test seeding.
 
