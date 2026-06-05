@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { Sun, Moon, Contrast } from 'lucide-react';
 
 export default function ThemeToggle() {
   const { theme, setTheme, toggleTheme } = useTheme();
@@ -14,9 +15,9 @@ export default function ThemeToggle() {
   };
 
   const icons = {
-    light: '☀️',
-    dark: '🌙',
-    'high-contrast': '◐',
+    light: <Sun className="w-4 h-4" />,
+    dark: <Moon className="w-4 h-4" />,
+    'high-contrast': <Contrast className="w-4 h-4" />,
   };
 
   return (
@@ -44,7 +45,7 @@ export default function ThemeToggle() {
             aria-label={`Switch to ${labels[t]} mode`}
             aria-pressed={theme === t}
           >
-            {icons[t]}
+            <span aria-hidden="true">{icons[t]}</span>
           </button>
         ))}
       </div>

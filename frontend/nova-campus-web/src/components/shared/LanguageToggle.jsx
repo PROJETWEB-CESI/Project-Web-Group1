@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/context/LanguageContext';
+import { Globe } from 'lucide-react';
 
 export default function LanguageToggle() {
   const { language, setLanguage, toggleLanguage, translate } = useLanguage();
@@ -23,7 +24,7 @@ export default function LanguageToggle() {
         className="flex items-center gap-1.5 rounded-full px-3 py-1 font-medium hover:bg-white/50 dark:hover:bg-black/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
         title={`${translate('language')}: ${langFull[language]}. Click to switch.`}
       >
-        <span aria-hidden="true">🌐</span>
+        <Globe className="w-4 h-4" aria-hidden="true" />
         <span className="hidden sm:inline font-mono">{langDisplay[language]}</span>
       </button>
 

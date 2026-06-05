@@ -9,6 +9,7 @@
   --color-primary-hover: #1e40af;
   --color-on-primary: #ffffff;   /* Text/icon color to use on primary backgrounds */
   --color-link: #1e40af;         /* Slightly brighter variant for links on light */
+  --color-link-hover: #1e3a8a;   /* Darker on hover for distinction */
   --color-accent: #0ea5e9;       /* Sky blue accent */
   --color-bg: #ffffff;
   --color-surface: #f8fafc;
@@ -34,6 +35,7 @@
   --color-primary-hover: #3b82f6;
   --color-on-primary: #ffffff;    /* White on the blue primary */
   --color-link: #60a5fa;          /* Brighter link color for good contrast on dark */
+  --color-link-hover: #93c5fd;    /* Lighter blue on hover for improved contrast (>4.5:1) */
   --color-accent: #38bdf8;
   --color-error: #f87171;
   --color-success: #4ade80;
@@ -55,6 +57,7 @@
   --color-primary-hover: #fde047;
   --color-on-primary: #000000;    /* Black text on yellow - the correct high-contrast choice */
   --color-link: #facc15;
+  --color-link-hover: #fef08c;   /* Brighter yellow on hover */
   --color-accent: #22f3f3;
   --color-error: #ff4d4d;
   --color-success: #22c55e;
@@ -139,7 +142,8 @@ button:focus-visible {
 }
 
 /* General accessible link style - uses --color-link (per-theme) for proper contrast.
-   Dark: brighter blue on slate. High-contrast: yellow on black (~13:1 per luminance calc).
+   Hover uses --color-link-hover (brighter in dark for >4.5:1 contrast).
+   High-contrast: yellow on black (~13:1 per luminance calc).
  */
 a {
   color: var(--color-link);
@@ -148,7 +152,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary-hover);
+  color: var(--color-link-hover);
 }
 
 /* Extra visibility for high-contrast links (already boosted in .high-contrast a above) */
