@@ -16,3 +16,4 @@ BILLING_SERVICE_URL = os.getenv("BILLING_SERVICE_URL", "http://billing-service:3
 REPORTING_SERVICE_URL = os.getenv("REPORTING_SERVICE_URL", "http://reporting-service:3000")
 
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "/app/data/chroma")
+CONVERSATIONS_DIR = os.getenv("CONVERSATIONS_DIR", "/app/data/conversations")
