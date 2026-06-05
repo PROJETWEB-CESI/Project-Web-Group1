@@ -16,6 +16,13 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP' });
 });
 
+// Log effective value of the test credentials flag on every startup
+// (helps debug why test users appear/disappear after .env changes)
+const rawTestCreds = process.env.ENABLE_TEST_CREDENTIALS;
+const enabledTestCreds = String(rawTestCreds || '').trim().toLowerCase();
+const testCredsOn = enabledTestCreds === 'true' || enabledTestCreds === '1' || enabledTestCreds === 'yes';
+console.log(`[IAM] ENABLE_TEST_CREDENTIALS=${rawTestCreds} (effective: ${testCredsOn ? 'ON (will seed if needed)' : 'OFF'})`);
+
 // Auth endpoints are reached via gateway /api/auth/* which strips prefix,
 // so mount at root to match incoming /login, /register, /validate etc.
 app.use(authRoutes);
