@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function ProfileMenu() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const { translate } = useLanguage();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -86,6 +88,7 @@ export default function ProfileMenu() {
     e.preventDefault();
     closeMenu();
     await logout();
+    router.replace('/login');
   };
 
   return (
