@@ -7,6 +7,7 @@ import Footer from "@/components/shared/Footer";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import LanguageToggle from "@/components/shared/LanguageToggle";
 import ProfileMenu from "@/components/shared/ProfileMenu";
+import LogoLink from "@/components/shared/LogoLink";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,14 +37,18 @@ export default function RootLayout({ children }) {
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              {/* Global toggles (language + theme) - accessible from everywhere */}
-              <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-                <LanguageToggle />
-                <ThemeToggle />
-                <ProfileMenu />
+              {/* Global header bar: logo (top-left) + language/theme/profile (top-right).
+                  Fixed overlay with side margins. Content area gets top padding to avoid overlap. */}
+              <div className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between">
+                <LogoLink />
+                <div className="flex items-center gap-3">
+                  <LanguageToggle />
+                  <ThemeToggle />
+                  <ProfileMenu />
+                </div>
               </div>
 
-              <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 flex flex-col min-h-0 pt-14">
                 {children}
               </div>
               <Footer />

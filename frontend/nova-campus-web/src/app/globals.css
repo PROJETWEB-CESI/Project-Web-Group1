@@ -4,62 +4,65 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Professional design tokens - NovaCampus education theme */
-  --color-primary: #1e3a8a;      /* Deep blue - good on light (for buttons) */
-  --color-primary-hover: #1e40af;
-  --color-on-primary: #ffffff;   /* Text/icon color to use on primary backgrounds */
-  --color-link: #1e40af;         /* Slightly brighter variant for links on light */
-  --color-accent: #0ea5e9;       /* Sky blue accent */
-  --color-bg: #ffffff;
-  --color-surface: #f8fafc;
-  --color-text: #0f172a;
-  --color-text-muted: #475569;
-  --color-border: #e2e8f0;
-  --color-error: #b91c1c;
-  --color-success: #15803d;
+  /* Professional design tokens - NovaCampus education theme (using OKLCH for perceptually consistent brightness across hues) */
+  --color-primary: oklch(0.37 0.12 260);      /* Deep blue */
+  --color-primary-hover: oklch(0.41 0.13 260);
+  --color-on-primary: oklch(1 0 0);   /* Text/icon color to use on primary backgrounds */
+  --color-link: oklch(0.41 0.13 260);         /* Slightly brighter variant for links on light */
+  --color-link-hover: oklch(0.37 0.12 260);   /* Darker on hover for distinction */
+  --color-accent: oklch(0.64 0.15 220);       /* Sky blue accent */
+  --color-bg: oklch(1 0 0);
+  --color-surface: oklch(0.97 0.005 260);
+  --color-text: oklch(0.14 0.01 260);
+  --color-text-muted: oklch(0.45 0.01 260);
+  --color-border: oklch(0.89 0.005 260);
+  --color-error: oklch(0.48 0.18 25);
+  --color-success: oklch(0.53 0.14 140);
 
   /* Focus & accessibility */
-  --ring-color: #1e3a8a;
-  --ring-offset: #ffffff;
+  --ring-color: oklch(0.37 0.12 260);
+  --ring-offset: oklch(1 0 0);
 }
 
-/* Dark theme - actual darkening (not white). Colors chosen + verified with luminance calc for >=4.5:1 */
+/* Dark theme - actual darkening (not white). Using OKLCH for consistent perceived brightness (L channel) across colors. */
 .dark {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: #475569;
-  --color-primary: #2563eb;       /* Blue chosen via luminance calc: white-on-primary ~5.2:1, visible on dark bg */
-  --color-primary-hover: #3b82f6;
-  --color-on-primary: #ffffff;    /* White on the blue primary */
-  --color-link: #60a5fa;          /* Brighter link color for good contrast on dark */
-  --color-accent: #38bdf8;
-  --color-error: #f87171;
-  --color-success: #4ade80;
-  --ring-color: #3b82f6;
-  --ring-offset: #0f172a;
+  --color-bg: oklch(0.17 0.01 260);
+  --color-surface: oklch(0.22 0.01 260);
+  --color-text: oklch(0.93 0 0);
+  --color-text-muted: oklch(0.65 0.01 260);
+  --color-border: oklch(0.35 0.01 260);
+  --color-primary: oklch(0.58 0.18 260);       /* Blue with good contrast on dark (on-primary ~ white) */
+  --color-primary-hover: oklch(0.63 0.18 260);
+  --color-on-primary: oklch(1 0 0);    /* White on the blue primary */
+  --color-link: oklch(0.72 0.14 260);          /* Brighter link color for good contrast on dark */
+  --color-link-hover: oklch(0.78 0.14 260);    /* Lighter blue on hover for improved contrast */
+  --color-accent: oklch(0.72 0.14 220);
+  --color-error: oklch(0.65 0.2 25);
+  --color-success: oklch(0.68 0.15 140);
+  --ring-color: oklch(0.63 0.18 260);
+  --ring-offset: oklch(0.17 0.01 260);
 }
 
-/* High contrast (RGAA/WCAG AAA target) - uses luminance calculation to pick pairs.
-   Yellow primary on black gives ~19:1 for links.
-   Black on yellow primary gives ~19:1 for buttons (never white-on-yellow).
+/* High contrast (RGAA/WCAG AAA target) - OKLCH tokens chosen for extreme contrast.
+   Yellow primary (high L) on black (L=0) + black on yellow.
+   Still verified at runtime via luminance calc (which converts oklch->srgb internally).
  */
 .high-contrast {
-  --color-bg: #000000;
-  --color-surface: #000000;
-  --color-text: #ffffff;
-  --color-text-muted: #e5e5e5;
-  --color-border: #ffffff;
-  --color-primary: #facc15;       /* Yellow chosen: high luminance diff vs black + vs on-primary black */
-  --color-primary-hover: #fde047;
-  --color-on-primary: #000000;    /* Black text on yellow - the correct high-contrast choice */
-  --color-link: #facc15;
-  --color-accent: #22f3f3;
-  --color-error: #ff4d4d;
-  --color-success: #22c55e;
-  --ring-color: #facc15;
-  --ring-offset: #000000;
+  --color-bg: oklch(0 0 0);
+  --color-surface: oklch(0 0 0);
+  --color-text: oklch(1 0 0);
+  --color-text-muted: oklch(0.9 0 0);
+  --color-border: oklch(1 0 0);
+  --color-primary: oklch(0.88 0.22 90);       /* Yellow chosen for max luminance diff */
+  --color-primary-hover: oklch(0.92 0.2 90);
+  --color-on-primary: oklch(0 0 0);    /* Black text on yellow - the correct high-contrast choice */
+  --color-link: oklch(0.88 0.22 90);
+  --color-link-hover: oklch(0.95 0.15 90);   /* Brighter yellow on hover */
+  --color-accent: oklch(0.85 0.15 200);
+  --color-error: oklch(0.7 0.25 25);
+  --color-success: oklch(0.75 0.2 140);
+  --ring-color: oklch(0.88 0.22 90);
+  --ring-offset: oklch(0 0 0);
 
   font-size: 1.05em; /* Slightly larger base for readability */
 }
@@ -108,14 +111,14 @@ input[type="password"]:focus,
 input[type="text"]:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring-color) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring-color) 12%, transparent);
 }
 
 /* Stronger rings in high-contrast */
 .high-contrast input[type="email"]:focus,
 .high-contrast input[type="password"]:focus,
 .high-contrast input[type="text"]:focus {
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring-color) 35%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring-color) 35%, transparent);
 }
 
 /* High-contrast inputs use the theme vars (black/yellow/white). Extra specificity for borders */
@@ -139,7 +142,8 @@ button:focus-visible {
 }
 
 /* General accessible link style - uses --color-link (per-theme) for proper contrast.
-   Dark: brighter blue on slate. High-contrast: yellow on black (~13:1 per luminance calc).
+   Hover uses --color-link-hover (brighter in dark for >4.5:1 contrast).
+   High-contrast: yellow on black (~13:1 per luminance calc).
  */
 a {
   color: var(--color-link);
@@ -148,7 +152,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary-hover);
+  color: var(--color-link-hover);
 }
 
 /* Extra visibility for high-contrast links (already boosted in .high-contrast a above) */
