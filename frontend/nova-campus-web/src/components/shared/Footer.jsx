@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { translate } = useLanguage();
 
   return (
     <footer className="bg-[var(--color-surface)] text-[var(--color-text-muted)] py-8 border-t border-[var(--color-border)]">
@@ -14,16 +14,16 @@ export default function Footer() {
         </div>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
           <Link href="/privacy" className="hover:text-[var(--color-text)] transition-colors">
-            {t('privacyPolicy')}
+            {translate('privacyPolicy')}
           </Link>
           <Link href="/accessibility" className="hover:text-[var(--color-text)] transition-colors">
-            {t('accessibility')}
+            {translate('accessibility')}
           </Link>
           <a 
             href="mailto:support@novacampus.fr" 
             className="hover:text-[var(--color-text)] transition-colors"
           >
-            {t('contact')}
+            {translate('contact')}
           </a>
         </div>
       </div>

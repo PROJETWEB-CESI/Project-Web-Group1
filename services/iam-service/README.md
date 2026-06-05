@@ -97,7 +97,7 @@ For implementation details, see the files under `src/auth/` and `src/users/`.
 
 ## Test / Dev Credentials
 
-When `ENABLE_TEST_CREDENTIALS=true` in the environment (see root `.env.exemple`), the IAM service automatically seeds the following test accounts on startup (in `startServer`):
+When `ENABLE_TEST_CREDENTIALS=true` in the environment (see root `.env.exemple`), **and you have recreated the iam-service container after the change**, the IAM service automatically seeds the following test accounts on startup (in `startServer`):
 
 - Student: `student@test.com` / `student123` (role: `student`, campusId: `CAMP001`)
 - Teacher: `teacher@test.com` / `teacher123` (role: `teacher`, campusId: `CAMP001`)
@@ -106,4 +106,4 @@ When `ENABLE_TEST_CREDENTIALS=true` in the environment (see root `.env.exemple`)
 
 Use these via the login page at `/login` (or directly via POST /api/auth/login). You will be redirected to the corresponding dashboard based on role.
 
-**These credentials are for development and testing only. Set `ENABLE_TEST_CREDENTIALS=false` (or omit) in production.**
+**These credentials are for development and testing only. Set `ENABLE_TEST_CREDENTIALS=false` (or omit) in production. Remember to recreate the container after changing the value in .env.**

@@ -7,7 +7,7 @@ const LanguageContext = createContext(null);
 const LANGUAGES = ['en', 'fr'];
 
 // Simple bilingual translations.
-// Keys are used via t('key').
+// Keys are used via translate('key').
 // Add more keys here as the UI grows. Keep English as the source of truth.
 const translations = {
   en: {
@@ -178,7 +178,7 @@ export function LanguageProvider({ children }) {
   };
 
   // Simple translation function
-  const t = (key) => {
+  const translate = (key) => {
     const langTranslations = translations[language] || translations.en;
     return langTranslations[key] || translations.en[key] || key;
   };
@@ -187,7 +187,7 @@ export function LanguageProvider({ children }) {
     language,
     setLanguage,
     toggleLanguage,
-    t,
+    translate,
     isFrench: language === 'fr',
     isEnglish: language === 'en',
     languages: LANGUAGES,

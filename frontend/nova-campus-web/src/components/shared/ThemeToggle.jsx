@@ -5,12 +5,12 @@ import { useLanguage } from '@/context/LanguageContext';
 
 export default function ThemeToggle() {
   const { theme, setTheme, toggleTheme } = useTheme();
-  const { t } = useLanguage();
+  const { translate } = useLanguage();
 
   const labels = {
-    light: t('light'),
-    dark: t('dark'),
-    'high-contrast': t('highContrast'),
+    light: translate('light'),
+    dark: translate('dark'),
+    'high-contrast': translate('highContrast'),
   };
 
   const icons = {

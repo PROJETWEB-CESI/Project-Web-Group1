@@ -20,7 +20,7 @@ import { useLanguage } from '@/context/LanguageContext';
  */
 export default function RootRedirector() {
   const { user, loading, isAuthenticated } = useAuth();
-  const { t } = useLanguage();
+  const { translate } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function RootRedirector() {
       <div className="text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-border)] border-t-[var(--color-primary)]" />
         <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-          {t('checkingSession')}
+          {translate('checkingSession')}
         </p>
       </div>
     </div>
