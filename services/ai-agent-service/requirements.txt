@@ -1,7 +1,8 @@
-ollama
 fastapi
-uvicorn
+uvicorn[standard]
+ollama
 chromadb
-sentence-transformers
 httpx
 python-dotenv
+PyJWT
+pydantic
