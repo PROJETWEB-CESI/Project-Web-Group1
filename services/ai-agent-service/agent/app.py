@@ -19,17 +19,35 @@ async def _pull_model_background(host: str, model: str) -> None:
     logger.info(f"[Aria] Pulling model '{model}' from {host} in background ...")
     try:
         client = ollama_client.Client(host=host)
-        # run_in_executor so the sync pull() doesn't block the event loop
         await loop.run_in_executor(None, lambda: client.pull(model))
         logger.info(f"[Aria] Model '{model}' ready")
     except Exception as exc:
         logger.warning(f"[Aria] Could not pull model '{model}': {exc}")
 
 
+def _seed_rag() -> None:
+    from rag.vectorstore import get_collection
+    from rag.indexer import index_documents
+    from rag.seed_data import SEED_DOCUMENTS
+    collection = get_collection()
+    if collection.count() == 0:
+        index_documents(SEED_DOCUMENTS)
+
+
+async def _init_rag_background() -> None:
+    loop = asyncio.get_running_loop()
+    logger.info("[RAG] Initializing ChromaDB ...")
+    try:
+        await loop.run_in_executor(None, _seed_rag)
+        logger.info("[RAG] Ready")
+    except Exception as exc:
+        logger.warning(f"[RAG] Init failed: {exc}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Fire-and-forget: server starts immediately, model pulls in background
     asyncio.create_task(_pull_model_background(OLLAMA_HOST, OLLAMA_MODEL))
+    asyncio.create_task(_init_rag_background())
     yield
 
 

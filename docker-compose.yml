@@ -196,6 +196,7 @@ services:
     volumes:
       - ./services/ai-agent-service:/app
       - ai_chroma_data:/app/data/chroma
+      - ai_onnx_cache:/root/.cache/chroma
     depends_on:
       ollama:
         condition: service_healthy
@@ -277,5 +278,6 @@ volumes:
   mongo_data:
   ollama_data:
   ai_chroma_data:
+  ai_onnx_cache:
   certbot_certs:
   certbot_webroot:
