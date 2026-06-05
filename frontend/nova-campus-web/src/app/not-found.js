@@ -5,7 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import Button from '@/components/shared/Button';
 
 export default function NotFound() {
-  const { t } = useLanguage();
+  const { translate } = useLanguage();
 
   return (
     <div className="flex-1 flex items-center justify-center px-6 py-12 bg-[var(--color-bg)]">
@@ -15,27 +15,27 @@ export default function NotFound() {
             404
           </div>
           <h1 className="text-4xl font-semibold tracking-tight text-[var(--color-text)] mb-4">
-            {t('pageNotFound')}
+            {translate('pageNotFound')}
           </h1>
           <p className="text-lg text-[var(--color-text-muted)] max-w-sm mx-auto">
-            {t('pageNotFoundDesc')}
+            {translate('pageNotFoundDesc')}
           </p>
         </div>
 
         <div className="space-y-3">
           <Link href="/login" className="block">
             <Button variant="primary" size="lg" className="w-full">
-              {t('backToLogin')}
+              {translate('backToLogin')}
             </Button>
           </Link>
 
           <Link href="/" className="block text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline underline-offset-4">
-            {t('returnHome')}
+            {translate('returnHome')}
           </Link>
         </div>
 
         <p className="mt-8 text-xs text-[var(--color-text-muted)]">
-          {t('contactSupport')}
+          {translate('contactSupport')}
         </p>
       </div>
     </div>

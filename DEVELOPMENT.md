@@ -67,8 +67,8 @@ Similar client-side persisted system to themes.
 - **Usage**:
   ```jsx
   const { t, language, isFrench } = useLanguage();
-  <h2>{t('welcomeBack')}</h2>
-  <p>{t('signInToAccess')}</p>
+  <h2>{translate('welcomeBack')}</h2>
+  <p>{translate('signInToAccess')}</p>
   ```
 - **Adding translations**: Edit the `translations` object in `LanguageContext.js`. English is the source of truth. Provide matching French strings.
 - **The toggle**: `LanguageToggle` (shared), placed next to `ThemeToggle` in the layout. Supports cycle + direct buttons.
@@ -101,10 +101,10 @@ import { useLanguage } from '@/context/LanguageContext';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 
-const { t } = useLanguage();
+const { translate } = useLanguage();
 // ...
-<Input label={t('emailAddress')} ... />
-<Button>{t('signIn')}</Button>
+<Input label={translate('emailAddress')} ... />
+<Button>{translate('signIn')}</Button>
 ```
 
 ### API Calls & Proxying (Important for Login / Backend)

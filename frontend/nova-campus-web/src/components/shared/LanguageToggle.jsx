@@ -3,7 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function LanguageToggle() {
-  const { language, setLanguage, toggleLanguage, t } = useLanguage();
+  const { language, setLanguage, toggleLanguage, translate } = useLanguage();
 
   // Always show native names for language choices (standard UX)
   const langDisplay = {
@@ -21,7 +21,7 @@ export default function LanguageToggle() {
       <button
         onClick={toggleLanguage}
         className="flex items-center gap-1.5 rounded-full px-3 py-1 font-medium hover:bg-white/50 dark:hover:bg-black/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
-        title={`${t('language')}: ${langFull[language]}. Click to switch.`}
+        title={`${translate('language')}: ${langFull[language]}. Click to switch.`}
       >
         <span aria-hidden="true">🌐</span>
         <span className="hidden sm:inline font-mono">{langDisplay[language]}</span>

@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const { login, user, loading: authLoading, isAuthenticated } = useAuth();
-  const { t } = useLanguage();
+  const { translate } = useLanguage();
   const router = useRouter();
 
   // If already authenticated, redirect away from login (prevents seeing login form when logged in)
@@ -62,14 +62,14 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
-            {t('shapingMinds')}
+            {translate('shapingMinds')}
           </h1>
           <p className="text-xl opacity-80 max-w-sm">
-            {t('secureAccess')}
+            {translate('secureAccess')}
           </p>
 
           <div className="mt-10 text-sm opacity-60">
-            {t('gdprTagline')}
+            {translate('gdprTagline')}
           </div>
         </div>
       </div>
@@ -86,13 +86,13 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">{t('welcomeBack')}</h2>
-            <p className="text-[var(--color-text-muted)] mt-1">{t('signInToAccess')}</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">{translate('welcomeBack')}</h2>
+            <p className="text-[var(--color-text-muted)] mt-1">{translate('signInToAccess')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <Input
-              label={t('emailAddress')}
+              label={translate('emailAddress')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -102,7 +102,7 @@ export default function LoginPage() {
             />
 
             <Input
-              label={t('password')}
+              label={translate('password')}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -124,30 +124,30 @@ export default function LoginPage() {
               loading={loading} 
               className="w-full mt-2"
             >
-              {t('signIn')}
+              {translate('signIn')}
             </Button>
 
             <div className="text-center text-sm">
               <button
                 type="button"
-                onClick={() => alert(t('forgotPasswordHelp'))}
+                onClick={() => alert(translate('forgotPasswordHelp'))}
                 className="text-[var(--color-link)] hover:underline focus:outline-none focus:underline"
               >
-                {t('forgotPassword')}
+                {translate('forgotPassword')}
               </button>
             </div>
           </form>
 
           {/* GDPR / Privacy notice - important for compliance */}
           <div className="mt-8 text-center text-xs text-[var(--color-text-muted)] leading-relaxed">
-            {t('privacyNoticePrefix')}{' '}
-            <a href="/privacy" className="underline hover:text-[var(--color-text)]">{t('privacyPolicy')}</a>.{' '}
-            {t('privacyNoticeSuffix')}
+            {translate('privacyNoticePrefix')}{' '}
+            <a href="/privacy" className="underline hover:text-[var(--color-text)]">{translate('privacyPolicy')}</a>.{' '}
+            {translate('privacyNoticeSuffix')}
           </div>
 
           <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
-            {t('needAccount')}{' '}
-            <span className="font-medium">{t('needAccountContact')}</span>
+            {translate('needAccount')}{' '}
+            <span className="font-medium">{translate('needAccountContact')}</span>
           </div>
         </div>
       </div>
