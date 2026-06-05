@@ -106,6 +106,6 @@ When `ENABLE_TEST_CREDENTIALS=true` (see root `.env.exemple` and the default-to-
 
 Use these via the login page at `/login` (or directly via POST /api/auth/login). You will be redirected to the corresponding dashboard based on role.
 
-**These credentials are for development and testing only. If `ENABLE_TEST_CREDENTIALS` is missing, empty, false, or any non-enabling value in .env (it defaults to false, no seeding). Set explicitly to true only for dev; never in production. Remember to recreate the container after changing the value in .env.**
+**These credentials are for development and testing only. If `ENABLE_TEST_CREDENTIALS` is missing, empty, false, or any non-enabling value in .env (defaults to false **and removes any existing test accounts** so logins stop working). Set explicitly to true only for dev; never in production. Remember to recreate the container after changing the value in .env.**
 
 The test script `scripts/test-scheduling.js` (at root) uses one of these accounts (admin) to exercise authenticated flows + cookie forwarding through the gateway before testing scheduling endpoints.
