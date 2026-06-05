@@ -138,7 +138,8 @@ The identity service is the source of truth for users, roles, JWTs, and campus t
 - Always start via full `docker compose up --build`.
 - Test credentials (for rapid role testing):
   1. In `.env`: `ENABLE_TEST_CREDENTIALS=true`
-  2. Rebuild the iam service: `docker compose up -d --build iam-service`
+  2. Recreate the iam service (required for env var to take effect): `docker compose up -d --force-recreate iam-service`
+   (Add --build if you also changed source code.)
   3. The users are seeded on startup (idempotent). See logs for `[DEV] Seeded test user...`.
   4. Logins:
      - `student@test.com` / `student123` → student
@@ -195,7 +196,7 @@ See the `environment` block in `docker-compose.yml` and the root `.env.exemple`.
 - **Components not themed**: Hardcoded Tailwind colors or `text-white` outside of `--color-on-primary` usage.
 - **Footer appears twice**: You created a local footer instead of using the shared one from layout.
 - **Scroll on short pages (e.g. login)**: Use the flex-1 + `min-h-dvh` + `min-h-0` pattern established in the layout and login page (see recent fixes).
-- **Test users not present**: `ENABLE_TEST_CREDENTIALS` not true in the `.env` that docker compose reads, or iam service not rebuilt after changing it.
+- **Test users not present**: `ENABLE_TEST_CREDENTIALS` not set to true in the `.env` that docker compose reads for variable substitution, **or** the iam-service container was not recreated after the change (env vars are injected only when the container is created -- use `--force-recreate` or down/up the service).
 
 ## Further Reading
 

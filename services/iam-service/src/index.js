@@ -25,7 +25,9 @@ app.use(authRoutes);
 app.use('/users', userRoutes);
 
 async function seedTestUsersIfEnabled() {
-  if (process.env.ENABLE_TEST_CREDENTIALS !== 'true') {
+  const enabled = String(process.env.ENABLE_TEST_CREDENTIALS || '').trim().toLowerCase();
+  const isEnabled = enabled === 'true' || enabled === '1' || enabled === 'yes';
+  if (!isEnabled) {
     return;
   }
 

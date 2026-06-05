@@ -45,11 +45,12 @@ For rapid testing of role-based features and redirects (login page + dashboards)
    ENABLE_TEST_CREDENTIALS=true
    ```
 
-2. Rebuild the IAM service (or full stack):
+2. Recreate the IAM service (env changes only take effect on container creation!):
 
    ```ps
-   docker compose up -d --build iam-service
+   docker compose up -d --force-recreate iam-service
    ```
+   (Include --build if you also edited code.)
 
 3. Use these accounts on the login page (`/login`):
 
@@ -60,7 +61,7 @@ For rapid testing of role-based features and redirects (login page + dashboards)
    | Admin      | admin@test.com         | admin123     | /dashboard/admin         |
    | Executive  | executive@test.com     | executive123 | /dashboard/executive     |
 
-These accounts are **only seeded** when `ENABLE_TEST_CREDENTIALS=true` and **must never be enabled in production**.
+These accounts are **only seeded** when `ENABLE_TEST_CREDENTIALS=true` (and you recreated the container after setting it in .env) and **must never be enabled in production**.
 
 See [services/iam-service/README.md](services/iam-service/README.md) for the full IAM API documentation, endpoints, and more details on test seeding.
 
