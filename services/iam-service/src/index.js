@@ -16,12 +16,21 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP' });
 });
 
-// Log effective value of the test credentials flag on every startup
-// (helps debug why test users appear/disappear after .env changes)
+// Helper: test credentials default to OFF (false) if the env var is not found, empty, or any non-truthy value.
+// Only "true", "1", "yes" (case-insensitive) enable seeding of dev accounts.
+// This ensures no test data is seeded in production or when .env omits the key.
+function isTestCredentialsEnabled() {
+  const val = process.env.ENABLE_TEST_CREDENTIALS;
+  if (val == null || val === '') {
+    return false; // not found or empty in .env → default false, no seeding
+  }
+  const s = String(val).trim().toLowerCase();
+  return s === 'true' || s === '1' || s === 'yes';
+}
+
 const rawTestCreds = process.env.ENABLE_TEST_CREDENTIALS;
-const enabledTestCreds = String(rawTestCreds || '').trim().toLowerCase();
-const testCredsOn = enabledTestCreds === 'true' || enabledTestCreds === '1' || enabledTestCreds === 'yes';
-console.log(`[IAM] ENABLE_TEST_CREDENTIALS=${rawTestCreds} (effective: ${testCredsOn ? 'ON (will seed if needed)' : 'OFF'})`);
+const testCredsOn = isTestCredentialsEnabled();
+console.log(`[IAM] ENABLE_TEST_CREDENTIALS=${rawTestCreds} (effective: ${testCredsOn ? 'ON (will seed if needed)' : 'OFF (default when not found/empty/falsy)'})`);
 
 // Auth endpoints are reached via gateway /api/auth/* which strips prefix,
 // so mount at root to match incoming /login, /register, /validate etc.
@@ -32,9 +41,7 @@ app.use(authRoutes);
 app.use('/users', userRoutes);
 
 async function seedTestUsersIfEnabled() {
-  const enabled = String(process.env.ENABLE_TEST_CREDENTIALS || '').trim().toLowerCase();
-  const isEnabled = enabled === 'true' || enabled === '1' || enabled === 'yes';
-  if (!isEnabled) {
+  if (!isTestCredentialsEnabled()) {
     return;
   }
 

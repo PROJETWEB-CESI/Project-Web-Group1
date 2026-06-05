@@ -97,7 +97,7 @@ For implementation details, see the files under `src/auth/` and `src/users/`.
 
 ## Test / Dev Credentials
 
-When `ENABLE_TEST_CREDENTIALS=true` in the environment (see root `.env.exemple`), **and you have recreated the iam-service container after the change**, the IAM service automatically seeds the following test accounts on startup (in `startServer`):
+When `ENABLE_TEST_CREDENTIALS=true` (see root `.env.exemple` and the default-to-false behavior when omitted), **and you have recreated the iam-service container after the change**, the IAM service automatically seeds the following test accounts on startup (in `startServer`):
 
 - Student: `student@test.com` / `student123` (role: `student`, campusId: `CAMP001`)
 - Teacher: `teacher@test.com` / `teacher123` (role: `teacher`, campusId: `CAMP001`)
@@ -106,4 +106,6 @@ When `ENABLE_TEST_CREDENTIALS=true` in the environment (see root `.env.exemple`)
 
 Use these via the login page at `/login` (or directly via POST /api/auth/login). You will be redirected to the corresponding dashboard based on role.
 
-**These credentials are for development and testing only. Set `ENABLE_TEST_CREDENTIALS=false` (or omit) in production. Remember to recreate the container after changing the value in .env.**
+**These credentials are for development and testing only. If `ENABLE_TEST_CREDENTIALS` is missing, empty, false, or any non-enabling value in .env (it defaults to false, no seeding). Set explicitly to true only for dev; never in production. Remember to recreate the container after changing the value in .env.**
+
+The test script `scripts/test-scheduling.js` (at root) uses one of these accounts (admin) to exercise authenticated flows + cookie forwarding through the gateway before testing scheduling endpoints.
