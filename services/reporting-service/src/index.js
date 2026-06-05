@@ -8,6 +8,8 @@ require('./models/Grade');
 require('./models/Attendance');
 require('./models/Enrollment');
 
+const kpiRoutes = require('./kpis/kpi.route');
+
 const app = express();
 const port = process.env.API_PORT || 3000;
 
@@ -17,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP' });
 });
+
+app.use('/api/kpis', kpiRoutes);
 
 async function startServer() {
     try {
