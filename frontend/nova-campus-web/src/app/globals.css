@@ -3,44 +3,75 @@
 :root {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  --font-body: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-  /* Professional design tokens - NovaCampus education theme (using OKLCH for perceptually consistent brightness across hues) */
-  --color-primary: oklch(0.37 0.12 260);      /* Deep blue */
-  --color-primary-hover: oklch(0.41 0.13 260);
-  --color-on-primary: oklch(1 0 0);   /* Text/icon color to use on primary backgrounds */
-  --color-link: oklch(0.41 0.13 260);         /* Slightly brighter variant for links on light */
-  --color-link-hover: oklch(0.37 0.12 260);   /* Darker on hover for distinction */
-  --color-accent: oklch(0.64 0.15 220);       /* Sky blue accent */
-  --color-bg: oklch(1 0 0);
-  --color-surface: oklch(0.97 0.005 260);
-  --color-text: oklch(0.14 0.01 260);
-  --color-text-muted: oklch(0.45 0.01 260);
-  --color-border: oklch(0.89 0.005 260);
-  --color-error: oklch(0.48 0.18 25);
-  --color-success: oklch(0.53 0.14 140);
+  /* Light theme colors from mockup (academic modern palette) */
+  --color-bg: oklch(0.985 0.004 95);
+  --color-bg-elev: oklch(1 0 0);
+  --color-bg-sunken: oklch(0.965 0.005 95);
+  --color-surface: oklch(1 0 0);
+  --color-surface-hover: oklch(0.97 0.005 95);
+  --color-border: oklch(0.91 0.008 95);
+  --color-border-strong: oklch(0.82 0.01 95);
+
+  --color-text: oklch(0.20 0.02 250);
+  --color-text-muted: oklch(0.48 0.015 250);
+  --color-text-subtle: oklch(0.62 0.012 250);
+  --color-text-inverse: oklch(0.985 0.004 95);
+
+  --color-primary: oklch(0.38 0.10 245);
+  --color-primary-hover: oklch(0.32 0.11 245);
+  --color-primary-soft: oklch(0.94 0.025 245);
+  --color-primary-soft-strong: oklch(0.88 0.04 245);
+  --color-on-primary: oklch(1 0 0);
+
+  --color-accent: oklch(0.55 0.10 165);
+  --color-accent-soft: oklch(0.93 0.035 165);
+
+  --color-link: oklch(0.38 0.10 245);
+  --color-link-hover: oklch(0.32 0.11 245);
+
+  --color-error: oklch(0.55 0.16 25);
+  --color-success: oklch(0.55 0.11 155);
 
   /* Focus & accessibility */
-  --ring-color: oklch(0.37 0.12 260);
-  --ring-offset: oklch(1 0 0);
+  --ring-color: oklch(0.38 0.10 245);
+  --ring-offset: oklch(0.985 0.004 95);
 }
 
-/* Dark theme - actual darkening (not white). Using OKLCH for consistent perceived brightness (L channel) across colors. */
+/* Dark theme - consistent with mockup light theme (using OKLCH). High-contrast untouched. */
 .dark {
-  --color-bg: oklch(0.17 0.01 260);
-  --color-surface: oklch(0.22 0.01 260);
-  --color-text: oklch(0.93 0 0);
-  --color-text-muted: oklch(0.65 0.01 260);
-  --color-border: oklch(0.35 0.01 260);
-  --color-primary: oklch(0.58 0.18 260);       /* Blue with good contrast on dark (on-primary ~ white) */
-  --color-primary-hover: oklch(0.63 0.18 260);
-  --color-on-primary: oklch(1 0 0);    /* White on the blue primary */
-  --color-link: oklch(0.72 0.14 260);          /* Brighter link color for good contrast on dark */
-  --color-link-hover: oklch(0.78 0.14 260);    /* Lighter blue on hover for improved contrast */
-  --color-accent: oklch(0.72 0.14 220);
-  --color-error: oklch(0.65 0.2 25);
-  --color-success: oklch(0.68 0.15 140);
-  --ring-color: oklch(0.63 0.18 260);
-  --ring-offset: oklch(0.17 0.01 260);
+  --color-bg: oklch(0.16 0.012 250);
+  --color-bg-elev: oklch(0.20 0.015 250);
+  --color-bg-sunken: oklch(0.13 0.012 250);
+  --color-surface: oklch(0.20 0.015 250);
+  --color-surface-hover: oklch(0.24 0.018 250);
+  --color-border: oklch(0.28 0.018 250);
+  --color-border-strong: oklch(0.36 0.02 250);
+
+  --color-text: oklch(0.96 0.005 95);
+  --color-text-muted: oklch(0.72 0.012 250);
+  --color-text-subtle: oklch(0.56 0.015 250);
+  --color-text-inverse: oklch(0.16 0.012 250);
+
+  --color-primary: oklch(0.72 0.13 245);
+  --color-primary-hover: oklch(0.78 0.12 245);
+  --color-primary-soft: oklch(0.28 0.05 245);
+  --color-primary-soft-strong: oklch(0.34 0.07 245);
+  --color-on-primary: oklch(1 0 0);
+
+  --color-accent: oklch(0.72 0.13 165);
+  --color-accent-soft: oklch(0.26 0.05 165);
+
+  --color-link: oklch(0.72 0.13 245);
+  --color-link-hover: oklch(0.78 0.12 245);
+
+  --color-error: oklch(0.70 0.16 25);
+  --color-success: oklch(0.72 0.13 155);
+
+  --ring-color: oklch(0.72 0.13 245);
+  --ring-offset: oklch(0.16 0.012 250);
 }
 
 /* High contrast (RGAA/WCAG AAA target) - OKLCH tokens chosen for extreme contrast.

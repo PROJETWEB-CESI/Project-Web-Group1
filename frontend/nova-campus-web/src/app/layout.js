@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -19,6 +19,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+});
+
 export const metadata = {
   title: "NovaCampus",
   description: "NovaCampus Alliance - Higher Education Platform. Secure access for students, teachers, and staff.",
@@ -31,7 +38,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="min-h-dvh flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
         <LanguageProvider>
@@ -39,7 +46,7 @@ export default function RootLayout({ children }) {
             <AuthProvider>
               {/* Global header bar: logo (top-left) + language/theme/profile (top-right).
                   Fixed overlay with side margins. Content area gets top padding to avoid overlap. */}
-              <div className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between">
+              <div className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between bg-transparent">
                 <LogoLink />
                 <div className="flex items-center gap-3">
                   <LanguageToggle />
