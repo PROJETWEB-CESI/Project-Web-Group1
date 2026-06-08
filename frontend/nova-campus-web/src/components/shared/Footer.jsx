@@ -7,7 +7,7 @@ export default function Footer() {
   const { translate } = useLanguage();
 
   return (
-    <footer className="bg-[var(--color-surface)] text-[var(--color-text-muted)] py-8 border-t border-[var(--color-border)]">
+    <footer className="bg-transparent text-[var(--color-on-primary)] py-8">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-4 text-sm">
         <div className="md:mr-auto">
           © {new Date().getFullYear()} NovaCampus Alliance. All rights reserved.
