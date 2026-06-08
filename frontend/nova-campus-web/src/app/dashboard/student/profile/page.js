@@ -1,5 +1,5 @@
 'use client';
- 
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -7,7 +7,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
- 
+
 const TABS = [
   { key: 'information',    labelKey: 'profileTabInfo' },
   { key: 'security',       labelKey: 'profileTabSecurity' },
@@ -15,7 +15,7 @@ const TABS = [
   { key: 'display',        labelKey: 'profileTabDisplay' },
   { key: 'sessions',       labelKey: 'profileTabSessions' },
 ];
- 
+
 // ── Notification settings (frontend-only state, no backend needed) ───────────
 const NOTIFICATION_ITEMS = [
   { key: 'roomChange',    labelKey: 'notifRoomChange' },
@@ -24,7 +24,7 @@ const NOTIFICATION_ITEMS = [
   { key: 'teacherMsg',    labelKey: 'notifTeacherMsg' },
   { key: 'adminAnnounce', labelKey: 'notifAdminAnnounce' },
 ];
- 
+
 const DEFAULT_NOTIFS = {
   roomChange:    { email: true,  inApp: true,  push: true  },
   newGrade:      { email: true,  inApp: true,  push: false },
@@ -32,49 +32,49 @@ const DEFAULT_NOTIFS = {
   teacherMsg:    { email: true,  inApp: true,  push: true  },
   adminAnnounce: { email: true,  inApp: false, push: false },
 };
- 
+
 // ── Mock sessions (frontend-only, realistic demo data) ───────────────────────
 const MOCK_SESSIONS = [
   { id: 1, device: 'MacBook Pro - Safari', location: 'Lyon, France',  lastActive: 'sessionNow',    current: true  },
   { id: 2, device: 'iPhone 15 - Application', location: 'Lyon, France',  lastActive: 'session4h',  current: false },
   { id: 3, device: 'Chrome - Windows',     location: 'Paris, France', lastActive: 'session3d',     current: false },
 ];
- 
+
 export default function StudentProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { translate } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
- 
+
   const [activeTab,      setActiveTab]      = useState('information');
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving,         setSaving]         = useState(false);
   const [success,        setSuccess]        = useState(false);
   const [error,          setError]          = useState(null);
- 
+
   // Information tab
   const [form, setForm]       = useState({ first_name: '', last_name: '', email: '', phone: '', address: '' });
   const [original, setOriginal] = useState({});
   const [programLabel, setProgramLabel] = useState('');
- 
+
   // Security tab
   const [pwForm, setPwForm]   = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState(null);
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwSaving, setPwSaving]   = useState(false);
- 
+
   // Notifications tab
   const [notifs, setNotifs] = useState(DEFAULT_NOTIFS);
- 
+
   // Sessions tab
   const [sessions, setSessions] = useState(MOCK_SESSIONS);
- 
+
   // ── Auth guard ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.push('/login');
   }, [authLoading, isAuthenticated, router]);
- 
+
   // ── Load student profile ─────────────────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -99,7 +99,7 @@ export default function StudentProfilePage() {
         setProfileLoading(false);
       });
   }, [isAuthenticated, user]);
- 
+
   // ── Information handlers ─────────────────────────────────────────────────
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -119,7 +119,7 @@ export default function StudentProfilePage() {
     } catch (err) { setError(err.message); }
     finally { setSaving(false); }
   }
- 
+
   // ── Security handlers ────────────────────────────────────────────────────
   function handlePwChange(e) {
     setPwForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -141,23 +141,23 @@ export default function StudentProfilePage() {
     } catch (err) { setPwError(err.message); }
     finally { setPwSaving(false); }
   }
- 
+
   // ── Notifications handler ────────────────────────────────────────────────
   function toggleNotif(key, channel) {
     setNotifs(prev => ({ ...prev, [key]: { ...prev[key], [channel]: !prev[key][channel] } }));
   }
- 
+
   // ── Sessions handler ─────────────────────────────────────────────────────
   function revokeSession(id) {
     setSessions(prev => prev.filter(s => s.id !== id));
   }
- 
+
   // ── Render guards ────────────────────────────────────────────────────────
   if (authLoading || profileLoading) return <PageShell><Skeleton /></PageShell>;
- 
+
   const initials = [form.first_name?.[0], form.last_name?.[0]].filter(Boolean).join('').toUpperCase() || '?';
   const fullName = [form.first_name, form.last_name].filter(Boolean).join(' ') || user?.email || '';
- 
+
   return (
     <PageShell>
       {/* Page title */}
@@ -167,13 +167,13 @@ export default function StudentProfilePage() {
       <p style={{ color: 'var(--color-text-muted)' }} className="text-sm mb-5">
         {translate('profileSubtitle')}
       </p>
- 
+
       <div className="flex gap-4 items-start">
- 
+
         {/* ── Sidebar ───────────────────────────────────────────────────── */}
         <aside style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '0.75rem' }}
           className="w-44 shrink-0 p-4 flex flex-col gap-1">
- 
+
           <div className="flex flex-col items-center gap-2 pb-4 mb-2"
             style={{ borderBottom: '1px solid var(--color-border)' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--color-primary)', color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 500 }}
@@ -186,7 +186,7 @@ export default function StudentProfilePage() {
               {translate('changePhoto')}
             </Button>
           </div>
- 
+
           <nav aria-label={translate('profileNav')}>
             {TABS.map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -200,11 +200,11 @@ export default function StudentProfilePage() {
             ))}
           </nav>
         </aside>
- 
+
         {/* ── Main panel ────────────────────────────────────────────────── */}
         <main style={{ flex: 1, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '0.75rem' }}
           className="p-6">
- 
+
           {/* INFORMATION */}
           {activeTab === 'information' && (
             <>
@@ -229,7 +229,7 @@ export default function StudentProfilePage() {
               </div>
             </>
           )}
- 
+
           {/* SECURITY */}
           {activeTab === 'security' && (
             <>
@@ -241,7 +241,7 @@ export default function StudentProfilePage() {
               </div>
               {pwError   && <p className="error-message mb-3" role="alert">{pwError}</p>}
               {pwSuccess && <p style={{ color: 'var(--color-success)' }} className="text-sm mb-3" role="status">{translate('passwordSaveSuccess')}</p>}
- 
+
               {/* 2FA notice */}
               <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', padding: '12px 16px', marginBottom: '20px' }}
                 className="text-sm">
@@ -251,7 +251,7 @@ export default function StudentProfilePage() {
                   {translate('twoFactorEnable')}
                 </button>
               </div>
- 
+
               <div className="flex justify-end gap-2">
                 <Button variant="secondary" onClick={() => { setPwForm({ current: '', next: '', confirm: '' }); setPwError(null); setPwSuccess(false); }} disabled={pwSaving}>
                   {translate('cancel')}
@@ -260,7 +260,7 @@ export default function StudentProfilePage() {
               </div>
             </>
           )}
- 
+
           {/* NOTIFICATIONS */}
           {activeTab === 'notifications' && (
             <>
@@ -299,19 +299,20 @@ export default function StudentProfilePage() {
               </table>
             </>
           )}
- 
+
           {/* DISPLAY */}
           {activeTab === 'display' && (
             <>
               <h2 style={{ color: 'var(--color-text)' }} className="text-sm font-medium mb-5">{translate('profileTabDisplay')}</h2>
- 
+
               {/* Theme selector */}
               <div className="mb-5">
                 <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mb-2">{translate('theme')}</p>
                 <div style={{ display: 'flex', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', padding: '4px', gap: '2px' }}>
                   {[
-                    { value: 'light', labelKey: 'light' },
-                    { value: 'dark',  labelKey: 'dark'  },
+                    { value: 'light',         labelKey: 'light' },
+                    { value: 'dark',          labelKey: 'dark'  },
+                    { value: 'high-contrast', labelKey: 'highContrast' },
                   ].map(opt => (
                     <button key={opt.value} onClick={() => setTheme(opt.value)}
                       style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.875rem', transition: 'all 0.15s ease',
@@ -324,7 +325,7 @@ export default function StudentProfilePage() {
                   ))}
                 </div>
               </div>
- 
+
               {/* Language selector */}
               <div>
                 <p style={{ color: 'var(--color-text-muted)' }} className="text-xs mb-2">{translate('language')}</p>
@@ -346,7 +347,7 @@ export default function StudentProfilePage() {
               </div>
             </>
           )}
- 
+
           {/* SESSIONS */}
           {activeTab === 'sessions' && (
             <>
@@ -392,13 +393,13 @@ export default function StudentProfilePage() {
               </table>
             </>
           )}
- 
+
         </main>
       </div>
     </PageShell>
   );
 }
- 
+
 // ── Toggle switch component ───────────────────────────────────────────────────
 function Toggle({ checked, onChange, label }) {
   return (
@@ -410,7 +411,7 @@ function Toggle({ checked, onChange, label }) {
     </button>
   );
 }
- 
+
 function PageShell({ children }) {
   return (
     <div style={{ background: 'var(--color-bg)', minHeight: '100vh' }} className="px-8 py-8">
@@ -418,7 +419,7 @@ function PageShell({ children }) {
     </div>
   );
 }
- 
+
 function Skeleton() {
   return (
     <div className="animate-pulse" aria-busy="true" aria-label="Loading profile">
