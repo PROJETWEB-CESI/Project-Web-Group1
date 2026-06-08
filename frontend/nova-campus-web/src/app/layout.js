@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -19,13 +19,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-});
-
 export const metadata = {
   title: "NovaCampus",
   description: "NovaCampus Alliance - Higher Education Platform. Secure access for students, teachers, and staff.",
@@ -38,15 +31,14 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-dvh flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              {/* Global header bar: logo (top-left) + language/theme/profile (top-right).
-                  Fixed overlay with side margins. Content area gets top padding to avoid overlap. */}
-              <div className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between bg-transparent">
+              {/* Fixed header bar (floating style) */}
+              <div className="fixed px-3 py-3 top-4 left-4 right-4 z-50 flex items-center justify-between bg-transparent">
                 <LogoLink />
                 <div className="flex items-center gap-3">
                   <LanguageToggle />
@@ -55,10 +47,16 @@ export default function RootLayout({ children }) {
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col min-h-0 pt-14">
+              {/* Main content area — flex-1 fills remaining viewport height */}
+              <div className="flex-1 flex flex-col min-h-0">
                 {children}
               </div>
-              <Footer />
+
+              {/* Footer overlaid at the very bottom of the window.
+                  The login panels will now extend behind/under it to the real viewport bottom. */}
+              <div className="fixed bottom-0 left-0 right-0 z-[60]">
+                <Footer />
+              </div>
             </AuthProvider>
           </ThemeProvider>
         </LanguageProvider>

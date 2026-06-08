@@ -13,15 +13,15 @@ export default function LanguageToggle() {
   };
 
   const langFull = {
-    en: 'English',
+    en: 'English ',
     fr: 'Français',
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-1 text-sm">
+    <div className="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-sunken)] p-1 text-sm">
       <button
         onClick={toggleLanguage}
-        className="flex items-center gap-1.5 rounded-full px-3 py-1 font-medium hover:bg-white/50 dark:hover:bg-black/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+        className="flex items-center gap-1.5 rounded-full px-3 font-medium hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
         title={`${translate('language')}: ${langFull[language]}. Click to switch.`}
       >
         <Globe className="w-4 h-4" aria-hidden="true" />
@@ -34,10 +34,10 @@ export default function LanguageToggle() {
           <button
             key={l}
             onClick={() => setLanguage(l)}
-            className={`rounded px-2 py-0.5 text-xs font-mono transition-colors ${
+            className={`rounded-full px-2 py-0.5 text-xs font-mono transition-colors ${
               language === l 
                 ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]' 
-                : 'hover:bg-[var(--color-border)]'
+                : 'hover:bg-[var(--color-bg-hover)]'
             }`}
             aria-label={`Switch to ${langFull[l]}`}
             aria-pressed={language === l}

@@ -2,15 +2,20 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { usePathname } from 'next/navigation';
 
 /**
  * LogoLink
  * Top-left brand link in the global header.
- * Matches mockup format: "Novacampus" (Instrument Serif) + "Alliance" (Geist, smaller).
- * Icon mark + wordmark. Links to role dashboard if authed, else /login.
+ * On the login page (large screens): uses light text (--color-on-primary) so it looks good over the blue panel.
+ * Everywhere else: forces dark text (--color-text).
  */
 export default function LogoLink() {
   const { user, isAuthenticated, loading } = useAuth();
+  const pathname = usePathname();
+
+  // Detect if we're on the login page
+  const isLoginPage = pathname === '/login' || pathname?.startsWith('/login');
 
   let href = '/login';
   if (!loading && isAuthenticated && user) {
@@ -18,43 +23,51 @@ export default function LogoLink() {
     href = `/dashboard/${role}`;
   }
 
+  // Color logic
+  const textColor = isLoginPage
+    ? "text-[var(--color-text)] lg:text-[var(--color-on-primary)]"
+    : "text-[var(--color-text)]";
+
+  const iconStroke = isLoginPage
+    ? "stroke-[var(--color-text)] lg:stroke-[var(--color-on-primary)]"
+    : "stroke-[var(--color-text)]";
+
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 no-underline focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-primary)] rounded group"
+      className="flex LogoLink items-center gap-2 no-underline focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-primary)] rounded group"
+      style={{ textDecoration: 'none' }}
+      aria-label="NovaCampus Alliance - Home"
     >
-      {/* Small mark icon (from mockup) */}
+      {/* Icon */}
       <div
-        className="w-5 h-5 rounded-[5px] flex items-center justify-center flex-shrink-0"
-        style={{ background: 'var(--color-primary)' }}
+        className="rounded-[5px] flex items-center justify-center flex-shrink-0"
+        style={{
+          background: 'var(--color-surface-lighter)',
+          width: '42px',
+          height: '42px',
+        }}
       >
         <svg
           viewBox="0 0 24 24"
-          width={13}
-          height={13}
+          width={32}
+          height={32}
           fill="none"
-          stroke="white"
           strokeWidth="2.25"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="opacity-95"
+          className={`${iconStroke} opacity-95`}
         >
           <path d="M4 20V8l8-5 8 5v12M9 20v-6h6v6" />
         </svg>
       </div>
 
-      {/* Wordmark: Novacampus (display/Instrument) + Alliance (body/Geist, smaller) */}
+      {/* Wordmark */}
       <div className="flex flex-col leading-[0.85] -space-y-px">
-        <span
-          className="text-[13px] font-semibold tracking-[-0.015em] text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
+        <span className={`text-[2em] font-semibold tracking-[-0.015em] transition-colors ${textColor}`}>
           Novacampus
         </span>
-        <span
-          className="text-[9px] text-[var(--color-text-muted)] tracking-[0.01em]"
-          style={{ fontFamily: 'var(--font-body)' }}
-        >
+        <span className={`text-[1em] tracking-[0.01em] transition-colors ${textColor}`}>
           Alliance
         </span>
       </div>
