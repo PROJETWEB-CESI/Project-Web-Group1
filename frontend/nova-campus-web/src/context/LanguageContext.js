@@ -11,6 +11,7 @@ const LANGUAGES = ['en', 'fr'];
 // Add more keys here as the UI grows. Keep English as the source of truth.
 const translations = {
   en: {
+
     // Login page
     welcomeBack: 'Welcome back',
     signInToAccess: 'Sign in to access your dashboard',
@@ -76,7 +77,30 @@ const translations = {
     pageNotFoundDesc: 'Sorry, the page you are looking for does not exist or has been moved.',
     backToLogin: 'Go back to login',
     returnHome: 'Return to home',
+    myProfile: 'My profile',
+    personalInformation: 'Personal information',
+    firstName: 'First name',
+    lastName: 'Last name',
+    phone: 'Phone',
+    address: 'Address',
+    emailReadOnly: 'Email address cannot be changed here. Contact your campus office.',
+    changePhoto: 'Change photo',
+    profileNav: 'Profile navigation',
+    profileTabInfo: 'Information',
+    profileTabSecurity: 'Security',
+    profileTabNotifications: 'Notifications',
+    profileTabDisplay: 'Display',
+    profileTabSessions: 'Sessions',
+    profileTabComingSoon: 'Coming soon',
+    save: 'Save',
+    cancel: 'Cancel',
+    profileSaveSuccess: 'Changes saved successfully.',
+    profileSaveError: 'Failed to save changes. Please try again.',
+    profileLoadError: 'Could not load profile data.',
     contactSupport: 'If you believe this is an error, please contact your campus support.',
+  
+  
+  
   },
   fr: {
     // Login page
@@ -175,6 +199,28 @@ const translations = {
     backToLogin: 'Retour à la connexion',
     returnHome: 'Retour à l\'accueil',
     contactSupport: 'Si vous pensez qu\'il s\'agit d\'une erreur, veuillez contacter le support de votre campus.',
+    myProfile: 'Mon profil',
+    personalInformation: 'Informations personnelles',
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    phone: 'Téléphone',
+    address: 'Adresse',
+    emailReadOnly: 'L\'adresse e-mail ne peut pas être modifiée ici. Contactez votre bureau de campus.',
+    changePhoto: 'Changer la photo',
+    profileNav: 'Navigation du profil',
+    profileTabInfo: 'Informations',
+    profileTabSecurity: 'Sécurité',
+    profileTabNotifications: 'Notifications',
+    profileTabDisplay: 'Affichage',
+    profileTabSessions: 'Sessions',
+    profileTabComingSoon: 'Bientôt disponible',
+    save: 'Enregistrer',
+    cancel: 'Annuler',
+    profileSaveSuccess: 'Modifications enregistrées.',
+    profileSaveError: 'Échec de l\'enregistrement. Veuillez réessayer.',
+    profileLoadError: 'Impossible de charger le profil.',
+
+  
   },
 };
 
