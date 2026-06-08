@@ -58,7 +58,10 @@ export default function LoginPage() {
             <div className="h-10 w-10 rounded-full bg-white/20 border border-[var(--color-on-primary)]/30 flex items-center justify-center text-xl font-semibold">
               NC
             </div>
-            <span className="text-3xl font-semibold tracking-tight">NovaCampus</span>
+            <div className="flex flex-col leading-none">
+              <span className="text-3xl font-semibold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Novacampus</span>
+              <span className="text-xs -mt-0.5 opacity-80" style={{ fontFamily: 'var(--font-body)' }}>Alliance</span>
+            </div>
           </div>
 
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
@@ -82,7 +85,10 @@ export default function LoginPage() {
             <div className="h-9 w-9 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center text-lg font-semibold">
               NC
             </div>
-            <span className="text-2xl font-semibold text-[var(--color-text)]">NovaCampus</span>
+            <div className="flex flex-col leading-none">
+              <span className="text-2xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Novacampus</span>
+              <span className="text-[10px] -mt-0.5 text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-body)' }}>Alliance</span>
+            </div>
           </div>
 
           <div className="mb-8">
