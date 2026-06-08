@@ -125,8 +125,18 @@ services:
   billing-service:
     build: ./services/billing-service
     container_name: nova-billing
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: novacampus
+      DB_USER: nova
+      DB_PASSWORD: nova123
     volumes:
       - ./services/billing-service/src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   reporting-service:
     build: ./services/reporting-service

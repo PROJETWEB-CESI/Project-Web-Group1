@@ -1,16 +1,12 @@
 ﻿File Tree for: Project-Web-Group1
-+-- .env
 +-- .env.exemple
 +-- .gitignore
-+-- docker-compose.override.yml
++-- DEVELOPMENT.md
 +-- docker-compose.yml
 +-- README.md
 +-- .github
 |   +-- copilot-instructions.md
-+-- .vscode
-|   +-- settings.json
 +-- docs
-|   +-- NovaCampus_Git_Versioning_Guide.md
 |   +-- NovaCampus_Git_Versioning_Guide.pdf
 +-- frontend
 |   +-- nova-campus-web
@@ -33,7 +29,10 @@
 |   |   |   |   +-- favicon.ico
 |   |   |   |   +-- globals.css
 |   |   |   |   +-- layout.js
+|   |   |   |   +-- not-found.js
 |   |   |   |   +-- page.js
+|   |   |   |   +-- accessibility
+|   |   |   |   |   +-- page.js
 |   |   |   |   +-- dashboard
 |   |   |   |   |   +-- admin
 |   |   |   |   |   |   +-- .gitkeep
@@ -44,20 +43,31 @@
 |   |   |   |   |   +-- teacher
 |   |   |   |   |   |   +-- .gitkeep
 |   |   |   |   +-- login
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- page.js
+|   |   |   |   +-- privacy
+|   |   |   |   |   +-- page.js
 |   |   |   +-- components
 |   |   |   |   +-- admin
 |   |   |   |   |   +-- .gitkeep
 |   |   |   |   +-- executive
 |   |   |   |   |   +-- .gitkeep
 |   |   |   |   +-- shared
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- Button.jsx
+|   |   |   |   |   +-- Footer.jsx
+|   |   |   |   |   +-- Input.jsx
+|   |   |   |   |   +-- LanguageToggle.jsx
+|   |   |   |   |   +-- ProtectedRoute.jsx
+|   |   |   |   |   +-- ThemeToggle.jsx
 |   |   |   |   +-- student
 |   |   |   |   |   +-- .gitkeep
 |   |   |   |   +-- teacher
 |   |   |   |   |   +-- .gitkeep
+|   |   |   +-- context
+|   |   |   |   +-- AuthContext.js
+|   |   |   |   +-- LanguageContext.js
+|   |   |   |   +-- ThemeContext.js
 |   |   |   +-- lib
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- contrast.js
 +-- infrastructure
 |   +-- k8s
 |   |   +-- base
@@ -74,16 +84,15 @@
 |   |   +-- nginx.conf
 |   |   +-- proxy_params_common
 |   |   +-- security_headers.conf
-|   |   +-- certs
-|   |   |   +-- fullchain.pem
-|   |   |   +-- privkey.pem
++-- nginx
+|   +-- certs
+|   |   +-- .gitkeep
 +-- scripts
 |   +-- file-tree.ps1
 |   +-- file_tree.txt
 |   +-- setup-nginx.ps1
 |   +-- sync-gitkeep.ps1
 |   +-- seed
-|   |   +-- .gitkeep
 |   |   +-- Dockerfile
 |   |   +-- requirements.txt
 |   |   +-- schema.sql
@@ -95,15 +104,26 @@
 |   |   +-- Dockerfile
 |   |   +-- package.json
 |   |   +-- src
+|   |   |   +-- index.js
+|   |   |   +-- attendance
+|   |   |   |   +-- attendance.model.js
+|   |   |   |   +-- attendance.route.js
+|   |   |   |   +-- attendance.service.js
 |   |   |   +-- common
 |   |   |   |   +-- utils
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- csv.util.js
 |   |   |   +-- config
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- associations.js
+|   |   |   |   +-- database.config.js
 |   |   |   +-- grades
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- grade.model.js
+|   |   |   |   +-- grade.route.js
+|   |   |   |   +-- grade.service.js
 |   |   |   +-- students
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- enrollment.model.js
+|   |   |   |   +-- student.model.js
+|   |   |   |   +-- student.route.js
+|   |   |   |   +-- student.service.js
 |   +-- ai-agent-service
 |   |   +-- Dockerfile
 |   |   +-- requirements.txt
@@ -133,6 +153,7 @@
 |   |   +-- Dockerfile
 |   |   +-- package-lock.json
 |   |   +-- package.json
+|   |   +-- README.md
 |   |   +-- src
 |   |   |   +-- index.js
 |   |   |   +-- auth
@@ -149,7 +170,9 @@
 |   |   |   +-- models
 |   |   |   |   +-- User.js
 |   |   |   +-- users
-|   |   |   |   +-- User.js
+|   |   |   |   +-- user.controller.js
+|   |   |   |   +-- user.route.js
+|   |   |   |   +-- user.service.js
 |   +-- reporting-service
 |   |   +-- Dockerfile
 |   |   +-- package.json
