@@ -127,6 +127,7 @@ services:
     container_name: nova-billing
     environment:
       NODE_ENV: development
+      PORT: "3003"
       DB_HOST: postgres
       DB_PORT: "5432"
       DB_NAME: novacampus
@@ -137,6 +138,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3003/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   reporting-service:
     build: ./services/reporting-service
@@ -170,6 +177,8 @@ services:
       mongo:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      billing-service:
         condition: service_healthy
 
   # ===================== DATABASES =====================

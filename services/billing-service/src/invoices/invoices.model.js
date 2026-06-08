@@ -37,6 +37,13 @@ const Invoice = sequelize.define(
       allowNull: false,
     },
 
+    // Programme the student is enrolled in (from Catalog/Enrollment service)
+    programmeId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+    },
+
     // Human-readable reference, e.g. "F-2025-0042"
     reference: {
       type: DataTypes.STRING(30),

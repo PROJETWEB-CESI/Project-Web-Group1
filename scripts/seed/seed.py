@@ -540,6 +540,143 @@ def seed_qdrant(sheets):
 
 
 # --------------------------------------------------------------------------- #
+#  Billing-service — invoices & billing_payments (Sequelize-managed tables)
+# --------------------------------------------------------------------------- #
+def seed_billing(sheets):
+    """Populate billing-service invoices and billing_payments tables.
+
+    Tables are created by the billing-service on startup (sequelize.sync).
+    Column names are camelCase because the Sequelize models have no underscored:true.
+    The billing-service must be healthy before this runs (see docker-compose depends_on).
+
+    ID mapping: string codes → integers
+        CAMP001 → 1, CAMP002 → 2  …
+        STU001  → 1, STU002  → 2  …
+        PROG001 → 1, PROG002 → 2  …
+    """
+    import psycopg2
+
+    conn = psycopg2.connect(
+        host=os.getenv("PG_HOST", "localhost"),
+        port=int(os.getenv("PG_PORT", "5432")),
+        dbname=os.getenv("PG_DB", "novacampus"),
+        user=os.getenv("PG_USER", "nova"),
+        password=os.getenv("PG_PASSWORD", "nova123"),
+    )
+    conn.autocommit = False
+    cur = conn.cursor()
+
+    def extract_int(id_str):
+        """'CAMP001' → 1, 'STU012' → 12"""
+        return int("".join(filter(str.isdigit, id_str))) if id_str else None
+
+    # Build student → campus / programme lookup
+    student_campus = {}
+    student_programme = {}
+    for s in sheets["STUDENTS"]:
+        sid = txt(s["Student ID"])
+        if sid:
+            student_campus[sid] = extract_int(txt(s["Campus_ID"]))
+            student_programme[sid] = extract_int(txt(s["Program ID"]))
+
+    method_map = {
+        "Bank Transfer": "bank_transfer",
+        "Credit card":   "card",
+        "Credit Card":   "card",
+        "Check":         "check",
+        "Cash":          "cash",
+        "Scholarship":   "scholarship",
+    }
+
+    dunning_map = {
+        "Reminder sent":         "R1",
+        "Second-level reminder": "R2",
+    }
+
+    now = dt.datetime.utcnow()
+
+    # Wipe and re-seed (idempotent)
+    cur.execute('DELETE FROM billing_payments')
+    cur.execute('DELETE FROM invoices')
+
+    n_invoices = 0
+    n_payments = 0
+
+    for i, r in enumerate(sheets["PAYMENTS"], start=1):
+        sid_str    = txt(r["Student ID"])
+        stu_int    = extract_int(sid_str)
+        campus_int = student_campus.get(sid_str, 1)
+        prog_int   = student_programme.get(sid_str)
+
+        total      = float(num(r["Amount"]) or 0)
+        status_raw = txt(r["Status"])        # "Paid" or "Delay"
+        invoice_dt = to_date(r["Invoice_Date"])
+        due_dt     = to_date(r["Due_Date"])
+        sem        = integer(r["Semester"]) or 1
+        acad_year  = txt(r["Academic_Year"]) or "2023-2024"
+
+        if status_raw == "Paid":
+            inv_status  = "paid"
+            paid_amount = total
+            dunning_lvl = None
+        else:
+            inv_status  = "overdue"
+            paid_amount = 0.0
+            dunning_lvl = dunning_map.get(txt(r["Notes"]))
+
+        year      = invoice_dt.year if invoice_dt else 2023
+        reference = f"F-{year}-{i:04d}"
+        desc      = f"Tuition fees S{sem} {acad_year}"
+
+        cur.execute("""
+            INSERT INTO invoices
+                ("campusId", "studentId", "programmeId", reference, description,
+                 "totalAmount", "paidAmount", "scholarshipAmount", "dueDate",
+                 status, "dunningLevel", "lastReminderSentAt", "adminNotes",
+                 "createdAt", "updatedAt")
+            VALUES (%s, %s, %s, %s, %s,  %s, %s, %s, %s,  %s, %s, %s, %s,  %s, %s)
+            ON CONFLICT (reference) DO UPDATE SET
+                status         = EXCLUDED.status,
+                "paidAmount"   = EXCLUDED."paidAmount",
+                "dunningLevel" = EXCLUDED."dunningLevel",
+                "updatedAt"    = EXCLUDED."updatedAt"
+            RETURNING id
+        """, (
+            campus_int, stu_int, prog_int, reference, desc,
+            total, paid_amount, 0.0, due_dt,
+            inv_status, dunning_lvl, None, None,
+            now, now,
+        ))
+        invoice_id = cur.fetchone()[0]
+        n_invoices += 1
+
+        if status_raw == "Paid":
+            pay_date   = to_date(r["Payment_Date"])
+            method_raw = txt(r["Payment_Method"]) or "Bank Transfer"
+            method     = method_map.get(method_raw, "bank_transfer")
+            pay_ref    = txt(r["Payment_ID"])       # PAY001 … PAY012
+            pay_notes  = txt(r["Notes"])
+            paid_at    = (dt.datetime.combine(pay_date, dt.time())
+                          if pay_date else now)
+
+            cur.execute("""
+                INSERT INTO billing_payments
+                    ("invoiceId", amount, method, status, "paidAt",
+                     "transactionReference", notes, "createdAt", "updatedAt")
+                VALUES (%s, %s, %s, %s, %s,  %s, %s, %s, %s)
+            """, (
+                invoice_id, total, method, "completed", paid_at,
+                pay_ref, pay_notes, now, now,
+            ))
+            n_payments += 1
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    print(f"  [Billing]    OK  (invoices={n_invoices}, billing_payments={n_payments})")
+
+
+# --------------------------------------------------------------------------- #
 #  Orchestration
 # --------------------------------------------------------------------------- #
 TASKS = {
@@ -547,6 +684,7 @@ TASKS = {
     "clickhouse": ("ClickHouse",  seed_clickhouse),
     "mongo":      ("MongoDB",     seed_mongo),
     "redis":      ("Redis",       seed_redis),
+    "billing":    ("Billing",     seed_billing),
     "qdrant":     ("Qdrant",      seed_qdrant),
 }
 
@@ -571,7 +709,8 @@ def main():
     if args.only:
         selected = args.only
     else:
-        selected = ["pg", "clickhouse", "mongo", "redis"]
+        # billing runs last — billing-service must have already synced its tables
+        selected = ["pg", "clickhouse", "mongo", "redis", "billing"]
         if args.with_vectors:
             selected.append("qdrant")
 

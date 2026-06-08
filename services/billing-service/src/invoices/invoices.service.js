@@ -2,17 +2,26 @@ const { Op } = require('sequelize');
 const Invoice = require('./invoices.model');
 const Payment = require('../payments/payments.model');
 const { generateReference } = require('../common/utils/billing.util');
+const { publish } = require('../events/event-publisher');
+
+const SIX_MONTHS_MS = 180 * 24 * 60 * 60 * 1000;
 
 // ─── READ ────────────────────────────────────────────────────────────────────
 
-/**
- * Return all invoices for a given campus, with optional filters.
- * Used by admin dashboard and executive KPI views.
- */
-async function getAllInvoices({ campusId, status, studentId } = {}) {
+async function getAllInvoices({ campusId, status, studentId, classification } = {}) {
   const where = { campusId };
   if (status) where.status = status;
   if (studentId) where.studentId = studentId;
+
+  if (classification) {
+    const sixMonthsAgo = new Date(Date.now() - SIX_MONTHS_MS);
+    where.status = 'overdue';
+    if (classification === 'retard') {
+      where.dueDate = { [Op.gte]: sixMonthsAgo };
+    } else if (classification === 'important') {
+      where.dueDate = { [Op.lt]: sixMonthsAgo };
+    }
+  }
 
   return Invoice.findAll({
     where,
@@ -21,10 +30,6 @@ async function getAllInvoices({ campusId, status, studentId } = {}) {
   });
 }
 
-/**
- * Return a single invoice by id, scoped to the campus.
- * Throws if not found.
- */
 async function getInvoiceById(id, campusId) {
   const invoice = await Invoice.findOne({
     where: { id, campusId },
@@ -40,9 +45,6 @@ async function getInvoiceById(id, campusId) {
   return invoice;
 }
 
-/**
- * Return all invoices for a specific student (used by the student dashboard).
- */
 async function getInvoicesByStudent(studentId, campusId) {
   return Invoice.findAll({
     where: { studentId, campusId },
@@ -51,10 +53,6 @@ async function getInvoicesByStudent(studentId, campusId) {
   });
 }
 
-/**
- * Return invoices that are overdue — used for the dunning workflow.
- * An invoice is overdue when dueDate < today AND status is still 'pending'.
- */
 async function getOverdueInvoices(campusId) {
   return Invoice.findAll({
     where: {
@@ -69,16 +67,13 @@ async function getOverdueInvoices(campusId) {
 
 // ─── CREATE ──────────────────────────────────────────────────────────────────
 
-/**
- * Create a new invoice.
- * Automatically generates a unique human-readable reference.
- */
-async function createInvoice({ campusId, studentId, description, totalAmount, scholarshipAmount, dueDate }) {
+async function createInvoice({ campusId, studentId, programmeId, description, totalAmount, scholarshipAmount, dueDate }) {
   const reference = await generateReference(campusId);
 
   const invoice = await Invoice.create({
     campusId,
     studentId,
+    programmeId: programmeId || null,
     reference,
     description,
     totalAmount,
@@ -88,15 +83,20 @@ async function createInvoice({ campusId, studentId, description, totalAmount, sc
     status: 'pending',
   });
 
+  publish('InvoiceCreated', {
+    invoiceId: invoice.id,
+    campusId,
+    studentId,
+    reference: invoice.reference,
+    totalAmount,
+    dueDate,
+  });
+
   return invoice;
 }
 
 // ─── UPDATE ──────────────────────────────────────────────────────────────────
 
-/**
- * Update editable fields of an invoice (description, dueDate, adminNotes, status).
- * paidAmount is updated internally via recordPayment, not directly.
- */
 async function updateInvoice(id, campusId, fields) {
   const invoice = await getInvoiceById(id, campusId);
 
@@ -109,11 +109,6 @@ async function updateInvoice(id, campusId, fields) {
   return invoice;
 }
 
-/**
- * Advance the dunning level of an overdue invoice (null → R1 → R2 → R3).
- * Also records the timestamp of the last reminder sent.
- * Called by the automated collection workflow (or manually by an admin).
- */
 async function advanceDunning(id, campusId) {
   const invoice = await getInvoiceById(id, campusId);
 
@@ -130,21 +125,26 @@ async function advanceDunning(id, campusId) {
   invoice.dunningLevel = next;
   invoice.lastReminderSentAt = new Date();
 
-  // Mark overdue if not already flagged
   if (invoice.status === 'pending') {
     invoice.status = 'overdue';
   }
 
   await invoice.save();
+
+  publish('DunningAdvanced', {
+    invoiceId: invoice.id,
+    campusId,
+    studentId: invoice.studentId,
+    reference: invoice.reference,
+    dunningLevel: next,
+    amount: invoice.totalAmount,
+  });
+
   return invoice;
 }
 
 // ─── DELETE ──────────────────────────────────────────────────────────────────
 
-/**
- * Cancel (soft-delete) an invoice by setting its status to 'cancelled'.
- * Hard deletion is intentionally not exposed to preserve audit history.
- */
 async function cancelInvoice(id, campusId) {
   const invoice = await getInvoiceById(id, campusId);
 
@@ -156,17 +156,24 @@ async function cancelInvoice(id, campusId) {
 
   invoice.status = 'cancelled';
   await invoice.save();
+
+  publish('InvoiceCancelled', {
+    invoiceId: invoice.id,
+    campusId,
+    studentId: invoice.studentId,
+    reference: invoice.reference,
+  });
+
   return invoice;
 }
 
 // ─── SUMMARY ─────────────────────────────────────────────────────────────────
 
-/**
- * Return aggregate billing figures for a campus (used by admin/exec dashboards).
- * Returns: { totalInvoiced, totalCollected, totalOverdue, overdueCount }
- */
 async function getBillingSummary(campusId) {
-  const invoices = await Invoice.findAll({ where: { campusId } });
+  const invoices = await Invoice.findAll({
+    where: { campusId },
+    include: [{ model: Payment, as: 'payments' }],
+  });
 
   const totalInvoiced = invoices.reduce((sum, inv) => sum + parseFloat(inv.totalAmount), 0);
   const totalCollected = invoices.reduce((sum, inv) => sum + parseFloat(inv.paidAmount), 0);
@@ -177,12 +184,64 @@ async function getBillingSummary(campusId) {
     0
   );
 
+  const sixMonthsAgo = new Date(Date.now() - SIX_MONTHS_MS);
+  const overdueByClassification = {
+    retard: overdueInvoices.filter((inv) => new Date(inv.dueDate) >= sixMonthsAgo).length,
+    important: overdueInvoices.filter((inv) => new Date(inv.dueDate) < sixMonthsAgo).length,
+  };
+
+  // Average recovery delay (days from dueDate to last completed payment) for paid invoices
+  const paidInvoices = invoices.filter((inv) => inv.status === 'paid' && inv.payments && inv.payments.length > 0);
+  let averageRecoveryDays = null;
+  if (paidInvoices.length > 0) {
+    const delays = paidInvoices.map((inv) => {
+      const lastPayment = [...inv.payments]
+        .filter((p) => p.status === 'completed')
+        .sort((a, b) => new Date(b.paidAt) - new Date(a.paidAt))[0];
+      if (!lastPayment) return 0;
+      const days = Math.ceil((new Date(lastPayment.paidAt) - new Date(inv.dueDate)) / 86400000);
+      return Math.max(0, days);
+    });
+    averageRecoveryDays = Math.round(delays.reduce((a, b) => a + b, 0) / delays.length);
+  }
+
   return {
     totalInvoiced: totalInvoiced.toFixed(2),
     totalCollected: totalCollected.toFixed(2),
     totalOverdue: totalOverdue.toFixed(2),
     overdueCount: overdueInvoices.length,
+    percentageCollected: totalInvoiced > 0 ? ((totalCollected / totalInvoiced) * 100).toFixed(1) : '0.0',
+    averageRecoveryDays,
+    overdueByClassification,
   };
+}
+
+// Cross-campus breakdown — reserved for executive role (no campusId scoping)
+async function getBillingSummaryByCampus() {
+  const invoices = await Invoice.findAll({
+    where: { status: { [Op.in]: ['pending', 'overdue', 'paid', 'on_hold'] } },
+  });
+
+  const byCampus = {};
+  for (const inv of invoices) {
+    const cId = inv.campusId;
+    if (!byCampus[cId]) {
+      byCampus[cId] = { campusId: cId, totalInvoiced: 0, totalCollected: 0, totalOverdue: 0, overdueCount: 0 };
+    }
+    byCampus[cId].totalInvoiced += parseFloat(inv.totalAmount);
+    byCampus[cId].totalCollected += parseFloat(inv.paidAmount);
+    if (inv.status === 'overdue') {
+      byCampus[cId].totalOverdue += parseFloat(inv.totalAmount) - parseFloat(inv.paidAmount);
+      byCampus[cId].overdueCount += 1;
+    }
+  }
+
+  return Object.values(byCampus).map((c) => ({
+    ...c,
+    totalInvoiced: c.totalInvoiced.toFixed(2),
+    totalCollected: c.totalCollected.toFixed(2),
+    totalOverdue: c.totalOverdue.toFixed(2),
+  }));
 }
 
 module.exports = {
@@ -195,4 +254,5 @@ module.exports = {
   advanceDunning,
   cancelInvoice,
   getBillingSummary,
+  getBillingSummaryByCampus,
 };
