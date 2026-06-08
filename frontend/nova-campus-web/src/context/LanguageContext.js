@@ -98,7 +98,35 @@ const translations = {
     profileSaveError: 'Failed to save changes. Please try again.',
     profileLoadError: 'Could not load profile data.',
     contactSupport: 'If you believe this is an error, please contact your campus support.',
-  
+    profileSubtitle: 'Preferences, security and notifications',
+    theme: 'Theme',
+     // Security
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    confirmPassword: 'Confirm',
+    passwordMismatch: 'Passwords do not match.',
+    passwordTooShort: 'Password must be at least 8 characters.',
+    passwordSaveSuccess: 'Password updated successfully.',
+    passwordSaveError: 'Failed to update password. Check your current password.',
+    twoFactor: 'Two-factor authentication',
+    twoFactorOff: '- not enabled.',
+    twoFactorEnable: 'Enable',
+      // Notifications
+    notifRoomChange: 'Room or schedule change',
+    notifNewGrade: 'New grade published',
+    notifPayment: 'Payment deadline',
+    notifTeacherMsg: 'Message from a teacher',
+    notifAdminAnnounce: 'Administrative announcement',
+    // Sessions
+    activeSessions: 'Active sessions',
+    sessionDevice: 'DEVICE',
+    sessionLocation: 'LOCATION',
+    sessionLastActive: 'LAST ACTIVITY',
+    sessionCurrent: 'This device',
+    sessionRevoke: 'Revoke',
+    sessionNow: 'Just now',
+    session4h: '4 hours ago',
+    session3d: '3 days ago',
   
   
   },
@@ -219,7 +247,36 @@ const translations = {
     profileSaveSuccess: 'Modifications enregistrées.',
     profileSaveError: 'Échec de l\'enregistrement. Veuillez réessayer.',
     profileLoadError: 'Impossible de charger le profil.',
-
+   // ── FRENCH ───────────────────────────────────────────────────────────────────
+    profileSubtitle: 'Préférences, sécurité et notifications',
+    theme: 'Thème',
+   // Security
+    currentPassword: 'Mot de passe actuel',
+    newPassword: 'Nouveau mot de passe', 
+    confirmPassword: 'Confirmer',
+    passwordMismatch: 'Les mots de passe ne correspondent pas.',
+    passwordTooShort: 'Le mot de passe doit contenir au moins 8 caractères.',
+    passwordSaveSuccess: 'Mot de passe mis à jour.',
+    passwordSaveError: 'Échec de la mise à jour. Vérifiez votre mot de passe actuel.',
+    twoFactor: 'Authentification à deux facteurs',
+    twoFactorOff: '- non activée.',
+    twoFactorEnable: 'Activer',
+      // Notifications
+    notifRoomChange: 'Changement de salle ou d\'horaire',
+    notifNewGrade: 'Nouvelle note publiée',
+    notifPayment: 'Échéance de paiement',
+    notifTeacherMsg: 'Message d\'un enseignant',
+    notifAdminAnnounce: 'Annonce administrative',
+   // Sessions
+    activeSessions: 'Sessions actives',
+    sessionDevice: 'APPAREIL',
+    sessionLocation: 'LOCALISATION',
+    sessionLastActive: 'DERNIÈRE ACTIVITÉ',
+    sessionCurrent: 'Cet appareil',
+    sessionRevoke: 'Révoquer',
+    sessionNow: 'À l\'instant',
+    session4h: 'il y a 4 h',
+    session3d: 'il y a 3 j',
   
   },
 };
