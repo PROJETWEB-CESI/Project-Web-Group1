@@ -12,16 +12,6 @@ const SUGGESTED = [
   'Liste mes absences non justifiées',
 ];
 
-const SOURCES = [
-  'Planning & EDT',
-  'Inscriptions étudiants',
-  'Notes & évaluations',
-  'Présences & absences',
-  'Facturation',
-  'Annuaire enseignants',
-  'Catalogue programmes',
-  'Annonces & messages',
-];
 
 // ── helpers ────────────────────────────────────────────────────────────────
 function uid() {
@@ -161,28 +151,79 @@ export default function AriaPage() {
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, { role: 'user', content: msg, sources: [] }]);
 
+    // Add placeholder assistant message that will be filled by streaming
+    const assistantIdx = (prev) => prev.length; // index after push
+    setMessages((prev) => [...prev, { role: 'assistant', content: '', sources: [], streaming: true }]);
+
     try {
-      const r = await fetch(`${AI}/chat`, {
+      const r = await fetch(`${AI}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ message: msg, conversation_id: convId, history }),
       });
-      const data = r.ok ? await r.json() : null;
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: data?.message ?? "Une erreur est survenue. Veuillez réessayer.",
-          sources: data?.sources ?? [],
-        },
-      ]);
-      if (r.ok) refreshConvs();
+
+      if (!r.ok || !r.body) {
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { role: 'assistant', content: "Une erreur est survenue. Veuillez réessayer.", sources: [], streaming: false };
+          return next;
+        });
+        return;
+      }
+
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop(); // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          let evt;
+          try { evt = JSON.parse(raw); } catch { continue; }
+
+          if (evt.type === 'meta') {
+            setMessages((prev) => {
+              const next = [...prev];
+              next[next.length - 1] = { ...next[next.length - 1], sources: evt.sources ?? [] };
+              return next;
+            });
+          } else if (evt.type === 'delta') {
+            setMessages((prev) => {
+              const next = [...prev];
+              const last = next[next.length - 1];
+              next[next.length - 1] = { ...last, content: last.content + evt.text };
+              return next;
+            });
+          } else if (evt.type === 'done') {
+            setMessages((prev) => {
+              const next = [...prev];
+              next[next.length - 1] = { ...next[next.length - 1], streaming: false };
+              return next;
+            });
+            refreshConvs();
+          } else if (evt.type === 'error') {
+            setMessages((prev) => {
+              const next = [...prev];
+              next[next.length - 1] = { role: 'assistant', content: "Une erreur est survenue. Veuillez réessayer.", sources: [], streaming: false };
+              return next;
+            });
+          }
+        }
+      }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: "Impossible de contacter Aria.", sources: [] },
-      ]);
+      setMessages((prev) => {
+        const next = [...prev];
+        next[next.length - 1] = { role: 'assistant', content: "Impossible de contacter Aria.", sources: [], streaming: false };
+        return next;
+      });
     } finally {
       setSending(false);
     }
@@ -290,7 +331,14 @@ export default function AriaPage() {
                         ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-tr-sm'
                         : 'bg-[var(--color-surface)] text-[var(--color-text)] border border-[var(--color-border)] rounded-tl-sm'
                     }`}>
-                      {m.content}
+                      {m.content
+                        ? <>
+                            {m.content}
+                            {m.streaming && <span className="inline-block w-0.5 h-[1em] bg-current ml-0.5 align-middle animate-pulse" />}
+                          </>
+                        : m.streaming
+                          ? <TypingDots />
+                          : m.content}
                     </div>
                     {m.sources?.length > 0 && (
                       <div className="flex flex-wrap gap-1">
@@ -304,14 +352,6 @@ export default function AriaPage() {
                   </div>
                 </div>
               ))}
-              {sending && (
-                <div className="flex gap-2.5">
-                  <Avatar initials="Ar" size={8} />
-                  <div className="px-4 py-2.5 rounded-2xl rounded-tl-sm bg-[var(--color-surface)] border border-[var(--color-border)]">
-                    <TypingDots />
-                  </div>
-                </div>
-              )}
             </>
           )}
           <div ref={bottomRef} />
@@ -346,26 +386,6 @@ export default function AriaPage() {
         </div>
       </main>
 
-      {/* ── Panneau droit ── */}
-      <aside className="w-56 flex-shrink-0 border-l border-[var(--color-border)] overflow-y-auto bg-[var(--color-surface)]">
-        <div className="p-4 border-b border-[var(--color-border)]">
-          <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">Sources connectées</p>
-          <ul className="space-y-2">
-            {SOURCES.map((s) => (
-              <li key={s} className="flex items-center gap-2 text-xs text-[var(--color-text)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)] flex-shrink-0" />
-                {s}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="p-4">
-          <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Confidentialité</p>
-          <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
-            LLM local · Ollama · Données filtrées par rôle · Aucune action critique sans confirmation.
-          </p>
-        </div>
-      </aside>
 
     </div>
   );
