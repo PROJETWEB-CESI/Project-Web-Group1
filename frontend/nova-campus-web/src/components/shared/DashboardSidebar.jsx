@@ -94,7 +94,7 @@ export default function DashboardSidebar() {
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles }, // fake references real /aria/ while inside dashboard shell
-        { label: profileLabel, href: '/settings', icon: User },
+        { label: profileLabel, href: '/dashboard/profile', icon: User },
       ];
     } else if (role === 'teacher') {
       mainItems = [
@@ -107,7 +107,7 @@ export default function DashboardSidebar() {
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles },
-        { label: profileLabel, href: '/settings', icon: User },
+        { label: profileLabel, href: '/dashboard/profile', icon: User },
       ];
     } else if (role === 'admin') {
       mainItems = [
@@ -118,7 +118,7 @@ export default function DashboardSidebar() {
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles },
-        { label: profileLabel, href: '/settings', icon: User },
+        { label: profileLabel, href: '/dashboard/profile', icon: User },
       ];
     } else if (role === 'executive') {
       mainItems = [
@@ -129,7 +129,7 @@ export default function DashboardSidebar() {
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles },
-        { label: profileLabel, href: '/settings', icon: User },
+        { label: profileLabel, href: '/dashboard/profile', icon: User },
       ];
     }
 

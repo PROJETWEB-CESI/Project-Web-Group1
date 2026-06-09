@@ -100,18 +100,11 @@ export default function ProfileMenu() {
       );
     }
 
-    // Tools / Aria + Profile (from mockup OUTILS section) — before Settings/Logout
+    // Tools / Aria + Profile (from mockup OUTILS section, merged profile/settings into one under dashboard layout) — before Logout
     items.push(
       { label: translate('assistantAria') || 'Aria Assistant (AI)', href: '/dashboard/assistant', icon: <Sparkles className={iconClass} /> },
-      { label: translate('profile') || 'Profile', href: '/settings', icon: <User className={iconClass} /> }
+      { label: translate('profile') || 'Profile', href: '/dashboard/profile', icon: <User className={iconClass} /> }
     );
-
-    // Settings near end (after role items + tools/aria/profile); Logout always last (red/error)
-    items.push({
-      label: translate('settings') || 'Settings',
-      href: '/settings',
-      icon: <Settings className={iconClass} />,
-    });
     
     // Logout always absolutely last (red)
     items.push({
