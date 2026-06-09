@@ -16,7 +16,7 @@ const Attendance = sequelize.define('Attendance', {
         allowNull: false,
     },
     campusId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         allowNull: false,
     },
     sessionDate: {
