@@ -45,6 +45,7 @@ export default function ProfileMenu() {
   }
 
   const role = (user.role || 'student').toLowerCase();
+  const dashboardHref = `/dashboard/${role}`;
 
   const iconClass = "w-4 h-4 mr-2 flex-shrink-0 text-[var(--color-text-muted)]";
 
@@ -115,7 +116,7 @@ export default function ProfileMenu() {
 
   const handleLogout = async (e) => {
     e.preventDefault();
-    setIsOpen(false);
+    closeMenu();
     await logout();
     router.replace('/login');
   };
@@ -123,20 +124,25 @@ export default function ProfileMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setIsOpen((o) => !o)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg)]"
+        onClick={toggleMenu}
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-semibold shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg)]"
         aria-label="Open user menu"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        {user.firstName ? user.firstName.charAt(0).toUpperCase() : '?'}
+        {user.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
       </button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] py-1 shadow-lg z-[60] text-sm">
+          {/* User info header */}
           <div className="px-4 py-2 border-b border-[var(--color-border)]">
-            <p className="font-medium text-[var(--color-text)]">{user.firstName} {user.lastName}</p>
-            <p className="text-xs text-[var(--color-text-muted)] capitalize">{role}</p>
+            <div className="font-medium text-[var(--color-text)]">
+              {user.firstName} {user.lastName}
+            </div>
+            <div className="text-xs text-[var(--color-text-muted)] capitalize">
+              {role}
+            </div>
           </div>
 
           <nav className="py-1" role="menu">

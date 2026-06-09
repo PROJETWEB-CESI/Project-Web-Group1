@@ -18,10 +18,15 @@ export default function LoginPage() {
   const { translate } = useLanguage();
   const router = useRouter();
 
-  // Already authenticated → go directly to Aria
+  // If already authenticated, redirect away from login (prevents seeing login form when logged in)
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      router.replace('/aria');
+      const role = (user.role || 'student').toLowerCase();
+      let target = '/dashboard/student';
+      if (role === 'teacher') target = '/dashboard/teacher';
+      else if (role === 'admin') target = '/dashboard/admin';
+      else if (role === 'executive') target = '/dashboard/executive';
+      router.replace(target);
     }
   }, [authLoading, isAuthenticated, user, router]);
 
@@ -29,6 +34,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setSubmitting(true);
+
     try {
       const loggedInUser = await login(email, password);
 
@@ -103,6 +109,7 @@ export default function LoginPage() {
               autoComplete="email"
               required
             />
+
             <Input
               label={translate('password')}
               type="password"
@@ -112,19 +119,23 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
             />
+
             {error && (
-              <div className="error-message" role="alert" aria-live="polite">{error}</div>
+              <div className="error-message" role="alert" aria-live="polite">
+                {error}
+              </div>
             )}
 
             <Button
               type="submit"
               variant="primary"
               size="lg"
-              loading={loading}
+              loading={submitting}
               className="w-full mt-2 active:bg-[var(--color-primary-active)]"
             >
               {translate('signIn')}
             </Button>
+
             <div className="text-center text-sm">
               <button
                 type="button"
@@ -142,6 +153,7 @@ export default function LoginPage() {
             <a href="/privacy" className="underline hover:text-[var(--color-text)]">{translate('privacyPolicy')}</a>.{' '}
             {translate('privacyNoticeSuffix')}
           </div>
+
           <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
             {translate('needAccount')}{' '}
             <span className="font-medium">{translate('needAccountContact')}</span>
