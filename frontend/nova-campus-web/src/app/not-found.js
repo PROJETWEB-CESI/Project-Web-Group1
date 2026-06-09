@@ -23,14 +23,14 @@ export default function NotFound() {
         </div>
 
         <div className="space-y-3">
-          <Link href="/login" className="block">
+          <Link href="/" className="block fakeLink">
             <Button variant="primary" size="lg" className="w-full">
-              {translate('backToLogin')}
+              {translate('returnHome')}
             </Button>
           </Link>
 
-          <Link href="/" className="block text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline underline-offset-4">
-            {translate('returnHome')}
+          <Link href="/login" className="w-auto text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline underline-offset-4">
+            {translate('backToLogin')}
           </Link>
         </div>
 
