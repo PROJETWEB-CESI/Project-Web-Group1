@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
+async rewrites() {
     // In development, when running the frontend directly on :3000 (e.g. `npm run dev` locally
     // or the frontend container's port in docker compose), we proxy /api/* to the gateway.
     // This allows FE dev without always going through the outer nginx.

@@ -12,29 +12,23 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const { login, user, loading: authLoading, isAuthenticated } = useAuth();
   const { translate } = useLanguage();
   const router = useRouter();
 
-  // If already authenticated, redirect away from login (prevents seeing login form when logged in)
+  // Already authenticated → go directly to Aria
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      const role = (user.role || 'student').toLowerCase();
-      let target = '/dashboard/student';
-      if (role === 'teacher') target = '/dashboard/teacher';
-      else if (role === 'admin') target = '/dashboard/admin';
-      else if (role === 'executive') target = '/dashboard/executive';
-      router.replace(target);
+      router.replace('/aria');
     }
   }, [authLoading, isAuthenticated, user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
-
+    setSubmitting(true);
     try {
       const loggedInUser = await login(email, password);
 
@@ -46,7 +40,7 @@ export default function LoginPage() {
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please check your credentials.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -109,7 +103,6 @@ export default function LoginPage() {
               autoComplete="email"
               required
             />
-
             <Input
               label={translate('password')}
               type="password"
@@ -119,11 +112,8 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
             />
-
             {error && (
-              <div className="error-message" role="alert" aria-live="polite">
-                {error}
-              </div>
+              <div className="error-message" role="alert" aria-live="polite">{error}</div>
             )}
 
             <Button
@@ -135,7 +125,6 @@ export default function LoginPage() {
             >
               {translate('signIn')}
             </Button>
-
             <div className="text-center text-sm">
               <button
                 type="button"
@@ -153,7 +142,6 @@ export default function LoginPage() {
             <a href="/privacy" className="underline hover:text-[var(--color-text)]">{translate('privacyPolicy')}</a>.{' '}
             {translate('privacyNoticeSuffix')}
           </div>
-
           <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
             {translate('needAccount')}{' '}
             <span className="font-medium">{translate('needAccountContact')}</span>

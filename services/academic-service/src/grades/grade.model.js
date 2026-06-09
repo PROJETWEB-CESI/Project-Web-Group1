@@ -16,7 +16,7 @@ const Grade = sequelize.define('Grade', {
         allowNull: false,
     },
     campusId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         allowNull: false,
     },
     evaluationName: {
