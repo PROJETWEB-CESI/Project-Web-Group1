@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useNotifications } from '@/context/NotificationContext';
 import {
   Home,
   Calendar,
@@ -17,11 +18,16 @@ import {
   FileText,
   Settings,
   LogOut,
+  Bell,
+  Sparkles,
+  User,
+  FolderOpen,
 } from 'lucide-react';
 
 export default function ProfileMenu() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const { translate } = useLanguage();
+  const { clearNotifications } = useNotifications();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -49,11 +55,10 @@ export default function ProfileMenu() {
 
   const iconClass = "w-4 h-4 mr-2 flex-shrink-0 text-[var(--color-text-muted)]";
 
-  // Role-specific pages based on Deliverable1 mockups (sidebars per persona/role).
+  // Role-specific pages + tools based on Deliverable1 mockups (sidebars + profile menu per persona/role).
+  // Includes main nav, Aria assistant, Profile (outils), Settings, and Logout last.
   // Privacy and Accessibility are public static pages (footer), not role menu items.
-  // Settings always 2nd-to-last, Logout always last.
-  // Icons from lucide-react (consistent with grok.com style and used in toggles).
-  // Menu links have no underline.
+  // Icons from lucide-react. Menu links have no underline.
   const getRoleMenuItems = () => {
     const items = [
       {
@@ -68,8 +73,9 @@ export default function ProfileMenu() {
         { label: translate('timetable') || 'Timetable', href: '/dashboard/student/timetable', icon: <Calendar className={iconClass} /> },
         { label: translate('grades') || 'Grades & Evaluations', href: '/dashboard/student/grades', icon: <BookOpen className={iconClass} /> },
         { label: translate('absences') || 'Absences', href: '/dashboard/student/absences', icon: <AlertCircle className={iconClass} /> },
-        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student/history', icon: <BookOpen className={iconClass} /> },
-        { label: translate('payments') || 'Payments', href: '/dashboard/student/payments', icon: <CreditCard className={iconClass} /> }
+        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student/history', icon: <FolderOpen className={iconClass} /> },
+        { label: translate('payments') || 'Payments', href: '/dashboard/student/payments', icon: <CreditCard className={iconClass} /> },
+        { label: translate('notifications') || 'Notifications', href: '/dashboard/student/notifications', icon: <Bell className={iconClass} /> }
       );
     } else if (role === 'teacher') {
       items.push(
@@ -94,7 +100,13 @@ export default function ProfileMenu() {
       );
     }
 
-    // Settings 2nd-to-last for all roles
+    // Tools / Aria + Profile (from mockup OUTILS section) — before Settings/Logout
+    items.push(
+      { label: translate('assistantAria') || 'Aria Assistant (AI)', href: '/dashboard/assistant', icon: <Sparkles className={iconClass} /> },
+      { label: translate('profile') || 'Profile', href: '/settings', icon: <User className={iconClass} /> }
+    );
+
+    // Settings near end (after role items + tools/aria/profile); Logout always last (red/error)
     items.push({
       label: translate('settings') || 'Settings',
       href: '/settings',
@@ -159,7 +171,8 @@ export default function ProfileMenu() {
                   <button
                     key={index}
                     onClick={handleLogout}
-                    className="block w-full px-3 py-1.5 text-left !text-[var(--color-error)] !no-underline hover:bg-[var(--color-surface)] hover:!text-[var(--color-error)] focus:bg-[var(--color-surface)] focus:outline-none"
+                    // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
+                    className="block w-full px-3 py-1.5 text-left !text-[var(--color-error)] underline-offset-2 hover:bg-[var(--color-surface)] hover:!text-[var(--color-error)] focus:bg-[var(--color-surface)] focus:outline-none"
                     role="menuitem"
                   >
                     {content}
@@ -171,8 +184,15 @@ export default function ProfileMenu() {
                 <Link
                   key={index}
                   href={item.href}
-                  onClick={closeMenu}
-                  className="block w-full px-3 py-1.5 text-left !text-[var(--color-text)] !no-underline hover:bg-[var(--color-surface)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
+                  onClick={() => {
+                    // Clear live notification badge (if this is the notifications entry) — works from dropdown too.
+                    if (item.label.toLowerCase().includes('notification') || item.href.includes('/notifications')) {
+                      clearNotifications();
+                    }
+                    closeMenu();
+                  }}
+                  // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
+                  className="block w-full px-3 py-1.5 text-left !text-[var(--color-text)] underline-offset-2 hover:bg-[var(--color-surface)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
                   role="menuitem"
                 >
                   {content}

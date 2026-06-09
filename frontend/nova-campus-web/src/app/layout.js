@@ -3,11 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
-import Footer from "@/components/shared/Footer";
-import ThemeToggle from "@/components/shared/ThemeToggle";
-import LanguageToggle from "@/components/shared/LanguageToggle";
-import ProfileMenu from "@/components/shared/ProfileMenu";
-import LogoLink from "@/components/shared/LogoLink";
+import { NotificationProvider } from "@/context/NotificationContext";
+import Header from "@/components/shared/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,20 +34,15 @@ export default function RootLayout({ children }) {
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              {/* Fixed header bar (floating style) */}
-              <div className="fixed top-0 left-0 right-0 px-3 py-3 z-50 flex items-center justify-between bg-[var(--header-background)] lg:bg-transparent lg:style={{ backdropFilter: 'blur(5px)' }}">
-                <LogoLink />
-                <div className="flex items-center gap-3">
-                  <LanguageToggle />
-                  <ThemeToggle />
-                  <ProfileMenu />
-                </div>
-              </div>
+              <NotificationProvider>
+                {/* Header: fixed for public/login pages; in-flow (non-floating) for dashboard to sit above sidebar layout */}
+                <Header />
 
-              {/* Main content area — flex-1 fills remaining viewport height */}
-              <div className="flex-1 flex flex-col min-h-0">
-                {children}
-              </div>
+                {/* Main content area — flex-1 fills remaining viewport height (after in-flow header when applicable) */}
+                <div className="flex-1 flex flex-col min-h-0">
+                  {children}
+                </div>
+              </NotificationProvider>
             </AuthProvider>
           </ThemeProvider>
         </LanguageProvider>
