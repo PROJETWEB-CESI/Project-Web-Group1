@@ -4,67 +4,101 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Professional design tokens - NovaCampus education theme */
-  --color-primary: #1e3a8a;      /* Deep blue - good on light (for buttons) */
-  --color-primary-hover: #1e40af;
-  --color-on-primary: #ffffff;   /* Text/icon color to use on primary backgrounds */
-  --color-link: #1e40af;         /* Slightly brighter variant for links on light */
-  --color-accent: #0ea5e9;       /* Sky blue accent */
-  --color-bg: #ffffff;
-  --color-surface: #f8fafc;
-  --color-text: #0f172a;
-  --color-text-muted: #475569;
-  --color-border: #e2e8f0;
-  --color-error: #b91c1c;
-  --color-success: #15803d;
+  /* Light theme colors from mockup (academic modern palette) */
+  --color-bg: oklch(0.985 0.004 95);
+  --color-bg-elev: oklch(1 0 0);
+  --color-bg-sunken: oklch(0.965 0.005 95);
+  --color-surface: oklch(1 0 0);
+  --color-surface-hover: oklch(0.97 0.005 95);
+  --color-border: oklch(0.91 0.008 95);
+  --color-border-strong: oklch(0.82 0.01 95);
+  --color-surface-lighter: rgba(0, 0, 0, 0.10);
+  --color-bg-hover: var(--color-border);
+
+  --color-text: oklch(0.20 0.02 250);
+  --color-text-muted: oklch(0.48 0.015 250);
+  --color-text-subtle: oklch(0.62 0.012 250);
+  --color-text-inverse: oklch(0.985 0.004 95);
+
+  --color-primary: oklch(0.38 0.10 245);
+  --color-primary-hover: oklch(0.32 0.11 245);
+  --color-primary-soft: oklch(0.94 0.025 245);
+  --color-primary-soft-strong: oklch(0.88 0.04 245);
+  --color-on-primary: oklch(1 0 0);
+
+  --color-accent: oklch(0.55 0.10 165);
+  --color-accent-soft: oklch(0.93 0.035 165);
+
+  --color-link: oklch(0.38 0.10 245);
+  --color-link-hover: oklch(0.32 0.11 245);
+
+  --color-error: oklch(0.55 0.16 25);
+  --color-success: oklch(0.55 0.11 155);
 
   /* Focus & accessibility */
-  --ring-color: #1e3a8a;
-  --ring-offset: #ffffff;
+  --ring-color: oklch(0.38 0.10 245);
+  --ring-offset: oklch(0.985 0.004 95);
 }
 
-/* Dark theme - actual darkening (not white). Colors chosen + verified with luminance calc for >=4.5:1 */
+/* Dark theme */
 .dark {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: #475569;
-  --color-primary: #2563eb;       /* Blue chosen via luminance calc: white-on-primary ~5.2:1, visible on dark bg */
-  --color-primary-hover: #3b82f6;
-  --color-on-primary: #ffffff;    /* White on the blue primary */
-  --color-link: #60a5fa;          /* Brighter link color for good contrast on dark */
-  --color-accent: #38bdf8;
-  --color-error: #f87171;
-  --color-success: #4ade80;
-  --ring-color: #3b82f6;
-  --ring-offset: #0f172a;
+  --color-bg: oklch(0.16 0.012 250);
+  --color-bg-elev: oklch(0.20 0.015 250);
+  --color-bg-sunken: oklch(0.13 0.012 250);
+  --color-surface: oklch(0.20 0.015 250);
+  --color-surface-hover: oklch(0.24 0.018 250);
+  --color-border: oklch(0.28 0.018 250);
+  --color-border-strong: oklch(0.36 0.02 250);
+  --color-bg-hover: var(--color-border);
+  --color-surface-lighter: rgba(255, 255, 255, 0.15);
+
+  --color-text: oklch(0.96 0.005 95);
+  --color-text-muted: oklch(0.72 0.012 250);
+  --color-text-subtle: oklch(0.56 0.015 250);
+  --color-text-inverse: oklch(0.16 0.012 250);
+
+  --color-primary: oklch(0.38 0.10 245);
+  --color-primary-hover: oklch(0.32 0.11 245);
+  --color-primary-soft: oklch(0.28 0.05 245);
+  --color-primary-soft-strong: oklch(0.34 0.07 245);
+  --color-on-primary: oklch(1 0 0);
+
+  --color-accent: oklch(0.72 0.13 165);
+  --color-accent-soft: oklch(0.26 0.05 165);
+
+  --color-link: oklch(0.72 0.13 245);
+  --color-link-hover: oklch(0.78 0.12 245);
+
+  --color-error: oklch(0.70 0.16 25);
+  --color-success: oklch(0.72 0.13 155);
+
+  --ring-color: oklch(0.72 0.13 245);
+  --ring-offset: oklch(0.16 0.012 250);
 }
 
-/* High contrast (RGAA/WCAG AAA target) - uses luminance calculation to pick pairs.
-   Yellow primary on black gives ~19:1 for links.
-   Black on yellow primary gives ~19:1 for buttons (never white-on-yellow).
- */
+/* High contrast */
 .high-contrast {
-  --color-bg: #000000;
-  --color-surface: #000000;
-  --color-text: #ffffff;
-  --color-text-muted: #e5e5e5;
-  --color-border: #ffffff;
-  --color-primary: #facc15;       /* Yellow chosen: high luminance diff vs black + vs on-primary black */
-  --color-primary-hover: #fde047;
-  --color-on-primary: #000000;    /* Black text on yellow - the correct high-contrast choice */
-  --color-link: #facc15;
-  --color-accent: #22f3f3;
-  --color-error: #ff4d4d;
-  --color-success: #22c55e;
-  --ring-color: #facc15;
-  --ring-offset: #000000;
-
-  font-size: 1.05em; /* Slightly larger base for readability */
+  --color-bg: oklch(0 0 0);
+  --color-bg-sunken: oklch(0 0 0);
+  --color-surface: oklch(0 0 0);
+  --color-text: oklch(1 0 0);
+  --color-text-muted: oklch(0.9 0 0);
+  --color-border: oklch(0.8 0 0);
+  --color-bg-hover: var(--color-border);
+  --color-primary: oklch(0.88 0.22 90);
+  --color-primary-hover: oklch(0.92 0.2 90);
+  --color-on-primary: oklch(0 0 0);
+  --color-link: oklch(0.88 0.22 90);
+  --color-link-hover: oklch(0.95 0.15 90);
+  --color-accent: oklch(0.85 0.15 200);
+  --color-error: oklch(0.7 0.25 25);
+  --color-success: oklch(0.75 0.2 140);
+  --ring-color: oklch(0.88 0.22 90);
+  --ring-offset: oklch(0 0 0);
+  --color-surface-lighter: rgba(255, 255, 255, 0.15);
+  font-size: 1.05em;
 }
 
-/* High-contrast specific enhancements (borders, focus, links) */
 .high-contrast button,
 .high-contrast input,
 .high-contrast a {
@@ -89,7 +123,7 @@ body {
   font-family: var(--font-geist-sans);
 }
 
-/* Professional base form styles - reusable, low duplication */
+/* Professional base form styles */
 input[type="email"],
 input[type="password"],
 input[type="text"] {
@@ -108,17 +142,15 @@ input[type="password"]:focus,
 input[type="text"]:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring-color) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring-color) 12%, transparent);
 }
 
-/* Stronger rings in high-contrast */
 .high-contrast input[type="email"]:focus,
 .high-contrast input[type="password"]:focus,
 .high-contrast input[type="text"]:focus {
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring-color) 35%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring-color) 35%, transparent);
 }
 
-/* High-contrast inputs use the theme vars (black/yellow/white). Extra specificity for borders */
 .high-contrast input[type="email"],
 .high-contrast input[type="password"],
 .high-contrast input[type="text"] {
@@ -138,25 +170,60 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* General accessible link style - uses --color-link (per-theme) for proper contrast.
-   Dark: brighter blue on slate. High-contrast: yellow on black (~13:1 per luminance calc).
- */
+
 a {
+  position: relative;
+  text-decoration: none;
   color: var(--color-link);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  font-weight: 500;
+  padding-bottom: 2px;
+  /* padding-top: 5px; */
 }
 
-a:hover {
-  color: var(--color-primary-hover);
+a::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-link);
+  border-radius: 10px;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* Extra visibility for high-contrast links (already boosted in .high-contrast a above) */
-.dark a {
-  text-decoration-thickness: 1.5px;
+a:not(.LogoLink):hover {
+  color: var(--color-link-hover);
 }
 
-/* Error message style - consistent */
+a:not(.LogoLink):hover::after {
+  background: var(--color-link-hover);
+  transform: scaleX(1);
+  transform-origin: left center;
+  transition-duration: 0.4s;
+}
+
+/* Dark theme adjustments */
+.dark a:not(.LogoLink)::after {
+  background: var(--color-link);
+}
+
+.dark a:not(.LogoLink):hover::after {
+  background: var(--color-link-hover);
+}
+
+/* High-contrast adjustments */
+.high-contrast a::after {
+  height: 2.5px;
+}
+
+.high-contrast a:hover::after {
+  height: 3px;
+}
+
+/* Error message */
 .error-message {
   color: var(--color-error);
   font-size: 0.875rem;

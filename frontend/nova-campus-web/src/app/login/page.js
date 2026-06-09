@@ -29,8 +29,13 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
-      await login(email, password);
-      router.push('/aria');
+      const loggedInUser = await login(email, password);
+
+      // Role-based redirect (matches dashboard structure)
+      const role = loggedInUser.role || 'student';
+      const dashboardPath = `/dashboard/${role}`;
+
+      router.push(dashboardPath);
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please check your credentials.');
     } finally {
@@ -39,16 +44,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex-1 flex min-h-0">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12">
+    <div className="flex-1 flex">
+      {/* Left panel - Branding (hidden on small screens) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12 min-h-full">
         <div className="max-w-md">
-          <div className="flex items-center gap-3 mb-8">
+          {/* <div className="flex items-center gap-3 mb-8">
             <div className="h-10 w-10 rounded-full bg-white/20 border border-[var(--color-on-primary)]/30 flex items-center justify-center text-xl font-semibold">
               NC
             </div>
-            <span className="text-3xl font-semibold tracking-tight">NovaCampus</span>
-          </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-3xl font-semibold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Novacampus</span>
+              <span className="text-xs -mt-0.5 opacity-80" style={{ fontFamily: 'var(--font-body)' }}>Alliance</span>
+            </div>
+          </div> */}
+
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
             {translate('shapingMinds')}
           </h1>
@@ -57,15 +66,23 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="w-full lg:w-1/2 flex min-h-0 overflow-auto items-start lg:items-center justify-center px-6 py-8 lg:py-12 bg-[var(--color-bg)]">
+      {/* Right panel - Login form
+          pt-20 + pb-14 ONLY on small screens (when left panel is hidden)
+          lg:pt-0 + lg:pb-0 on large screens (two panels keep full "under" height) */}
+      <div className="w-full lg:w-1/2 min-h-full flex overflow-auto items-start lg:items-center justify-center px-6 py-8 lg:py-12 pt-20 lg:pt-0 pb-14 lg:pb-0 bg-[var(--color-bg)]">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="h-9 w-9 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center text-lg font-semibold">NC</div>
-            <span className="text-2xl font-semibold text-[var(--color-text)]">NovaCampus</span>
-          </div>
+          {/* Mobile header */}
+          {/* <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="h-9 w-9 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center text-lg font-semibold">
+              NC
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-2xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>Novacampus</span>
+              <span className="text-[10px] -mt-0.5 text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-body)' }}>Alliance</span>
+            </div>
+          </div> */}
 
-          <div className="mb-8">
+          <div className="mb-8 mt-8">
             <h2 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">{translate('welcomeBack')}</h2>
             <p className="text-[var(--color-text-muted)] mt-1">{translate('signInToAccess')}</p>
           </div>
@@ -92,7 +109,14 @@ export default function LoginPage() {
             {error && (
               <div className="error-message" role="alert" aria-live="polite">{error}</div>
             )}
-            <Button type="submit" variant="primary" size="lg" loading={submitting} className="w-full mt-2">
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              loading={loading}
+              className="w-full mt-2"
+            >
               {translate('signIn')}
             </Button>
             <div className="text-center text-sm">
@@ -106,6 +130,7 @@ export default function LoginPage() {
             </div>
           </form>
 
+          {/* GDPR / Privacy notice */}
           <div className="mt-8 text-center text-xs text-[var(--color-text-muted)] leading-relaxed">
             {translate('privacyNoticePrefix')}{' '}
             <a href="/privacy" className="underline hover:text-[var(--color-text)]">{translate('privacyPolicy')}</a>.{' '}
