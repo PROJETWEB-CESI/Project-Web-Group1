@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import Header from "@/components/shared/Header";
 
 const geistSans = Geist({
@@ -33,13 +34,15 @@ export default function RootLayout({ children }) {
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              {/* Fixed header bar (floating style) */}
-              <Header />
+              <NotificationProvider>
+                {/* Header: fixed for public/login pages; in-flow (non-floating) for dashboard to sit above sidebar layout */}
+                <Header />
 
-              {/* Main content area — flex-1 fills remaining viewport height */}
-              <div className="flex-1 flex flex-col min-h-0">
-                {children}
-              </div>
+                {/* Main content area — flex-1 fills remaining viewport height (after in-flow header when applicable) */}
+                <div className="flex-1 flex flex-col min-h-0">
+                  {children}
+                </div>
+              </NotificationProvider>
             </AuthProvider>
           </ThemeProvider>
         </LanguageProvider>

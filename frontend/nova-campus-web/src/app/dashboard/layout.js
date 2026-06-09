@@ -1,26 +1,56 @@
-import React from 'react';
+'use client';
+
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import DashboardSidebar from '@/components/shared/DashboardSidebar';
 
 export default function DashboardLayout({ children }) {
+  const { user, loading, isAuthenticated } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Enforce that each user type only sees their own dashboard.
+  // A student (for example) cannot access /dashboard/admin/* or /dashboard/teacher/* etc.
+  // The sidebar + profile menu already only generate links for the current user's role.
+  useEffect(() => {
+    if (loading || !isAuthenticated || !user) return;
+
+    const userRole = (user.role || 'student').toLowerCase();
+    const segments = (pathname || '').split('/').filter(Boolean); // e.g. ['dashboard', 'admin', ...]
+    const pathRole = segments[1]; // the segment right after 'dashboard'
+
+    // Bare /dashboard or /dashboard/ -> bounce to the user's own role dashboard
+    if (!pathRole || pathRole === 'dashboard') {
+      router.replace(`/dashboard/${userRole}`);
+      return;
+    }
+
+    // If the URL role segment does not match the logged-in user, redirect to their own.
+    // This prevents manual URL access or bookmarking another role's dashboard.
+    if (pathRole !== userRole) {
+      router.replace(`/dashboard/${userRole}`);
+    }
+  }, [pathname, user, loading, isAuthenticated, router]);
+
+  // While checking auth or during redirect, keep it minimal (sidebar will also be null if !auth).
+  if (loading) {
+    return (
+      <div className="flex flex-1 h-full min-h-0 items-center justify-center text-sm text-[var(--color-text-muted)]">
+        Loading your dashboard…
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-full">
-      {/* Left sidebar ~300px wide */}
-      <aside className="w-[300px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col">
-        <div className="p-4 border-b border-[var(--color-border)]">
-          <div className="font-semibold text-lg">Dashboard</div>
-          <div className="text-sm text-[var(--color-text-muted)]">Navigation</div>
-        </div>
-        <nav className="flex-1 p-2 text-sm overflow-auto">
-          <div className="px-3 py-2 rounded hover:bg-[var(--color-surface-hover)] cursor-pointer">Overview</div>
-          <div className="px-3 py-2 rounded hover:bg-[var(--color-surface-hover)] cursor-pointer">Schedule</div>
-          <div className="px-3 py-2 rounded hover:bg-[var(--color-surface-hover)] cursor-pointer">Reports</div>
-          <div className="px-3 py-2 rounded hover:bg-[var(--color-surface-hover)] cursor-pointer">Settings</div>
-        </nav>
-        <div className="p-4 text-xs text-[var(--color-text-muted)] border-t border-[var(--color-border)]">
-          Base sidebar (same for all users)
-        </div>
+    <div className="flex flex-1 h-full min-h-0">
+      {/* Left sidebar ~300px wide, extends full height from under header to window bottom.
+          Content (role-specific nav + tools + bottom logout/help) provided by DashboardSidebar. */}
+      <aside className="w-[300px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col overflow-hidden">
+        <DashboardSidebar />
       </aside>
 
-      {/* Main content area */}
+      {/* Main content area (role pages render here). Guard above ensures only matching role content stays. */}
       <main className="flex-1 overflow-auto bg-[var(--color-bg)] p-6">
         {children}
       </main>
