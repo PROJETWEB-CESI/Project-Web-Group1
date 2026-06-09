@@ -28,6 +28,13 @@ async function startServer() {
         await sequelize.sync();
         console.log('Database synced');
 
+        // Student pages data seeding note (feature/student-pages branch):
+        // When ENABLE_TEST_CREDENTIALS=true (via root .env), ensure demo data exists for the student test user
+        // (Léa Moreau / student@test.com, CAMP001): courses, grades, absences, academic history (semesters/inscriptions),
+        // and notifications. This data powers the single-path /dashboard/student sections.
+        // Extend this file or add a seed script (similar to iam-service) for grades/attendance models when backend
+        // integration for student pages is completed.
+
         app.listen(port, () => {
             console.log(`Academic service running on port ${port}`);
         });

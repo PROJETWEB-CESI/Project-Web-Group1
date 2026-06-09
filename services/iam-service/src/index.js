@@ -50,8 +50,11 @@ async function seedTestUsersIfEnabled() {
       password: 'student123',
       role: 'student',
       campusId: 'CAMP001',
-      firstName: 'Test',
-      lastName: 'Student',
+      firstName: 'Léa',
+      lastName: 'Moreau',
+      // Extended for student pages demo data (timetable, grades, absences, history, payments, notifications).
+      // Real associated records are seeded in academic-service / scheduling-service / billing-service
+      // when ENABLE_TEST_CREDENTIALS is true (see services in this branch).
     },
     {
       email: 'teacher@test.com',
