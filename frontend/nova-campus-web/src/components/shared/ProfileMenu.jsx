@@ -106,6 +106,7 @@ export default function ProfileMenu() {
       href: '#',
       isLogout: true,
       icon: <LogOut className={iconClass} />,
+      className: 'hover:!var(--red-hoverlay)',
     });
 
     return items;

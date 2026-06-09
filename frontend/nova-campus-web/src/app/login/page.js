@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import Footer from "@/components/shared/Footer";
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 
@@ -67,20 +68,20 @@ export default function LoginPage() {
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight mb-6">
             {translate('shapingMinds')}
           </h1>
-          <p className="text-xl opacity-80 max-w-sm">
+          <p className="text-xl opacity-90 max-w-sm">
             {translate('secureAccess')}
           </p>
 
-          <div className="mt-10 text-sm opacity-60">
+          {/* <div className="mt-10 text-sm opacity-80">
             {translate('gdprTagline')}
-          </div>
+          </div> */}
         </div>
       </div>
 
       {/* Right panel - Login form
           pt-20 + pb-14 ONLY on small screens (when left panel is hidden)
           lg:pt-0 + lg:pb-0 on large screens (two panels keep full "under" height) */}
-      <div className="w-full lg:w-1/2 min-h-full flex overflow-auto items-start lg:items-center justify-center px-6 py-8 lg:py-12 pt-20 lg:pt-0 pb-14 lg:pb-0 bg-[var(--color-bg)]">
+      <div className="w-full lg:w-1/2 min-h-full flex overflow-auto items-start lg:items-center justify-center px-6 py-8 lg:py-12 pt-20 pb-20 lg:pb-20 bg-[var(--color-bg)]">
         <div className="w-full max-w-md">
           {/* Mobile header */}
           {/* <div className="lg:hidden flex items-center gap-3 mb-8">
@@ -130,7 +131,7 @@ export default function LoginPage() {
               variant="primary"
               size="lg"
               loading={loading}
-              className="w-full mt-2"
+              className="w-full mt-2 active:bg-[var(--color-primary-active)]"
             >
               {translate('signIn')}
             </Button>
@@ -156,6 +157,12 @@ export default function LoginPage() {
           <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
             {translate('needAccount')}{' '}
             <span className="font-medium">{translate('needAccountContact')}</span>
+          </div>
+
+          {/* Footer overlaid at the very bottom of the window.
+                            The login panels will now extend behind/under it to the real viewport bottom. */}
+          <div className="fixed bottom-0 w-full max-w-md">
+            <Footer />
           </div>
         </div>
       </div>
