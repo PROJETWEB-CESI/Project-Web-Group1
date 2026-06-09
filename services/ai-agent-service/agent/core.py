@@ -3,7 +3,11 @@ import logging
 from typing import AsyncGenerator
 
 import jwt as PyJWT
-from agent.config import OLLAMA_HOST, OLLAMA_MODEL, JWT_SECRET, JWT_ALGORITHM
+from agent.config import (
+    OLLAMA_HOST, OLLAMA_MODEL, OLLAMA_OPTIONS,
+    GROQ_API_KEY, GROQ_MODEL,
+    JWT_SECRET, JWT_ALGORITHM,
+)
 from agent.models import ChatMessage
 from tools.executor import execute_tool, available_tool_names
 
@@ -11,11 +15,41 @@ logger = logging.getLogger(__name__)
 
 _MAX_HISTORY = 20
 
+_FR_WORDS = {
+    "je", "tu", "il", "elle", "nous", "vous", "ils", "elles",
+    "le", "la", "les", "un", "une", "des", "du", "de", "en",
+    "est", "sont", "avoir", "être", "que", "qui", "quoi", "où",
+    "mon", "mes", "ma", "ton", "ses", "notre", "votre",
+    "comment", "pourquoi", "quand", "quel", "quelle",
+    "salut", "bonjour", "merci", "oui", "non", "pas", "plus",
+    "pour", "avec", "dans", "sur", "par", "mais", "ou", "et",
+    "montre", "affiche", "donne", "aide", "veux", "peux",
+    "emploi", "temps", "notes", "cours", "absences",
+}
+_EN_WORDS = {
+    "i", "you", "he", "she", "we", "they", "it",
+    "the", "a", "an", "is", "are", "was", "were", "be", "been",
+    "my", "your", "his", "her", "our", "their",
+    "what", "when", "where", "why", "how", "who",
+    "hello", "hi", "hey", "thanks", "yes", "no", "not",
+    "can", "do", "did", "will", "would", "could", "should",
+    "show", "give", "help", "want", "need", "get", "see",
+    "me", "bro", "please", "ok", "okay", "dude",
+    "schedule", "grades", "absences", "billing",
+}
+
+
+def _detect_language(text: str) -> str:
+    words = set(text.lower().split())
+    en_score = len(words & _EN_WORDS)
+    fr_score = len(words & _FR_WORDS)
+    return "english" if en_score > fr_score else "french"
+
+
 _SYSTEM_PROMPT = (
     "Tu es Aria, l'assistante IA de NovaCampus Alliance, un ERP universitaire. "
     "Tu aides les étudiants, enseignants et administrateurs avec leurs questions "
     "sur la plateforme : emploi du temps, notes, facturation, documents administratifs. "
-    "Réponds toujours en français sauf si l'utilisateur écrit dans une autre langue. "
     "Sois professionnelle, bienveillante et précise. "
     "Fournis des réponses complètes et utiles, sans rembourrage inutile. "
     "Si tu disposes d'un contexte documentaire ou de données temps réel, utilise-les pour répondre avec précision. "
@@ -118,7 +152,9 @@ async def _build_context(
     claims = _user_info_from_token(token)
     email = claims.get("email", "")
     email_str = f" ({email})" if email else ""
-    system = _SYSTEM_PROMPT + f"\nUtilisateur connecté : {user_role}{email_str}."
+    lang = _detect_language(message)
+    lang_directive = "You MUST reply in English." if lang == "english" else "Tu DOIS répondre en français."
+    system = _SYSTEM_PROMPT + f"\n{lang_directive}\nUtilisateur connecté : {user_role}{email_str}."
     if chunks:
         system += "\n\nContexte documentaire NovaCampus :\n" + "\n\n".join(f"- {c}" for c in chunks)
     if tool_results:
@@ -141,6 +177,48 @@ async def _build_context(
     return system, msgs, chunks
 
 
+# ─── LLM backend (Groq si clé présente, Ollama sinon) ────────────────────────
+
+
+async def _llm_chat(messages: list[dict]) -> str:
+    if GROQ_API_KEY:
+        from groq import AsyncGroq
+        client = AsyncGroq(api_key=GROQ_API_KEY)
+        resp = await client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=OLLAMA_OPTIONS["num_predict"],
+        )
+        return resp.choices[0].message.content or ""
+    import ollama as ollama_sdk
+    client = ollama_sdk.AsyncClient(host=OLLAMA_HOST)
+    final = await client.chat(model=OLLAMA_MODEL, messages=messages, options=OLLAMA_OPTIONS)
+    return final.message.content or ""
+
+
+async def _llm_stream(messages: list[dict]) -> AsyncGenerator[str, None]:
+    if GROQ_API_KEY:
+        from groq import AsyncGroq
+        client = AsyncGroq(api_key=GROQ_API_KEY)
+        stream = await client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            stream=True,
+            max_tokens=OLLAMA_OPTIONS["num_predict"],
+        )
+        async for chunk in stream:
+            text = chunk.choices[0].delta.content or ""
+            if text:
+                yield text
+        return
+    import ollama as ollama_sdk
+    client = ollama_sdk.AsyncClient(host=OLLAMA_HOST)
+    async for chunk in await client.chat(model=OLLAMA_MODEL, messages=messages, stream=True, options=OLLAMA_OPTIONS):
+        text = chunk.message.content or ""
+        if text:
+            yield text
+
+
 # ─── API publique ─────────────────────────────────────────────────────────────
 
 
@@ -151,12 +229,10 @@ async def ask_aria(
     token: str = "",
 ) -> dict:
     system, msgs, chunks = await _build_context(message, history, user_role, token)
-    import ollama as ollama_sdk
-    client = ollama_sdk.AsyncClient(host=OLLAMA_HOST)
     full_msgs = [{"role": "system", "content": system}] + msgs
-    final = await client.chat(model=OLLAMA_MODEL, messages=full_msgs)
+    reply = await _llm_chat(full_msgs)
     return {
-        "message": final.message.content or "Je n'ai pas pu obtenir une réponse.",
+        "message": reply or "Je n'ai pas pu obtenir une réponse.",
         "sources": chunks,
     }
 
@@ -176,14 +252,9 @@ async def ask_aria_stream(
     system, msgs, chunks = await _build_context(message, history, user_role, token)
     yield {"type": "meta", "sources": chunks}
 
-    import ollama as ollama_sdk
-    client = ollama_sdk.AsyncClient(host=OLLAMA_HOST)
     full_msgs = [{"role": "system", "content": system}] + msgs
-
     full = []
-    async for chunk in await client.chat(model=OLLAMA_MODEL, messages=full_msgs, stream=True):
-        token_text = chunk.message.content or ""
-        if token_text:
-            full.append(token_text)
-            yield {"type": "delta", "text": token_text}
+    async for text in _llm_stream(full_msgs):
+        full.append(text)
+        yield {"type": "delta", "text": text}
     yield {"type": "done", "full": "".join(full)}

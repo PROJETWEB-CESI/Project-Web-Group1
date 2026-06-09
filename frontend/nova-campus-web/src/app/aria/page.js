@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const AI = '/api/ai/api';
 
@@ -73,6 +75,38 @@ function ConvItem({ conv, active, onLoad, onDelete }) {
         title="Supprimer"
       >✕</span>
     </button>
+  );
+}
+
+function MarkdownContent({ content, streaming }) {
+  return (
+    <div className="text-sm leading-relaxed break-words">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
+          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+          em: ({ children }) => <em className="italic">{children}</em>,
+          h1: ({ children }) => <h1 className="text-base font-bold mb-2 mt-1">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-sm font-bold mb-1.5 mt-1">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-sm font-semibold mb-1 mt-1">{children}</h3>,
+          code: ({ inline, children }) => inline
+            ? <code className="px-1 py-0.5 rounded bg-black/10 text-[0.8em] font-mono">{children}</code>
+            : <pre className="p-3 rounded-lg bg-black/10 text-xs font-mono overflow-x-auto my-2 whitespace-pre-wrap"><code>{children}</code></pre>,
+          table: ({ children }) => <div className="overflow-x-auto my-2"><table className="text-xs border-collapse w-full">{children}</table></div>,
+          th: ({ children }) => <th className="border border-current/20 px-2 py-1 font-semibold text-left bg-black/5">{children}</th>,
+          td: ({ children }) => <td className="border border-current/20 px-2 py-1">{children}</td>,
+          blockquote: ({ children }) => <blockquote className="border-l-2 border-current/30 pl-3 my-2 opacity-80">{children}</blockquote>,
+          hr: () => <hr className="my-2 border-current/20" />,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+      {streaming && <span className="inline-block w-0.5 h-[1em] bg-current ml-0.5 align-middle animate-pulse" />}
+    </div>
   );
 }
 
@@ -326,19 +360,18 @@ export default function AriaPage() {
                 <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {m.role === 'assistant' && <Avatar initials="Ar" size={8} />}
                   <div className={`flex flex-col gap-1 max-w-[70%] ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                    <div className={`px-4 py-2.5 rounded-2xl ${
                       m.role === 'user'
-                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-tr-sm'
+                        ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-tr-sm text-sm leading-relaxed whitespace-pre-wrap break-words'
                         : 'bg-[var(--color-surface)] text-[var(--color-text)] border border-[var(--color-border)] rounded-tl-sm'
                     }`}>
-                      {m.content
-                        ? <>
-                            {m.content}
-                            {m.streaming && <span className="inline-block w-0.5 h-[1em] bg-current ml-0.5 align-middle animate-pulse" />}
-                          </>
-                        : m.streaming
-                          ? <TypingDots />
-                          : m.content}
+                      {m.role === 'user' ? (
+                        m.content
+                      ) : m.content ? (
+                        <MarkdownContent content={m.content} streaming={m.streaming} />
+                      ) : m.streaming ? (
+                        <TypingDots />
+                      ) : null}
                     </div>
                     {m.sources?.length > 0 && (
                       <div className="flex flex-wrap gap-1">

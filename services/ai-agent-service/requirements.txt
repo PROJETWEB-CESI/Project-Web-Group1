@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 ollama
+groq
 chromadb
 httpx
 python-dotenv

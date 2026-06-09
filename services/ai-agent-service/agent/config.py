@@ -1,10 +1,19 @@
 import os
+import multiprocessing
 from dotenv import load_dotenv
 
 load_dotenv()
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
+OLLAMA_OPTIONS = {
+    "num_ctx": int(os.getenv("OLLAMA_NUM_CTX", "2048")),
+    "num_predict": int(os.getenv("OLLAMA_NUM_PREDICT", "600")),
+    "num_thread": int(os.getenv("OLLAMA_NUM_THREAD", str(multiprocessing.cpu_count()))),
+}
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
 JWT_SECRET = os.getenv("JWT_SECRET", "secret")
 JWT_ALGORITHM = "HS256"
