@@ -112,13 +112,14 @@ export default function ProfileMenu() {
       href: '/settings',
       icon: <Settings className={iconClass} />,
     });
+    
     // Logout always absolutely last (red)
     items.push({
       label: translate('logout') || 'Logout',
       href: '#',
       isLogout: true,
       icon: <LogOut className={iconClass} />,
-      className: 'hover:!var(--red-hoverlay)',
+      className: '!text-[var(--color-error)] hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)]',
     });
 
     return items;
@@ -146,7 +147,7 @@ export default function ProfileMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] py-1 shadow-lg z-[60] text-sm">
+        <div className="absolute right-0 mt-2 w-56 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] p-1 shadow-lg z-[60] text-sm">
           {/* User info header */}
           <div className="px-4 py-2 border-b border-[var(--color-border)]">
             <div className="font-medium text-[var(--color-text)]">
@@ -157,7 +158,7 @@ export default function ProfileMenu() {
             </div>
           </div>
 
-          <nav className="py-1" role="menu">
+          <nav className="pt-1 space-y-0.5" role="menu">
             {menuItems.map((item, index) => {
               const content = (
                 <span className="flex items-center">
@@ -172,7 +173,7 @@ export default function ProfileMenu() {
                     key={index}
                     onClick={handleLogout}
                     // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
-                    className="block w-full px-3 py-1.5 text-left !text-[var(--color-error)] underline-offset-2 hover:bg-[var(--color-surface)] hover:!text-[var(--color-error)] focus:bg-[var(--color-surface)] focus:outline-none"
+                    className="block w-full rounded-md px-3 py-1.5 text-left !text-[var(--color-error)] underline-offset-2 hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)] focus:bg-[var(--color-surface)] focus:outline-none"
                     role="menuitem"
                   >
                     {content}
@@ -192,7 +193,7 @@ export default function ProfileMenu() {
                     closeMenu();
                   }}
                   // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
-                  className="block w-full px-3 py-1.5 text-left !text-[var(--color-text)] underline-offset-2 hover:bg-[var(--color-surface)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
+                  className="fakeLink block w-full rounded-md px-3 py-1.5 text-left !text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
                   role="menuitem"
                 >
                   {content}

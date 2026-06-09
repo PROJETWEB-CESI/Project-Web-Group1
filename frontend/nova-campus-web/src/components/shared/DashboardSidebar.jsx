@@ -40,7 +40,7 @@ export default function DashboardSidebar() {
   const iconClass = 'w-4 h-4 mr-2.5 flex-shrink-0';
   const activeClasses = 'bg-[var(--color-primary-soft)] text-[var(--color-primary)] font-medium';
   // underline-offset-2 moves any underline (from global styles) 2px lower than default for the nav items in the sidebar
-  const baseItemClasses = 'flex items-center w-full px-3 py-2 rounded-md text-sm hover:bg-[var(--color-surface-hover)] transition-colors text-[var(--color-text)] underline-offset-2';
+  const baseItemClasses = 'fakeLink flex items-center w-full px-3 py-2 rounded-md text-sm hover:bg-[var(--color-surface-hover)] transition-colors text-[var(--color-text)] underline-offset-2';
 
   const isActive = (href) => {
     if (!pathname) return false;
@@ -139,10 +139,10 @@ export default function DashboardSidebar() {
 
     const content = (
       <>
-        <Icon className={`${iconClass} ${active ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`} />
-        <span className="flex-1 truncate">{item.label}</span>
+        <Icon className={`${iconClass} ${active ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}`} />
+        <span className={`{'flex-1 truncate'} ${active ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}`}>{item.label}</span>
         {showBadge && (
-          <span className="ml-auto text-[10px] leading-none px-1.5 py-0.5 rounded-full bg-[var(--color-error)] text-[var(--color-on-primary)] font-medium">
+          <span className="ml-auto text-[12px] leading-none px-2 py-1 rounded-full bg-[var(--color-error)] text-[var(--color-on-primary)] font-medium">
             {badgeValue}
           </span>
         )}
@@ -209,7 +209,7 @@ export default function DashboardSidebar() {
       </nav>
 
       {/* Bottom actions (always visible, pushed to bottom) */}
-      <div className="mt-auto px-1.5 pt-2 border-t border-[var(--color-border)] space-y-0.5">
+      <div className="mt-auto px-1.5 py-2 border-t border-[var(--color-border)] space-y-0.5">
         <Link
           href="/help"
           className={`${baseItemClasses} text-[var(--color-text-muted)] hover:text-[var(--color-text)]`}
