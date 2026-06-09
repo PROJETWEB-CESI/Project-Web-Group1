@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
           <ThemeProvider>
             <AuthProvider>
               {/* Fixed header bar (floating style) */}
-              <div className="fixed px-3 py-3 top-4 left-4 right-4 z-50 flex items-center justify-between bg-transparent">
+              <div className="fixed top-0 left-0 right-0 px-3 py-3 z-50 flex items-center justify-between bg-[var(--header-background)] lg:bg-transparent lg:style={{ backdropFilter: 'blur(5px)' }}">
                 <LogoLink />
                 <div className="flex items-center gap-3">
                   <LanguageToggle />
@@ -50,12 +50,6 @@ export default function RootLayout({ children }) {
               {/* Main content area — flex-1 fills remaining viewport height */}
               <div className="flex-1 flex flex-col min-h-0">
                 {children}
-              </div>
-
-              {/* Footer overlaid at the very bottom of the window.
-                  The login panels will now extend behind/under it to the real viewport bottom. */}
-              <div className="fixed bottom-0 left-0 right-0 z-[60]">
-                <Footer />
               </div>
             </AuthProvider>
           </ThemeProvider>
