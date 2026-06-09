@@ -22,6 +22,7 @@ import {
   Sparkles,
   User,
   FolderOpen,
+  HelpCircle,
 } from 'lucide-react';
 
 export default function ProfileMenu() {
@@ -100,18 +101,16 @@ export default function ProfileMenu() {
       );
     }
 
-    // Tools / Aria + Profile (from mockup OUTILS section) — before Settings/Logout
+    // Tools / Aria + Profile (from mockup OUTILS section, merged profile/settings into one under dashboard layout) — before Logout
     items.push(
-      { label: translate('assistantAria') || 'Aria Assistant (AI)', href: '/dashboard/assistant', icon: <Sparkles className={iconClass} /> },
-      { label: translate('profile') || 'Profile', href: '/settings', icon: <User className={iconClass} /> }
+      { label: translate('assistantAria') || 'Aria Assistant (AI)', href: '/dashboard/assistant', icon: <Sparkles className={iconClass} />, dividerBefore: true },
+      { label: translate('profile') || 'Profile', href: '/dashboard/profile', icon: <User className={iconClass} /> }
     );
-
-    // Settings near end (after role items + tools/aria/profile); Logout always last (red/error)
-    items.push({
-      label: translate('settings') || 'Settings',
-      href: '/settings',
-      icon: <Settings className={iconClass} />,
-    });
+    
+    // Help center above Logout
+    items.push(
+      { label: translate('helpCenter') || 'Help Center', href: '/dashboard/help', icon: <HelpCircle className={iconClass} />, dividerBefore: true }
+    );
     
     // Logout always absolutely last (red)
     items.push({
@@ -182,22 +181,27 @@ export default function ProfileMenu() {
               }
 
               return (
-                <Link
-                  key={index}
-                  href={item.href}
-                  onClick={() => {
-                    // Clear live notification badge (if this is the notifications entry) — works from dropdown too.
-                    if (item.label.toLowerCase().includes('notification') || item.href.includes('/notifications')) {
-                      clearNotifications();
-                    }
-                    closeMenu();
-                  }}
-                  // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
-                  className="fakeLink block w-full rounded-md px-3 py-1.5 text-left !text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
-                  role="menuitem"
-                >
-                  {content}
-                </Link>
+                <>
+                  {item.dividerBefore && index > 0 && (
+                    <hr key={`divider-${index}`} className="my-1 border-[var(--color-border)] mx-3" />
+                  )}
+                  <Link
+                    key={index}
+                    href={item.href}
+                    onClick={() => {
+                      // Clear live notification badge (if this is the notifications entry) — works from dropdown too.
+                      if (item.label.toLowerCase().includes('notification') || item.href.includes('/notifications')) {
+                        clearNotifications();
+                      }
+                      closeMenu();
+                    }}
+                    // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
+                    className="fakeLink block w-full rounded-md px-3 py-1.5 text-left !text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
+                    role="menuitem"
+                  >
+                    {content}
+                  </Link>
+                </>
               );
             })}
           </nav>

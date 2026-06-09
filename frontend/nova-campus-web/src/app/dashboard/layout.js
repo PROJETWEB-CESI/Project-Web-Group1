@@ -20,6 +20,12 @@ export default function DashboardLayout({ children }) {
     const segments = (pathname || '').split('/').filter(Boolean); // e.g. ['dashboard', 'admin', ...]
     const pathRole = segments[1]; // the segment right after 'dashboard'
 
+    // Common pages accessible to all logged-in users (assistant, profile/settings, help etc.)
+    const commonRoles = ['assistant', 'profile', 'settings', 'help'];
+    if (commonRoles.includes(pathRole)) {
+      return; // allow, will use dashboard layout
+    }
+
     // Bare /dashboard or /dashboard/ -> bounce to the user's own role dashboard
     if (!pathRole || pathRole === 'dashboard') {
       router.replace(`/dashboard/${userRole}`);
@@ -44,9 +50,8 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="flex flex-1 h-full min-h-0">
-      {/* Left sidebar ~300px wide, extends full height from under header to window bottom.
-          Content (role-specific nav + tools + bottom logout/help) provided by DashboardSidebar. */}
-      <aside className="w-[300px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col overflow-hidden">
+      {/* Left sidebar ~300px wide, hidden on small screens, appears at xl breakpoint (1280px) */}
+      <aside className="hidden xl:flex w-[280px] xl:w-[300px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] flex-col overflow-hidden">
         <DashboardSidebar />
       </aside>
 

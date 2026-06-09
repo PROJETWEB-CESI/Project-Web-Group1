@@ -125,9 +125,14 @@ export default function AriaPage() {
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
 
-  // Auth guard
+  // Auth guard and redirect to dashboard/assistant
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) router.replace('/login');
+    if (!authLoading && !isAuthenticated) {
+      router.replace('/login');
+    } else if (!authLoading && isAuthenticated) {
+      // Redirect authenticated users to dashboard/assistant
+      router.replace('/dashboard/assistant');
+    }
   }, [authLoading, isAuthenticated, router]);
 
   // Load conversation list
