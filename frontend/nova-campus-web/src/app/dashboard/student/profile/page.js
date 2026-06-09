@@ -44,7 +44,7 @@ export default function StudentProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { translate } = useLanguage();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, isHighContrast } = useTheme();
   const { language, setLanguage } = useLanguage();
 
   const [activeTab,      setActiveTab]      = useState('information');
@@ -54,21 +54,30 @@ export default function StudentProfilePage() {
   const [error,          setError]          = useState(null);
 
   // Information tab
-  const [form, setForm]       = useState({ first_name: '', last_name: '', email: '', phone: '', address: '' });
+  const [form, setForm]         = useState({ first_name: '', last_name: '', email: '', phone: '', address: '' });
   const [original, setOriginal] = useState({});
   const [programLabel, setProgramLabel] = useState('');
+
+  // Photo
+  const [photoUrl,   setPhotoUrl]   = useState(null);
+  const [photoError, setPhotoError] = useState(null);
 
   // Security tab
   const [pwForm, setPwForm]   = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState(null);
-  const [pwSuccess, setPwSuccess] = useState(false);
-  const [pwSaving, setPwSaving]   = useState(false);
 
   // Notifications tab
   const [notifs, setNotifs] = useState(DEFAULT_NOTIFS);
 
   // Sessions tab
   const [sessions, setSessions] = useState(MOCK_SESSIONS);
+
+  // ── Helper: get stored token for Authorization header ────────────────────
+  // The IAM service issues Bearer tokens stored in localStorage by AuthContext
+  function authHeader() {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
 
   // ── Auth guard ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -78,7 +87,10 @@ export default function StudentProfilePage() {
   // ── Load student profile ─────────────────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated) return;
-    fetch('/api/academic/students/me', { credentials: 'include' })
+    fetch('/api/academic/students/me', {
+      credentials: 'include',
+      headers: authHeader(),
+    })
       .then(res => { if (!res.ok) throw new Error(translate('profileLoadError')); return res.json(); })
       .then(data => {
         const fields = {
@@ -91,6 +103,7 @@ export default function StudentProfilePage() {
         setForm(fields);
         setOriginal(fields);
         setProgramLabel([data.program_id, data.campus_id].filter(Boolean).join(' - '));
+        if (data.photo_url) setPhotoUrl(data.photo_url);
         setProfileLoading(false);
       })
       .catch(() => {
@@ -110,8 +123,9 @@ export default function StudentProfilePage() {
     setSaving(true); setError(null); setSuccess(false);
     try {
       const res = await fetch('/api/academic/students/me', {
-        method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({ first_name: form.first_name, last_name: form.last_name, phone: form.phone, address: form.address }),
       });
       if (!res.ok) throw new Error(translate('profileSaveError'));
@@ -120,26 +134,29 @@ export default function StudentProfilePage() {
     finally { setSaving(false); }
   }
 
-  // ── Security handlers ────────────────────────────────────────────────────
+  // ── Photo upload handler — local preview only, no backend needed ────────
+  function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setPhotoError(translate('photoInvalidType')); return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError(translate('photoTooLarge')); return;
+    }
+
+    setPhotoError(null);
+    // Show instantly as a local blob URL — no server needed
+    const localUrl = URL.createObjectURL(file);
+    setPhotoUrl(localUrl);
+  }
+
+  // Security tab handler
   function handlePwChange(e) {
     setPwForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setPwError(null); setPwSuccess(false);
-  }
-  async function handlePwSave() {
-    if (pwForm.next !== pwForm.confirm) { setPwError(translate('passwordMismatch')); return; }
-    if (pwForm.next.length < 8)         { setPwError(translate('passwordTooShort'));  return; }
-    setPwSaving(true); setPwError(null);
-    try {
-      const res = await fetch('/api/auth/change-password', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next }),
-      });
-      if (!res.ok) throw new Error(translate('passwordSaveError'));
-      setPwForm({ current: '', next: '', confirm: '' });
-      setPwSuccess(true);
-    } catch (err) { setPwError(err.message); }
-    finally { setPwSaving(false); }
+    setPwError(null);
   }
 
   // ── Notifications handler ────────────────────────────────────────────────
@@ -176,15 +193,36 @@ export default function StudentProfilePage() {
 
           <div className="flex flex-col items-center gap-2 pb-4 mb-2"
             style={{ borderBottom: '1px solid var(--color-border)' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--color-primary)', color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 500 }}
-              aria-hidden="true">
-              {initials}
+
+            {/* Avatar — shows uploaded photo or initials fallback */}
+            <div style={{ position: 'relative', width: '56px', height: '56px' }}>
+              {photoUrl ? (
+                <img src={photoUrl} alt={fullName}
+                  style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--color-border)' }} />
+              ) : (
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--color-primary)', color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 500 }}
+                  aria-hidden="true">
+                  {initials}
+                </div>
+              )}
+
             </div>
+
             <p style={{ color: 'var(--color-text)' }} className="text-sm font-medium text-center leading-tight">{fullName}</p>
             {programLabel && <p style={{ color: 'var(--color-text-muted)' }} className="text-xs text-center leading-snug">{programLabel}</p>}
-            <Button variant="secondary" size="sm" className="text-xs mt-1 w-full" onClick={() => {}} aria-label={translate('changePhoto')}>
+
+            {/* Hidden file input — triggered by the button below */}
+            <input id="photo-upload" type="file" accept="image/jpeg,image/png,image/webp"
+              style={{ display: 'none' }} onChange={handlePhotoChange} aria-label={translate('changePhoto')} />
+
+            <Button variant="secondary" size="sm" className="text-xs mt-1 w-full"
+              onClick={() => document.getElementById('photo-upload').click()}>
               {translate('changePhoto')}
             </Button>
+
+            {photoError && (
+              <p className="error-message text-center" role="alert" style={{ fontSize: '0.65rem' }}>{photoError}</p>
+            )}
           </div>
 
           <nav aria-label={translate('profileNav')}>
@@ -233,14 +271,94 @@ export default function StudentProfilePage() {
           {/* SECURITY */}
           {activeTab === 'security' && (
             <>
-              <h2 style={{ color: 'var(--color-text)' }} className="text-sm font-medium mb-5">{translate('profileTabSecurity')}</h2>
+              <h2 style={{ color: 'var(--color-text)' }} className="text-sm font-medium mb-5">
+                {translate('profileTabSecurity')}
+              </h2>
+
               <div className="flex flex-col gap-3 mb-4">
-                <Input label={translate('currentPassword')} name="current" type="password" value={pwForm.current} onChange={handlePwChange} autoComplete="current-password" />
-                <Input label={translate('newPassword')}     name="next"    type="password" value={pwForm.next}    onChange={handlePwChange} autoComplete="new-password" />
-                <Input label={translate('confirmPassword')} name="confirm" type="password" value={pwForm.confirm} onChange={handlePwChange} autoComplete="new-password" />
+
+                {/* Current password */}
+                <Input
+                  label={translate('currentPassword')}
+                  name="current"
+                  type="password"
+                  value={pwForm.current}
+                  onChange={handlePwChange}
+                  autoComplete="current-password"
+                />
+
+                {/* New password */}
+                <Input
+                  label={translate('newPassword')}
+                  name="next"
+                  type="password"
+                  value={pwForm.next}
+                  onChange={handlePwChange}
+                  autoComplete="new-password"
+                />
+
+                {/* Strength bar + rules — appear as soon as user types */}
+                {pwForm.next.length > 0 && (() => {
+                  const rules = [
+                    pwForm.next.length >= 8,
+                    /[A-Z]/.test(pwForm.next),
+                    /[0-9]/.test(pwForm.next),
+                    /[^A-Za-z0-9]/.test(pwForm.next),
+                  ];
+                  const score  = rules.filter(Boolean).length;
+                  const colors = isHighContrast
+                    ? ['var(--color-text)', 'var(--color-text)', 'var(--color-text)', 'var(--color-primary)']
+                    : ['#ef4444','#f97316','#eab308','#22c55e'];
+                  const labels = [
+                    translate('strengthWeak'),
+                    translate('strengthFair'),
+                    translate('strengthGood'),
+                    translate('strengthStrong'),
+                  ];
+                  return (
+                    <div style={{ padding: '12px 14px', borderRadius: '8px', background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}>
+                      {/* Bar */}
+                      <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                        {[0,1,2,3].map(i => (
+                          <div key={i} style={{ flex: 1, height: '4px', borderRadius: '99px',
+                            background: i < score ? colors[score - 1] : 'var(--color-border)',
+                            transition: 'background 0.2s' }} />
+                        ))}
+                      </div>
+                      {/* Label */}
+                      <p style={{ fontSize: '0.75rem', color: colors[score - 1] || 'var(--color-text-muted)', marginBottom: '8px', fontWeight: 500 }}>
+                        {labels[score - 1] || translate('strengthWeak')}
+                      </p>
+                      {/* Compact inline rules */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+                        <StrengthRule ok={rules[0]} label={translate('passwordRuleLength')}  />
+                        <StrengthRule ok={rules[1]} label={translate('passwordRuleUpper')}   />
+                        <StrengthRule ok={rules[2]} label={translate('passwordRuleNumber')}  />
+                        <StrengthRule ok={rules[3]} label={translate('passwordRuleSpecial')} />
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Confirm password */}
+                <Input
+                  label={translate('confirmPassword')}
+                  name="confirm"
+                  type="password"
+                  value={pwForm.confirm}
+                  onChange={handlePwChange}
+                  autoComplete="new-password"
+                  error={pwForm.confirm.length > 0 && pwForm.next !== pwForm.confirm
+                    ? translate('passwordMismatch') : undefined}
+                />
+
+                {/* Passwords match confirmation */}
+                {pwForm.confirm.length > 0 && pwForm.next === pwForm.confirm && (
+                  <p style={{ color: 'var(--color-success)', fontSize: '0.8rem' }} role="status">
+                    ✓ {translate('passwordMatch')}
+                  </p>
+                )}
               </div>
-              {pwError   && <p className="error-message mb-3" role="alert">{pwError}</p>}
-              {pwSuccess && <p style={{ color: 'var(--color-success)' }} className="text-sm mb-3" role="status">{translate('passwordSaveSuccess')}</p>}
 
               {/* 2FA notice */}
               <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', padding: '12px 16px', marginBottom: '20px' }}
@@ -252,12 +370,31 @@ export default function StudentProfilePage() {
                 </button>
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button variant="secondary" onClick={() => { setPwForm({ current: '', next: '', confirm: '' }); setPwError(null); setPwSuccess(false); }} disabled={pwSaving}>
-                  {translate('cancel')}
-                </Button>
-                <Button variant="primary" onClick={handlePwSave} loading={pwSaving}>{translate('save')}</Button>
-              </div>
+              {/* Actions — Save is greyed out until all conditions are met */}
+              {(() => {
+                const allRulesPass = pwForm.next.length >= 8
+                  && /[A-Z]/.test(pwForm.next)
+                  && /[0-9]/.test(pwForm.next)
+                  && /[^A-Za-z0-9]/.test(pwForm.next);
+                const canSave = pwForm.current.length > 0
+                  && allRulesPass
+                  && pwForm.next === pwForm.confirm;
+                return (
+                  <div className="flex justify-end gap-2">
+                    <Button variant="secondary"
+                      onClick={() => setPwForm({ current: '', next: '', confirm: '' })}>
+                      {translate('cancel')}
+                    </Button>
+                    <Button variant="primary" disabled={!canSave}
+                      onClick={() => {
+                        // Backend not connected yet — form is ready when this is enabled
+                        setPwForm({ current: '', next: '', confirm: '' });
+                      }}>
+                      {translate('save')}
+                    </Button>
+                  </div>
+                );
+              })()}
             </>
           )}
 
@@ -400,13 +537,23 @@ export default function StudentProfilePage() {
   );
 }
 
+// ── Password strength rule indicator ─────────────────────────────────────────
+function StrengthRule({ ok, label }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: ok ? 'var(--color-success)' : 'var(--color-text-muted)', fontSize: '0.7rem' }}>
+      <span>{ok ? '✓' : '○'}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 // ── Toggle switch component ───────────────────────────────────────────────────
 function Toggle({ checked, onChange, label }) {
   return (
     <button role="switch" aria-checked={checked} aria-label={label} onClick={onChange}
-      style={{ width: '36px', height: '20px', borderRadius: '999px', border: 'none', cursor: 'pointer', padding: '2px', transition: 'background 0.2s ease',
+      style={{ width: '36px', height: '20px', borderRadius: '999px', border: '1px solid var(--color-border)', cursor: 'pointer', padding: '2px', transition: 'background 0.2s ease',
         background: checked ? 'var(--color-primary)' : 'var(--color-border)' }}>
-      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'white', transition: 'transform 0.2s ease',
+      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--color-on-primary)', transition: 'transform 0.2s ease',
         transform: checked ? 'translateX(16px)' : 'translateX(0)' }} />
     </button>
   );

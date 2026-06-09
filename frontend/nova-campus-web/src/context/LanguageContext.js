@@ -127,7 +127,14 @@ const translations = {
     sessionNow: 'Just now',
     session4h: '4 hours ago',
     session3d: '3 days ago',
-  
+    passwordRuleLength: '8+ characters',
+    passwordRuleUpper: 'One uppercase',
+    passwordRuleNumber: 'One number',
+    passwordRuleSpecial: 'One special character',
+    strengthWeak: 'Weak', 
+    strengthFair: 'Fair',
+    strengthGood: 'Good',
+    strengthStrong: 'Strong',
   
   },
   fr: {
@@ -277,7 +284,14 @@ const translations = {
     sessionNow: 'À l\'instant',
     session4h: 'il y a 4 h',
     session3d: 'il y a 3 j',
-  
+    passwordRuleLength: '8 caractères minimum',
+    passwordRuleUpper: 'Une majuscule',
+    passwordRuleNumber: 'Un chiffre',
+    passwordRuleSpecial: 'Un caractère spécial',
+    strengthWeak: 'Faible',
+    strengthFair: 'Moyen',
+    strengthGood: 'Bon',
+    strengthStrong: 'Fort',
   },
 };
 
