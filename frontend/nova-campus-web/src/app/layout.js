@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-dvh flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+      <body className="h-dvh flex flex-col bg-[var(--color-bg)] text-[var(--color-text)] overflow-hidden">
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
                 <Header />
 
                 {/* Main content area — flex-1 fills remaining viewport height (after in-flow header when applicable) */}
-                <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                   {children}
                 </div>
               </NotificationProvider>

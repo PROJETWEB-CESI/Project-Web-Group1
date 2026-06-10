@@ -48,12 +48,17 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver(([entry]) => {
-      setWidth(entry.contentRect.width || 500);
+      const newWidth = entry.contentRect.width || 500;
+      if (newWidth !== width) {
+        setWidth(newWidth);
+      }
     });
     observer.observe(containerRef.current);
-    setWidth(containerRef.current.offsetWidth || 500);
+    // Set initial width
+    const initialWidth = containerRef.current.offsetWidth || 500;
+    setWidth(initialWidth);
     return () => observer.disconnect();
-  }, []);
+  }, [width]);
 
   const chartHeight = 100;
   const svgHeight = PADDING.top + chartHeight + PADDING.bottom;

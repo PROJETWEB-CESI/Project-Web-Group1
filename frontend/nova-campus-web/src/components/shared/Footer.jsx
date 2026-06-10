@@ -17,7 +17,11 @@ export default function Footer() {
     : "text-[var(--color-text)]";
 
   return (
-    <footer className="bg-[var(--color-bg)] lg:bg-transparent text-[var(--color-on-primary)] py-4">
+    <footer
+      className="text-[var(--color-on-primary)] py-4"
+      // blur
+      style={{ backdropFilter: 'blur(5px)' }}
+    >
       <div className="mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-4 text-sm">
         {/* <div className={`md:mr-auto ${textColor}`}>
           © {new Date().getFullYear()} NovaCampus Alliance. All rights reserved.

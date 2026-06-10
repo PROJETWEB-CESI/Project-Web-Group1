@@ -51,9 +51,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex-1 flex">
+    <div className="flex-1 flex min-h-screen">
       {/* Left panel - Branding (hidden on small screens) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12 min-h-full">
+      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-primary)] text-[var(--color-on-primary)] flex-col justify-center px-12 min-h-screen">
         <div className="max-w-md">
           {/* <div className="flex items-center gap-3 mb-8">
             <div className="h-10 w-10 rounded-full bg-white/20 border border-[var(--color-on-primary)]/30 flex items-center justify-center text-xl font-semibold">
@@ -154,16 +154,16 @@ export default function LoginPage() {
             {translate('privacyNoticeSuffix')}
           </div>
 
+          {/* Contact info for account issues */}
           <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
             {translate('needAccount')}{' '}
             <span className="font-medium">{translate('needAccountContact')}</span>
           </div>
-
-          {/* Footer overlaid at the very bottom of the window.
+        </div>
+        {/* Footer overlaid at the very bottom of the window.
                             The login panels will now extend behind/under it to the real viewport bottom. */}
-          <div className="fixed bottom-0 w-full max-w-md">
-            <Footer />
-          </div>
+        <div className="fixed bottom-0 w-full max-w-md">
+          <Footer />
         </div>
       </div>
     </div>
