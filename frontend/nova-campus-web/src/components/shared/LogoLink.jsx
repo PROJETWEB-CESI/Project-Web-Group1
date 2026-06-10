@@ -19,8 +19,7 @@ export default function LogoLink() {
 
   let href = '/login';
   if (!loading && isAuthenticated && user) {
-    const role = (user.role || 'student').toLowerCase();
-    href = `/dashboard/${role}`;
+    href = `/dashboard`;
   }
 
   // Color logic
