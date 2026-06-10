@@ -359,11 +359,22 @@ INSERT INTO grades (student_id, course_id, campus_id, evaluation_name, score, sc
   ('STU031','CRS010','CAMP001','Projet web',15.5,20,2,'2025-05-15','2025-06-05 10:00:00'),
   ('STU032','CRS010','CAMP001','Projet web',8.0,20,2,'2025-05-15','2025-06-05 10:00:00');
 
--- ── 5. Verify ─────────────────────────────────────────────────────────────────
+-- ── 5. Extra schedule entry forcing a room conflict for planning UI testing ────
+-- SCH001 already books ROOM101 on Monday 09:00-12:00 (semester 1, 2023-2024).
+-- This entry overlaps the same room/day/semester/year with a different course
+-- and instructor, producing a visible room conflict in the planning views.
+INSERT INTO schedules (schedule_id, course_id, instructor_id, room_id, day_of_week, start_time, end_time, semester, academic_year, status)
+VALUES
+  ('SCH011','CRS003','INST002','ROOM101','Monday','10:00:00','13:00:00',1,'2023-2024','Active')
+ON CONFLICT (schedule_id) DO NOTHING;
+
+-- ── 6. Verify ─────────────────────────────────────────────────────────────────
 SELECT 'students added'   AS label, COUNT(*) AS n FROM students     WHERE student_id >= 'STU013'
 UNION ALL
 SELECT 'users added',               COUNT(*)       FROM users        WHERE "studentId" >= 'STU013'
 UNION ALL
 SELECT 'enrollments added',         COUNT(*)       FROM enrollments  WHERE student_id >= 'STU013'
 UNION ALL
-SELECT 'grades added',              COUNT(*)       FROM grades       WHERE student_id >= 'STU013';
+SELECT 'grades added',              COUNT(*)       FROM grades       WHERE student_id >= 'STU013'
+UNION ALL
+SELECT 'schedules added',           COUNT(*)       FROM schedules    WHERE schedule_id = 'SCH011';

@@ -10,11 +10,32 @@ router.get('/', authorize(['admin']), async (req, res) => {
     }
     try {
         const students = await service.getStudents(req.query.campusId, {
-            programmeId: req.query.programmeId,
-            administrativeStatus: req.query.administrativeStatus,
+            programId: req.query.programId,
+            status: req.query.status,
             search: req.query.search,
         });
         res.json(students);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Admin : campus information
+router.get('/campuses/:campusId', authorize(['admin', 'executive']), async (req, res) => {
+    try {
+        const campus = await service.getCampusById(req.params.campusId);
+        if (!campus) return res.status(404).json({ error: 'Campus introuvable' });
+        res.json(campus);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Admin : campus-wide stats (headcount, programs, success rate, average grade)
+router.get('/campus/:campusId/stats', authorize(['admin', 'executive']), async (req, res) => {
+    try {
+        const stats = await service.getCampusStats(req.params.campusId);
+        res.json(stats);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
