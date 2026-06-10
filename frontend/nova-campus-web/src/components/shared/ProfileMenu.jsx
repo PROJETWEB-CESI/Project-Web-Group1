@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -57,6 +57,8 @@ export default function ProfileMenu() {
   const { notificationCount, clearNotifications } = useNotifications();
   const { apiFetch } = useApi();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [adminBadges, setAdminBadges] = useState({ planning: 0, finance: 0 });
   const menuRef = useRef(null);
@@ -111,6 +113,23 @@ export default function ProfileMenu() {
   }
 
   const dashboardHref = `/dashboard/${role}`;
+
+  // Same active-page detection as the sidebar: for /dashboard/student, the
+  // ?tab= query param drives which entry is highlighted; otherwise compare paths.
+  const isActive = (item) => {
+    if (!pathname || !item.href || item.href === '#') return false;
+
+    const [itemPath, itemQuery] = item.href.split('?');
+    const itemTab = new URLSearchParams(itemQuery || '').get('tab');
+
+    if (pathname.startsWith('/dashboard/student') && itemTab) {
+      const currentTab = searchParams?.get('tab') || 'dashboard';
+      return pathname.startsWith(itemPath) && currentTab === itemTab;
+    }
+
+    if (itemPath === dashboardHref) return pathname === itemPath || pathname === `/dashboard/${role}`;
+    return pathname === itemPath || pathname.startsWith(itemPath + '/');
+  };
 
   const iconClass = "w-4 h-4 mr-2 flex-shrink-0 text-[var(--color-text-muted)]";
 
@@ -217,6 +236,8 @@ export default function ProfileMenu() {
 
           <nav className="pt-1 space-y-0.5" role="menu">
             {menuItems.map((item, index) => {
+              const active = isActive(item);
+
               // Live notification count (student) or live conflict/overdue counts (admin),
               // matching the sidebar's badge behavior.
               const liveBadge = item.isLiveBadge ? notificationCount : null;
@@ -265,8 +286,13 @@ export default function ProfileMenu() {
                       closeMenu();
                     }}
                     // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
-                    className="fakeLink block w-full rounded-md px-3 py-1.5 text-left !text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] hover:!text-[var(--color-link-hover)] focus:bg-[var(--color-surface)] focus:outline-none"
+                    className={`fakeLink block w-full rounded-md px-3 py-1.5 text-left hover:bg-[var(--color-surface-hover)] focus:bg-[var(--color-surface)] focus:outline-none ${
+                      active
+                        ? 'bg-[var(--color-primary-soft)] !text-[var(--color-primary)] font-medium'
+                        : '!text-[var(--color-text)] hover:!text-[var(--color-link-hover)]'
+                    }`}
                     role="menuitem"
+                    aria-current={active ? 'page' : undefined}
                   >
                     {content}
                   </Link>
