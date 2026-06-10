@@ -29,6 +29,7 @@ export default function StudentDashboard() {
   const [timetables,       setTimetables]       = useState([]);
   const [studentProfile,   setStudentProfile]   = useState(null);
   const [gradeStats,       setGradeStats]       = useState(null);
+  const [attStats,         setAttStats]         = useState(null);
   const [kpis, setKpis] = useState({
     average: null, attendanceRate: null, tuition: null,
     credits: null, totalCredits: null, currentSemesterLabel: null,
@@ -63,6 +64,7 @@ export default function StudentDashboard() {
     ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats]) => {
       if (profile?.firstName) setStudentProfile(profile);
       if (stats?.rank != null) setGradeStats(stats);
+      if (attStats) setAttStats(attStats);
       setGradesData(grades);
       setAbsences(att);
       setEnrollments(enr);
@@ -127,7 +129,7 @@ export default function StudentDashboard() {
   };
 
   const justifyAbsence = (id) => {
-    setAbsences(prev => prev.map(a => a.id === id ? { ...a, status: 'Justifiée (en attente de validation)' } : a));
+    setAbsences(prev => prev.map(a => a.id === id ? { ...a, pendingJustification: true } : a));
   };
 
   const payEcheance = (index) => {
@@ -138,7 +140,7 @@ export default function StudentDashboard() {
     switch (currentTab) {
       case 'schedule':      return <ScheduleTab      timetables={timetables} />;
       case 'grades':        return <GradesTab        gradesData={gradesData} enrollments={enrollments} kpis={kpis} gradeStats={gradeStats} studentId={user?.studentId} campusId={user?.campusId} programName={studentProfile?.program?.programName} />;
-      case 'absences':      return <AbsencesTab      absences={absences} justifyAbsence={justifyAbsence} />;
+      case 'absences':      return <AbsencesTab      absences={absences} timetables={timetables} attStats={attStats} justifyAbsence={justifyAbsence} />;
       case 'history':       return <HistoryTab       enrollments={enrollments} />;
       case 'payment':       return <PaymentTab       payments={payments} payEcheance={payEcheance} />;
       case 'notifications': return <NotificationsTab notifs={notifs} markNotifRead={markNotifRead} markAllRead={markAllRead} />;
