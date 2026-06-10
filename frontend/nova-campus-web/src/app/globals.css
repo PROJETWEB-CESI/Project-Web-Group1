@@ -116,6 +116,10 @@
   --ring-offset: oklch(0 0 0);
   --color-surface-lighter: rgba(255, 255, 255, 0.50);
   font-size: 1.05em;
+
+  hr {
+    border-top-width: 2px !important;
+  }
 }
 
 .high-contrast button,
