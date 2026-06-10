@@ -71,12 +71,12 @@ export default function ProfileMenu() {
 
     if (role === 'student') {
       items.push(
-        { label: translate('timetable') || 'Timetable', href: '/dashboard/student/timetable', icon: <Calendar className={iconClass} /> },
-        { label: translate('grades') || 'Grades & Evaluations', href: '/dashboard/student/grades', icon: <BookOpen className={iconClass} /> },
-        { label: translate('absences') || 'Absences', href: '/dashboard/student/absences', icon: <AlertCircle className={iconClass} /> },
-        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student/history', icon: <FolderOpen className={iconClass} /> },
-        { label: translate('payments') || 'Payments', href: '/dashboard/student/payments', icon: <CreditCard className={iconClass} /> },
-        { label: translate('notifications') || 'Notifications', href: '/dashboard/student/notifications', icon: <Bell className={iconClass} /> }
+        { label: translate('timetable') || 'Timetable', href: '/dashboard/student?tab=schedule', icon: <Calendar className={iconClass} /> },
+        { label: translate('grades') || 'Grades & Evaluations', href: '/dashboard/student?tab=grades', icon: <BookOpen className={iconClass} /> },
+        { label: translate('absences') || 'Absences', href: '/dashboard/student?tab=absences', icon: <AlertCircle className={iconClass} /> },
+        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student?tab=history', icon: <FolderOpen className={iconClass} /> },
+        { label: translate('payments') || 'Payments', href: '/dashboard/student?tab=payment', icon: <CreditCard className={iconClass} /> },
+        { label: translate('notifications') || 'Notifications', href: '/dashboard/student?tab=notifications', icon: <Bell className={iconClass} /> }
       );
     } else if (role === 'teacher') {
       items.push(
