@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useNotifications } from '@/context/NotificationContext';
+import { useAuth } from '@/context/AuthContext';
 import { useApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
 
@@ -16,6 +17,7 @@ import NotificationsTab  from '@/components/student/NotificationsTab';
 export default function StudentDashboard() {
   const searchParams = useSearchParams();
   const { clearNotifications } = useNotifications();
+  const { user } = useAuth();
 
   const currentTab = (searchParams?.get('tab') || 'dashboard').toLowerCase();
 
@@ -26,20 +28,19 @@ export default function StudentDashboard() {
   const [semesterAverages, setSemesterAverages] = useState(null);
   const [timetables,       setTimetables]       = useState([]);
   const [studentProfile,   setStudentProfile]   = useState(null);
+  const [gradeStats,       setGradeStats]       = useState(null);
   const [kpis, setKpis] = useState({
     average: null, attendanceRate: null, tuition: null,
     credits: null, totalCredits: null, currentSemesterLabel: null,
   });
-  const [notifs, setNotifs] = useState([
-    { id: 1, type: 'Changement EDT', title: 'Introduction au Business lundi 4 déc. — salle modifiée', time: 'il y a 12 min', read: false },
-    { id: 2, type: 'Échéance',       title: 'Examen Économie Internationale dans 7 jours',            time: 'il y a 1 h',   read: false },
-  ]);
+  const [notifs, setNotifs] = useState([]);
 
   const { apiFetch } = useApi();
 
   useEffect(() => {
-    const campusId  = 'CAMP001';
-    const studentId = 'STU001';
+    const studentId = user?.studentId;
+    const campusId  = user?.campusId;
+    if (!studentId || !campusId) return;
 
     const fetchJson = async (url) => {
       try {
@@ -58,8 +59,10 @@ export default function StudentDashboard() {
       fetchJson(`/api/timetables/?campusId=${campusId}`),
       fetchJson(`/api/attendance/student/${studentId}/stats?campusId=${campusId}`),
       fetchJson(`/api/students/${studentId}?campusId=${campusId}`),
-    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile]) => {
+      fetchJson(`/api/grades/student/${studentId}/stats?campusId=${campusId}`),
+    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats]) => {
       if (profile?.firstName) setStudentProfile(profile);
+      if (stats?.rank != null) setGradeStats(stats);
       setGradesData(grades);
       setAbsences(att);
       setEnrollments(enr);
@@ -111,7 +114,7 @@ export default function StudentDashboard() {
       const enrolledIds = new Set(enr.map(e => e.courseId));
       setTimetables(allTimetables.filter(t => enrolledIds.has(t.course_id)));
     });
-  }, []);
+  }, [user]);
 
   const markNotifRead = (id) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -134,7 +137,7 @@ export default function StudentDashboard() {
   const renderTab = () => {
     switch (currentTab) {
       case 'schedule':      return <ScheduleTab      timetables={timetables} />;
-      case 'grades':        return <GradesTab        gradesData={gradesData} />;
+      case 'grades':        return <GradesTab        gradesData={gradesData} enrollments={enrollments} kpis={kpis} gradeStats={gradeStats} studentId={user?.studentId} campusId={user?.campusId} programName={studentProfile?.program?.programName} />;
       case 'absences':      return <AbsencesTab      absences={absences} justifyAbsence={justifyAbsence} />;
       case 'history':       return <HistoryTab       enrollments={enrollments} />;
       case 'payment':       return <PaymentTab       payments={payments} payEcheance={payEcheance} />;
