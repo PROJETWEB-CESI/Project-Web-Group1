@@ -145,4 +145,5 @@ docs/*.md
 .nx/
 # Project agent instructions (local only)
 AGENT.md
+todo.md
 

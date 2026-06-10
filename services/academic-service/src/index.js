@@ -1,24 +1,31 @@
 require('dotenv').config();
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const sequelize = require('./config/database.config');
 const gradeRoutes = require('./grades/grade.route');
 const attendanceRoutes = require('./attendance/attendance.route');
 const studentRoutes = require('./students/student.route');
+const { authenticate } = require('./middleware/auth.middleware');
 require('./config/associations');
 
 const app = express();
 const port = process.env.API_PORT || 3000;
 
+// Trust reverse proxy headers (X-Forwarded-Proto, etc.) - needed when behind nginx
+app.set('trust proxy', true);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP' });
 });
 
-app.use('/api/grades', gradeRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/students', studentRoutes);
+// Apply authentication middleware to all service routes
+app.use('/grades', authenticate, gradeRoutes);
+app.use('/attendance', authenticate, attendanceRoutes);
+app.use('/students', authenticate, studentRoutes);
 
 async function startServer() {
     try {
@@ -40,13 +47,11 @@ async function startServer() {
           // Demo student for test student@test.com (Léa Moreau)
           const demoStudentId = 'STU001';
           const demoCampus = 'CAMP001';
-          const demoUserId = '00000000-0000-0000-0000-000000000001'; // placeholder, matches typical test user uuid in iam
 
           await Student.findOrCreate({
             where: { studentId: demoStudentId },
             defaults: {
               studentId: demoStudentId,
-              userId: demoUserId,
               firstName: 'Léa',
               lastName: 'Moreau',
               email: 'student@test.com',

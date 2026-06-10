@@ -5,7 +5,7 @@ const Enrollment = require('./enrollment.model');
 const getStudentById = async (id, campusId) => {
     if (!id || !campusId) throw new Error('id et campusId sont obligatoires');
     return Student.findOne({
-        where: { id, campusId },
+        where: { studentId: id, campusId },
         include: [{ model: Enrollment, as: 'enrollments' }],
     });
 };
@@ -36,16 +36,23 @@ const createStudent = async (data) => {
 // Met à jour le profil d'un étudiant
 const updateStudent = async (id, campusId, data) => {
     if (!id || !campusId) throw new Error('id et campusId sont obligatoires');
-    const student = await Student.findOne({ where: { id, campusId } });
+    const student = await Student.findOne({ where: { studentId: id, campusId } });
     if (!student) return null;
     return student.update(data);
 };
 
 // Retourne l'historique complet des inscriptions d'un étudiant
+// Note: Enrollments don't have campus_id, so we first verify the student's campus
 const getEnrollmentsByStudent = async (studentId, campusId) => {
     if (!studentId || !campusId) throw new Error('studentId et campusId sont obligatoires');
+    
+    // Verify student exists and belongs to the specified campus
+    const student = await Student.findOne({ where: { studentId, campusId } });
+    if (!student) throw new Error('Étudiant non trouvé ou campus incorrect');
+    
+    // Get all enrollments for this student (no campus filter needed on enrollments table)
     return Enrollment.findAll({
-        where: { studentId, campusId },
+        where: { studentId },
         order: [['academicYear', 'DESC'], ['semester', 'ASC']],
     });
 };

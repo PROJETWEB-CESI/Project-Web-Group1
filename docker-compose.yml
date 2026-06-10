@@ -38,10 +38,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - DEV_API_PROXY_TARGET=http://gateway:80
-    volumes:
-      - ./frontend/nova-campus-web/src:/app/src
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=/api
     depends_on:
       gateway:
         condition: service_healthy
@@ -61,6 +59,14 @@ services:
     depends_on:
       iam-service:
         condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      scheduling-service:
+        condition: service_healthy
+      billing-service:
+        condition: service_healthy
+      reporting-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
       interval: 5s
@@ -73,14 +79,14 @@ services:
     container_name: nova-iam
     environment:
       NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_NAME: novacampus
-      DB_USER: nova
-      DB_PASSWORD: nova123
-      JWT_SECRET: super_long_random_secret_key_change_this_in_production_please
-      ACCESS_TOKEN_EXPIRES_IN: 15m
-      REFRESH_TOKEN_EXPIRES_IN: 7d
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ACCESS_TOKEN_EXPIRES_IN: ${ACCESS_TOKEN_EXPIRES_IN}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN}
       ENABLE_TEST_CREDENTIALS: "${ENABLE_TEST_CREDENTIALS:-false}"
     volumes:
       - ./services/iam-service/src:/app/src
@@ -99,11 +105,13 @@ services:
     container_name: nova-academic
     environment:
       NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_NAME: novacampus
-      DB_USER: nova
-      DB_PASSWORD: nova123
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ENABLE_TEST_CREDENTIALS: ${ENABLE_TEST_CREDENTIALS:-true}
     volumes:
       - ./services/academic-service/src:/app/src
     depends_on:
@@ -121,11 +129,13 @@ services:
     container_name: nova-scheduling
     environment:
       NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_NAME: novacampus
-      DB_USER: nova
-      DB_PASSWORD: nova123
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ENABLE_TEST_CREDENTIALS: ${ENABLE_TEST_CREDENTIALS:-true}
     volumes:
       - ./services/scheduling-service/src:/app/src
     depends_on:
@@ -143,11 +153,13 @@ services:
     container_name: nova-billing
     environment:
       NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_NAME: novacampus
-      DB_USER: nova
-      DB_PASSWORD: nova123
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ENABLE_TEST_CREDENTIALS: ${ENABLE_TEST_CREDENTIALS:-true}
     volumes:
       - ./services/billing-service/src:/app/src
     depends_on:
@@ -165,11 +177,12 @@ services:
     container_name: nova-reporting
     environment:
       NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_NAME: novacampus
-      DB_USER: nova
-      DB_PASSWORD: nova123
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./services/reporting-service/src:/app/src
     depends_on:
@@ -202,15 +215,15 @@ services:
     container_name: nova-ai-agent
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL: qwen2.5:7b
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_MODEL: ${GROQ_MODEL:-llama-3.1-8b-instant}
-      JWT_SECRET: super_long_random_secret_key_change_this_in_production_please
-      IAM_SERVICE_URL: http://iam-service:3000
-      ACADEMIC_SERVICE_URL: http://academic-service:3000
-      SCHEDULING_SERVICE_URL: http://scheduling-service:3000
-      BILLING_SERVICE_URL: http://billing-service:3000
-      REPORTING_SERVICE_URL: http://reporting-service:3000
+      JWT_SECRET: ${JWT_SECRET}
+      IAM_SERVICE_URL: ${IAM_SERVICE_URL}
+      ACADEMIC_SERVICE_URL: ${ACADEMIC_SERVICE_URL}
+      SCHEDULING_SERVICE_URL: ${SCHEDULING_SERVICE_URL}
+      BILLING_SERVICE_URL: ${BILLING_SERVICE_URL}
+      REPORTING_SERVICE_URL: ${REPORTING_SERVICE_URL}
     volumes:
       - ./services/ai-agent-service:/app
       - ai_chroma_data:/app/data/chroma
@@ -234,14 +247,14 @@ services:
     container_name: nova-seeder
     restart: "no"
     environment:
-      PG_HOST: postgres
-      PG_USER: nova
-      PG_PASSWORD: nova123
-      PG_DB: novacampus
-      MONGO_URI: mongodb://mongo:27017/
-      MONGO_DB: novacampus
-      REDIS_HOST: redis
-      REDIS_PORT: "6379"
+      PG_HOST: ${POSTGRES_HOST}
+      PG_USER: ${POSTGRES_USER}
+      PG_PASSWORD: ${POSTGRES_PASSWORD}
+      PG_DB: ${POSTGRES_DB}
+      MONGO_URI: ${MONGO_URI}
+      MONGO_DB: ${MONGO_DB}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     depends_on:
       postgres:
         condition: service_healthy
@@ -255,15 +268,15 @@ services:
     image: postgres:16
     container_name: nova-postgres
     environment:
-      POSTGRES_USER: nova
-      POSTGRES_PASSWORD: nova123
-      POSTGRES_DB: novacampus
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nova -d novacampus"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10

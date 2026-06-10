@@ -20,11 +20,12 @@ import { useAuth } from '@/context/AuthContext';
  *   }
  */
 export default function ProtectedRoute({ children, requiredRole = null }) {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
+      logout();
       router.push('/login');
     }
 
@@ -33,7 +34,7 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
       // Redirect to their actual dashboard or show forbidden
       router.push(`/dashboard/${user.role}`);
     }
-  }, [loading, isAuthenticated, user, requiredRole, router]);
+  }, [loading, isAuthenticated, user, requiredRole, router, logout]);
 
   if (loading || !isAuthenticated) {
     return (

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./payment.service');
+const { authorize } = require('../middleware/auth.middleware');
 
 // ── Student routes ────────────────────────────────────────────────────────────
 
 // Étudiant : résumé de facturation (solde, payé, impayé, prochaine échéance)
-router.get('/student/:studentId/summary', async (req, res) => {
+router.get('/student/:studentId/summary', authorize(['student', 'admin']), async (req, res) => {
     try {
         const summary = await service.getStudentBillingSummary(
             req.params.studentId,
@@ -18,7 +19,7 @@ router.get('/student/:studentId/summary', async (req, res) => {
 });
 
 // Étudiant : liste complète de ses paiements
-router.get('/student/:studentId', async (req, res) => {
+router.get('/student/:studentId', authorize(['student', 'admin']), async (req, res) => {
     try {
         const payments = await service.getPaymentsByStudent(req.params.studentId);
         res.json(payments);
@@ -31,7 +32,7 @@ router.get('/student/:studentId', async (req, res) => {
 
 // Admin : KPIs de facturation d'un campus
 // GET /api/payments/stats?campusId=CAMP001&academicYear=2023-2024
-router.get('/stats', async (req, res) => {
+router.get('/stats', authorize(['admin', 'executive']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -48,7 +49,7 @@ router.get('/stats', async (req, res) => {
 
 // Admin/exécutif : impayés par campus (tous les campus)
 // GET /api/payments/overdue/all
-router.get('/overdue/all', async (req, res) => {
+router.get('/overdue/all', authorize(['admin', 'executive']), async (req, res) => {
     try {
         const data = await service.getOverdueByAllCampuses();
         res.json(data);
@@ -59,7 +60,7 @@ router.get('/overdue/all', async (req, res) => {
 
 // Admin : impayés d'un campus avec classification R1/R2/R3
 // GET /api/payments/overdue?campusId=CAMP001
-router.get('/overdue', async (req, res) => {
+router.get('/overdue', authorize(['admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -73,7 +74,7 @@ router.get('/overdue', async (req, res) => {
 
 // Admin : liste des paiements d'un campus avec filtres
 // GET /api/payments?campusId=CAMP001&status=Delay&academicYear=2023-2024&semester=1&search=dupont
-router.get('/', async (req, res) => {
+router.get('/', authorize(['admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -91,7 +92,7 @@ router.get('/', async (req, res) => {
 });
 
 // Admin : détail d'un paiement
-router.get('/:paymentId', async (req, res) => {
+router.get('/:paymentId', authorize(['admin']), async (req, res) => {
     try {
         const payment = await service.getPaymentById(req.params.paymentId);
         if (!payment) return res.status(404).json({ error: 'Paiement introuvable' });
@@ -102,7 +103,7 @@ router.get('/:paymentId', async (req, res) => {
 });
 
 // Admin : créer une facture
-router.post('/', async (req, res) => {
+router.post('/', authorize(['admin']), async (req, res) => {
     const { paymentId, studentId, amount, dueDate, academicYear } = req.body;
     if (!paymentId || !studentId || !amount || !dueDate || !academicYear) {
         return res.status(400).json({
@@ -118,7 +119,7 @@ router.post('/', async (req, res) => {
 });
 
 // Admin : mettre à jour un paiement (marquer comme payé, changer le statut, etc.)
-router.put('/:paymentId', async (req, res) => {
+router.put('/:paymentId', authorize(['admin']), async (req, res) => {
     try {
         const payment = await service.updatePayment(req.params.paymentId, req.body);
         if (!payment) return res.status(404).json({ error: 'Paiement introuvable' });
@@ -129,7 +130,7 @@ router.put('/:paymentId', async (req, res) => {
 });
 
 // Admin : supprimer une facture
-router.delete('/:paymentId', async (req, res) => {
+router.delete('/:paymentId', authorize(['admin']), async (req, res) => {
     try {
         const result = await service.deletePayment(req.params.paymentId);
         if (!result) return res.status(404).json({ error: 'Paiement introuvable' });

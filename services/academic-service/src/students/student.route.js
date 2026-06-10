@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./student.service');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Admin : liste des étudiants d'un campus avec filtres optionnels
-router.get('/', async (req, res) => {
+router.get('/', authorize(['admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -19,8 +20,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Tous : profil d'un étudiant avec ses inscriptions
-router.get('/:id', async (req, res) => {
+// Student/Teacher/Admin : profil d'un étudiant (students can view their own, teachers/admins can view any)
+router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -34,7 +35,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Admin : créer un dossier étudiant
-router.post('/', async (req, res) => {
+router.post('/', authorize(['admin']), async (req, res) => {
     const { userId, campusId, studentNumber, firstName, lastName, email, programmeId, entryYear } = req.body;
     if (!userId || !campusId || !studentNumber || !firstName || !lastName || !email || !programmeId || !entryYear) {
         return res.status(400).json({ error: 'Champs obligatoires manquants : userId, campusId, studentNumber, firstName, lastName, email, programmeId, entryYear' });
@@ -47,8 +48,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Tous : historique des inscriptions d'un étudiant
-router.get('/:studentId/enrollments', async (req, res) => {
+// Student/Teacher/Admin : historique des inscriptions d'un étudiant
+router.get('/:studentId/enrollments', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -61,7 +62,7 @@ router.get('/:studentId/enrollments', async (req, res) => {
 });
 
 // Admin : inscrire un étudiant à un cours
-router.post('/:studentId/enrollments', async (req, res) => {
+router.post('/:studentId/enrollments', authorize(['admin']), async (req, res) => {
     const { courseId, campusId, semester, academicYear } = req.body;
     if (!courseId || !campusId || !semester || !academicYear) {
         return res.status(400).json({ error: 'Champs obligatoires manquants : courseId, campusId, semester, academicYear' });
@@ -75,7 +76,7 @@ router.post('/:studentId/enrollments', async (req, res) => {
 });
 
 // Admin/prof : mettre à jour une inscription (note, présence, statut)
-router.put('/enrollments/:id', async (req, res) => {
+router.put('/enrollments/:id', authorize(['admin', 'teacher']), async (req, res) => {
     try {
         const enrollment = await service.updateEnrollment(req.params.id, req.body);
         if (!enrollment) return res.status(404).json({ error: 'Inscription introuvable' });
@@ -86,7 +87,7 @@ router.put('/enrollments/:id', async (req, res) => {
 });
 
 // Admin/étudiant : mettre à jour un profil
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorize(['admin', 'student']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }

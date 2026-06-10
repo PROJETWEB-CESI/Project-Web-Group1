@@ -3,6 +3,7 @@ const multer = require('multer');
 const router = express.Router();
 const service = require('./grade.service');
 const { parseGradesCsv } = require('../common/utils/csv.util');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Multer stocke le fichier en mémoire (pas sur le disque)
 const upload = multer({
@@ -15,7 +16,7 @@ const upload = multer({
 });
 
 // Prof : publier toutes les notes d'un cours — déclaré avant les routes génériques
-router.post('/course/:courseId/publish', async (req, res) => {
+router.post('/course/:courseId/publish', authorize(['teacher', 'admin']), async (req, res) => {
     if (!req.body.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -28,7 +29,7 @@ router.post('/course/:courseId/publish', async (req, res) => {
 });
 
 // Prof : distribution des notes d'un cours (médiane, écart-type, taux de réussite)
-router.get('/course/:courseId/stats', async (req, res) => {
+router.get('/course/:courseId/stats', authorize(['teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -43,7 +44,7 @@ router.get('/course/:courseId/stats', async (req, res) => {
 // Prof : import d'un fichier CSV de notes pour un cours
 // Champs attendus dans le CSV : studentId, evaluationName, score, coefficient, evaluationDate
 // Le champ annotation est optionnel
-router.post('/course/:courseId/import', (req, res, next) => {
+router.post('/course/:courseId/import', authorize(['teacher', 'admin']), (req, res, next) => {
     upload.single('file')(req, res, err => {
         if (err) return res.status(400).json({ error: err.message });
         next();
@@ -66,7 +67,7 @@ router.post('/course/:courseId/import', (req, res, next) => {
 });
 
 // Prof/admin : toutes les notes d'un cours
-router.get('/course/:courseId', async (req, res) => {
+router.get('/course/:courseId', authorize(['teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -79,7 +80,7 @@ router.get('/course/:courseId', async (req, res) => {
 });
 
 // Étudiant : moyenne pondérée, rang dans la promo, moyenne de classe
-router.get('/student/:studentId/stats', async (req, res) => {
+router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -92,7 +93,7 @@ router.get('/student/:studentId/stats', async (req, res) => {
 });
 
 // Étudiant : ses notes publiées
-router.get('/student/:studentId', async (req, res) => {
+router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -105,7 +106,7 @@ router.get('/student/:studentId', async (req, res) => {
 });
 
 // Prof : saisir une note
-router.post('/', async (req, res) => {
+router.post('/', authorize(['teacher', 'admin']), async (req, res) => {
     const { studentId, courseId, campusId, evaluationName, evaluationDate, coefficient } = req.body;
     if (!studentId || !courseId || !campusId || !evaluationName || !evaluationDate || !coefficient) {
         return res.status(400).json({ error: 'Champs obligatoires manquants : studentId, courseId, campusId, evaluationName, evaluationDate, coefficient' });
@@ -119,7 +120,7 @@ router.post('/', async (req, res) => {
 });
 
 // Prof : modifier une note
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorize(['teacher', 'admin']), async (req, res) => {
     try {
         const grade = await service.updateGrade(req.params.id, req.body);
         if (!grade) return res.status(404).json({ error: 'Note introuvable' });
@@ -130,7 +131,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Prof : supprimer une note
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authorize(['teacher', 'admin']), async (req, res) => {
     try {
         const result = await service.deleteGrade(req.params.id);
         if (!result) return res.status(404).json({ error: 'Note introuvable' });

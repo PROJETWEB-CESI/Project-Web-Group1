@@ -3,6 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { useNotifications } from '@/context/NotificationContext';
+import { useApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
 
 /**
@@ -42,18 +43,27 @@ export default function StudentDashboard() {
     { id: 2, type: 'Échéance', title: 'Examen Économie Internationale dans 7 jours', time: 'il y a 1 h', read: false },
   ]);
 
+  const { apiFetch } = useApi();
+
   useEffect(() => {
     const campusId = 'CAMP001';
     const studentId = 'STU001'; // from seeding for student@test.com
 
-    const fetchJson = (url) => fetch(url, { credentials: 'include' }).then(r => r.ok ? r.json() : []).catch(() => []);
+    const fetchJson = async (url) => {
+      try {
+        const response = await apiFetch(url);
+        return response.ok ? await response.json() : [];
+      } catch {
+        return [];
+      }
+    };
 
     fetchJson(`/api/grades/student/${studentId}?campusId=${campusId}`).then(setGradesData);
     fetchJson(`/api/attendance/student/${studentId}?campusId=${campusId}`).then(setAbsences);
     fetchJson(`/api/students/${studentId}/enrollments?campusId=${campusId}`).then(setEnrollments);
     fetchJson(`/api/payments/student/${studentId}`).then(setPayments);
     fetchJson(`/api/timetables?campusId=${campusId}`).then(setTimetables);
-  }, []);
+  }, [apiFetch]);
 
   const markNotifRead = (id) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));

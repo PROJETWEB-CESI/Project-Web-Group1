@@ -8,6 +8,9 @@ const userRoutes = require('./users/user.route');
 const app = express();
 const port = process.env.API_PORT || 3000;
 
+// Trust reverse proxy headers (X-Forwarded-Proto, etc.) - needed when behind nginx
+app.set('trust proxy', true);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

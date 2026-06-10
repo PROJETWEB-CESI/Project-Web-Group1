@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./attendance.service');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Prof : justifier une absence — déclaré avant /:id pour éviter un conflit de routing
-router.post('/:id/justify', async (req, res) => {
+router.post('/:id/justify', authorize(['teacher', 'admin']), async (req, res) => {
     if (!req.body.justificationNote) {
         return res.status(400).json({ error: 'justificationNote est obligatoire' });
     }
@@ -17,7 +18,7 @@ router.post('/:id/justify', async (req, res) => {
 });
 
 // Prof : enregistrer l'appel d'une session entière
-router.post('/session', async (req, res) => {
+router.post('/session', authorize(['teacher', 'admin']), async (req, res) => {
     const { records } = req.body;
     if (!Array.isArray(records) || records.length === 0) {
         return res.status(400).json({ error: 'records doit être un tableau non vide' });
@@ -31,7 +32,7 @@ router.post('/session', async (req, res) => {
 });
 
 // Prof/admin : présences d'une session (cours + date)
-router.get('/course/:courseId', async (req, res) => {
+router.get('/course/:courseId', authorize(['teacher', 'admin']), async (req, res) => {
     const { campusId, sessionDate } = req.query;
     if (!campusId || !sessionDate) {
         return res.status(400).json({ error: 'campusId et sessionDate sont obligatoires' });
@@ -45,7 +46,7 @@ router.get('/course/:courseId', async (req, res) => {
 });
 
 // Étudiant : taux de présence, total absences, non justifiées
-router.get('/student/:studentId/stats', async (req, res) => {
+router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -58,7 +59,7 @@ router.get('/student/:studentId/stats', async (req, res) => {
 });
 
 // Étudiant : son historique de présences
-router.get('/student/:studentId', async (req, res) => {
+router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -71,7 +72,7 @@ router.get('/student/:studentId', async (req, res) => {
 });
 
 // Prof : modifier un enregistrement de présence
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorize(['teacher', 'admin']), async (req, res) => {
     try {
         const record = await service.updateAttendance(req.params.id, req.body);
         if (!record) return res.status(404).json({ error: 'Enregistrement introuvable' });
