@@ -146,7 +146,7 @@ export default function ProfileMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] p-1 shadow-lg z-[60] text-sm">
+        <div className="absolute overflow-auto right-0 mt-2 w-56 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg)] p-1 shadow-lg z-[60] text-sm">
           {/* User info header */}
           <div className="px-4 py-2 border-b border-[var(--color-border)]">
             <div className="font-medium text-[var(--color-text)]">

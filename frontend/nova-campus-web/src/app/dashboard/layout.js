@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }) {
   // The sidebar + profile menu already only generate links for the current user's role.
   useEffect(() => {
     if (loading) return;
-    
+
     // Redirect to login if not authenticated
     if (!isAuthenticated || !user) {
       logout();
@@ -56,9 +56,9 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex flex-1 h-full min-h-0">
+    <div className="flex flex-1 w-screen overflow-hidden">
       {/* Left sidebar ~300px wide, hidden on small screens, appears at xl breakpoint (1280px) */}
-      <aside className="hidden xl:flex w-[280px] xl:w-[300px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] flex-col overflow-hidden">
+      <aside className="hidden xl:flex w-[280px] xl:w-[300px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] flex-col overflow-auto">
         <DashboardSidebar />
       </aside>
 
