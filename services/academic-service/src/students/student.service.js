@@ -12,7 +12,7 @@ const getStudentById = async (id, campusId) => {
         include: [
             { model: Enrollment, as: 'enrollments' },
             { model: Campus, as: 'campus', attributes: ['campusId', 'campusName'] },
-            { model: Program, as: 'program', attributes: ['programId', 'programName'] },
+            { model: Program, as: 'program', attributes: ['programId', 'programName', 'durationYears', 'annualTuition'] },
         ],
     });
 };

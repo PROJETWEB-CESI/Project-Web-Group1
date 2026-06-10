@@ -141,7 +141,7 @@ export default function StudentDashboard() {
       case 'schedule':      return <ScheduleTab      timetables={timetables} />;
       case 'grades':        return <GradesTab        gradesData={gradesData} enrollments={enrollments} kpis={kpis} gradeStats={gradeStats} studentId={user?.studentId} campusId={user?.campusId} programName={studentProfile?.program?.programName} />;
       case 'absences':      return <AbsencesTab      absences={absences} timetables={timetables} attStats={attStats} justifyAbsence={justifyAbsence} />;
-      case 'history':       return <HistoryTab       enrollments={enrollments} />;
+      case 'history':       return <HistoryTab       enrollments={enrollments} studentProfile={studentProfile} />;
       case 'payment':       return <PaymentTab       payments={payments} payEcheance={payEcheance} />;
       case 'notifications': return <NotificationsTab notifs={notifs} markNotifRead={markNotifRead} markAllRead={markAllRead} />;
       default:              return <DashboardTab     studentProfile={studentProfile} kpis={kpis} timetables={timetables} semesterAverages={semesterAverages} />;
