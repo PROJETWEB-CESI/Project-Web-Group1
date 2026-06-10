@@ -5,19 +5,15 @@ import Link from 'next/link';
 const DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const DAY_MAP = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
 
+// Course color palette built from theme tokens so it follows light/dark/high-contrast themes
 const PALETTE = [
-  { bg: 'bg-blue-50',   border: 'border-l-blue-400',   text: 'text-blue-700'   },
-  { bg: 'bg-green-50',  border: 'border-l-green-400',  text: 'text-green-700'  },
-  { bg: 'bg-amber-50',  border: 'border-l-amber-400',  text: 'text-amber-700'  },
-  { bg: 'bg-purple-50', border: 'border-l-purple-400', text: 'text-purple-700' },
-  { bg: 'bg-pink-50',   border: 'border-l-pink-400',   text: 'text-pink-700'   },
-  { bg: 'bg-teal-50',   border: 'border-l-teal-400',   text: 'text-teal-700'   },
-  { bg: 'bg-orange-50', border: 'border-l-orange-400', text: 'text-orange-700' },
-  { bg: 'bg-cyan-50',   border: 'border-l-cyan-400',   text: 'text-cyan-700'   },
-  { bg: 'bg-rose-50',   border: 'border-l-rose-400',   text: 'text-rose-700'   },
-  { bg: 'bg-indigo-50', border: 'border-l-indigo-400', text: 'text-indigo-700' },
+  { bg: 'bg-[var(--color-primary)]/10',      border: 'border-l-[var(--color-primary)]',      text: 'text-[var(--color-primary)]'      },
+  { bg: 'bg-[var(--color-accent)]/10',       border: 'border-l-[var(--color-accent)]',       text: 'text-[var(--color-accent)]'       },
+  { bg: 'bg-[var(--color-success)]/10',      border: 'border-l-[var(--color-success)]',      text: 'text-[var(--color-success)]'      },
+  { bg: 'bg-[var(--color-primary-soft)]/20', border: 'border-l-[var(--color-primary-soft)]', text: 'text-[var(--color-primary)]'      },
+  { bg: 'bg-[var(--color-accent-soft)]/20',  border: 'border-l-[var(--color-accent-soft)]',  text: 'text-[var(--color-accent)]'       },
 ];
-const EXAM_VARIANT = { bg: 'bg-red-50', border: 'border-l-red-400', text: 'text-red-700' };
+const EXAM_VARIANT = { bg: 'bg-[var(--color-error)]/10', border: 'border-l-[var(--color-error)]', text: 'text-[var(--color-error)]' };
 
 function buildColorMap(timetables) {
   const map = new Map();
