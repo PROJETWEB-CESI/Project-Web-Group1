@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApi } from '@/lib/api';
 
 const BADGE_COLORS = [
@@ -53,9 +53,29 @@ export default function GradesTab({
   programName,
 }) {
   const { apiFetch } = useApi();
-  const [expanded, setExpanded]         = useState({});
+  const [expanded, setExpanded]             = useState({});
   const [courseClassAvg, setCourseClassAvg] = useState({});
-  const [loadingAvg, setLoadingAvg]     = useState({});
+  const [loadingAvg, setLoadingAvg]         = useState({});
+
+  // Prefetch class averages for all enrolled courses at mount
+  useEffect(() => {
+    if (!studentId || !campusId || gradesData.length === 0) return;
+    const courseIds = [...new Set(gradesData.map(g => g.courseId))];
+    courseIds.forEach(courseId => {
+      setLoadingAvg(prev => ({ ...prev, [courseId]: true }));
+      apiFetch(`/api/grades/student/${studentId}/stats?campusId=${campusId}&courseId=${courseId}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          setCourseClassAvg(prev => ({ ...prev, [courseId]: data?.classAverage ?? null }));
+        })
+        .catch(() => {
+          setCourseClassAvg(prev => ({ ...prev, [courseId]: null }));
+        })
+        .finally(() => {
+          setLoadingAvg(prev => ({ ...prev, [courseId]: false }));
+        });
+    });
+  }, [studentId, campusId, gradesData]);
 
   // Map courseId → { courseName, credits, colorIdx }
   const courseInfoMap = {};

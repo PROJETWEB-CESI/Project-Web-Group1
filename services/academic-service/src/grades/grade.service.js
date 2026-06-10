@@ -59,7 +59,7 @@ const getStudentGradeStats = async (studentId, campusId, courseId) => {
     // Récupère tous les étudiants du même campus/cours pour calculer la moyenne de classe et le rang
     const sequelize = require('../config/database.config');
     const allStudentIds = await Grade.findAll({
-        attributes: [[sequelize.fn('DISTINCT', sequelize.col('studentId')), 'studentId']],
+        attributes: [[sequelize.fn('DISTINCT', sequelize.col('student_id')), 'studentId']],
         where,
         raw: true,
     });
