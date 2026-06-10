@@ -3,6 +3,7 @@ const multer = require('multer');
 const router = express.Router();
 const service = require('./grade.service');
 const { parseGradesCsv } = require('../common/utils/csv.util');
+const { resolveStudentId } = require('../common/utils/student.util');
 const { authorize } = require('../middleware/auth.middleware');
 
 // Multer stocke le fichier en mémoire (pas sur le disque)
@@ -98,7 +99,8 @@ router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), as
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
     try {
-        const grades = await service.getGradesByStudent(req.params.studentId, req.query.campusId);
+        const studentId = await resolveStudentId(req.params.studentId);
+        const grades = await service.getGradesByStudent(studentId, req.query.campusId);
         res.json(grades);
     } catch (err) {
         res.status(500).json({ error: err.message });
