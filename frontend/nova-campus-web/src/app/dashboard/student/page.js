@@ -6,6 +6,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import GradeEvolutionChart from '@/components/student/GradeEvolutionChart';
+import WeekSchedule from '@/components/student/WeekSchedule';
 
 /**
  * SINGLE PATH ONLY: /dashboard/student
@@ -72,6 +73,7 @@ export default function StudentDashboard() {
   const [payments, setPayments] = useState([]);
   const [semesterAverages, setSemesterAverages] = useState(null);
   const [timetables, setTimetables] = useState([]);
+  const [studentProfile, setStudentProfile] = useState(null);
   const [kpis, setKpis] = useState({ average: null, attendanceRate: null, tuition: null, credits: null, totalCredits: null, currentSemesterLabel: null });
   const [notifs, setNotifs] = useState([
     { id: 1, type: 'Changement EDT', title: 'Introduction au Business lundi 4 déc. — salle modifiée', time: 'il y a 12 min', read: false },
@@ -101,7 +103,9 @@ export default function StudentDashboard() {
       fetchJson(`/api/payments/student/${studentId}/summary`),
       fetchJson(`/api/timetables/?campusId=${campusId}`),
       fetchJson(`/api/attendance/student/${studentId}/stats?campusId=${campusId}`),
-    ]).then(([grades, absences, enrollments, paymentSummary, allTimetables, attendanceStats]) => {
+      fetchJson(`/api/students/${studentId}?campusId=${campusId}`),
+    ]).then(([grades, absences, enrollments, paymentSummary, allTimetables, attendanceStats, profile]) => {
+      if (profile && profile.firstName) setStudentProfile(profile);
       setGradesData(grades);
       setAbsences(absences);
       setEnrollments(enrollments);
@@ -193,7 +197,6 @@ export default function StudentDashboard() {
     setPayments(updated);
   };
 
-  const studentInfo = 'Léa Moreau — Bachelor Business International — Campus Paris Center (entrée 2023)';
 
   const renderSection = () => {
     switch (currentTab) {
@@ -371,8 +374,14 @@ export default function StudentDashboard() {
       default:
         return (
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('myDashboard') || 'My Dashboard'}</h1>
-            <p className="text-[var(--color-text-muted)] mb-6">{studentInfo}</p>
+            <h1 className="text-2xl font-semibold tracking-tight mb-1">
+              {studentProfile ? <>Bonjour {studentProfile.firstName} 👋</> : null}
+            </h1>
+            {studentProfile?.program?.programName && studentProfile?.campus?.campusName && (
+              <p className="text-[var(--color-text-muted)] mb-6">
+                {studentProfile.program.programName} · {studentProfile.campus.campusName}
+              </p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
                 <div className="text-xs text-[var(--color-text-muted)]">MOYENNE {kpis.currentSemesterLabel || '—'}</div>
@@ -450,6 +459,8 @@ export default function StudentDashboard() {
               );
             })()}
 
+            <WeekSchedule timetables={timetables} />
+
             <div className="mt-6">
               <GradeEvolutionChart data={semesterAverages} />
             </div>
@@ -460,7 +471,6 @@ export default function StudentDashboard() {
 
   return (
     <div>
-      <div className="mb-4 text-sm text-[var(--color-text-muted)]">Novacampus / Espace étudiant / {TABS[currentTab] || 'Tableau de bord'}</div>
       {renderSection()}
     </div>
   );

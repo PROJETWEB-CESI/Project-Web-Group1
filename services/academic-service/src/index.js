@@ -52,9 +52,9 @@ async function startServer() {
             where: { studentId: demoStudentId },
             defaults: {
               studentId: demoStudentId,
-              firstName: 'Léa',
-              lastName: 'Moreau',
-              email: 'student@test.com',
+              firstName: 'Alexandre',
+              lastName: 'Dubois',
+              email: 'a.dubois@etu.novacampus.fr',
               campusId: demoCampus,
               programId: 'PROG001',
               enrollmentYear: 2023,

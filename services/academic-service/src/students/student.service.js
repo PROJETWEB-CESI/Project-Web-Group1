@@ -1,13 +1,19 @@
 const Student = require('./student.model');
 const Enrollment = require('./enrollment.model');
 const Course = require('../courses/course.model');
+const Campus = require('./campus.model');
+const Program = require('./program.model');
 
 // Retourne le profil complet d'un étudiant avec ses inscriptions actives
 const getStudentById = async (id, campusId) => {
     if (!id || !campusId) throw new Error('id et campusId sont obligatoires');
     return Student.findOne({
         where: { studentId: id, campusId },
-        include: [{ model: Enrollment, as: 'enrollments' }],
+        include: [
+            { model: Enrollment, as: 'enrollments' },
+            { model: Campus, as: 'campus', attributes: ['campusId', 'campusName'] },
+            { model: Program, as: 'program', attributes: ['programId', 'programName'] },
+        ],
     });
 };
 
