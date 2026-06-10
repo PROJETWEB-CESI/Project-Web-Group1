@@ -91,12 +91,19 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
 
   const handleMouseMove = (e) => {
     const svg = e.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const { x: mouseX } = pt.matrixTransform(ctm.inverse());
     const step = chartWidth / (chartData.length - 1);
-    const idx = Math.round((mouseX - PADDING.left) / step);
-    if (idx >= 0 && idx < chartData.length) {
+    const raw = (mouseX - PADDING.left) / step;
+    const idx = Math.min(chartData.length - 1, Math.max(0, Math.round(raw)));
+    if (raw >= -0.5 && raw <= chartData.length - 0.5) {
       setTooltip({ idx, x: studentPoints[idx].x, y: studentPoints[idx].y, d: chartData[idx] });
+    } else {
+      setTooltip(null);
     }
   };
 
