@@ -26,6 +26,38 @@ const TABS = {
   notifications: 'Notifications',
 };
 
+const DAY_MAP = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+
+function getNextCourse(timetables) {
+  if (!timetables || !timetables.length) return null;
+  const now = new Date();
+  const currentDay = now.getDay();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  let best = null;
+  let bestMinutesAway = Infinity;
+  for (const t of timetables) {
+    const tDay = DAY_MAP[t.day_of_week];
+    if (tDay === undefined) continue;
+    const [sh, sm] = (t.start_time || '00:00').split(':').map(Number);
+    const startMinutes = sh * 60 + sm;
+    let daysAway = (tDay - currentDay + 7) % 7;
+    if (daysAway === 0 && startMinutes <= currentMinutes) daysAway = 7;
+    const minutesAway = daysAway * 24 * 60 + startMinutes - currentMinutes;
+    if (minutesAway < bestMinutesAway) {
+      bestMinutesAway = minutesAway;
+      best = { ...t, minutesAway, daysAway };
+    }
+  }
+  return best;
+}
+
+function formatTimeUntil(minutesAway) {
+  if (minutesAway < 60) return `dans ${minutesAway} min`;
+  if (minutesAway < 24 * 60) return `dans ${Math.floor(minutesAway / 60)} h`;
+  if (minutesAway < 2 * 24 * 60) return 'demain';
+  return `dans ${Math.floor(minutesAway / (24 * 60))} jours`;
+}
+
 export default function StudentDashboard() {
   const { translate } = useLanguage();
   const searchParams = useSearchParams();
@@ -67,7 +99,7 @@ export default function StudentDashboard() {
       fetchJson(`/api/attendance/student/${studentId}?campusId=${campusId}`),
       fetchJson(`/api/students/${studentId}/enrollments?campusId=${campusId}`),
       fetchJson(`/api/payments/student/${studentId}/summary`),
-      fetchJson(`/api/timetables?campusId=${campusId}`),
+      fetchJson(`/api/timetables/?campusId=${campusId}`),
       fetchJson(`/api/attendance/student/${studentId}/stats?campusId=${campusId}`),
     ]).then(([grades, absences, enrollments, paymentSummary, allTimetables, attendanceStats]) => {
       setGradesData(grades);
@@ -369,7 +401,54 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </div>
-            <div className="text-sm text-[var(--color-text-muted)]">Prochain cours dans 42 min • Introduction au Business (COM101) — Amphi Commerce A.<br />Cette semaine: 4 cours, 1 évaluation, 2 tâches. (Final UI — demo data; real data from services after seeding.)</div>
+            {(() => {
+              const nextCourse = getNextCourse(timetables);
+              if (!nextCourse) return null;
+              const roomChanged = nextCourse.status && nextCourse.status !== 'Active';
+              return (
+                <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] mb-6 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
+                    <span className="text-sm text-[var(--color-text-muted)]">
+                      Prochain cours · <span className="font-medium text-[var(--color-text)]">{formatTimeUntil(nextCourse.minutesAway)}</span>
+                    </span>
+                    {roomChanged && (
+                      <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 flex items-center gap-1">
+                        ⚠ Salle changée
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 p-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[var(--color-surface)] flex items-center justify-center text-sm font-semibold text-[var(--color-text-muted)]">
+                      {(nextCourse.start_time || '').slice(0, 2) + 'h' || '—'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-[var(--color-text)] truncate">
+                        {nextCourse.course?.course_name || nextCourse.course_id}
+                        <span className="ml-2 text-sm font-normal text-[var(--color-text-muted)]">({nextCourse.course_id})</span>
+                      </div>
+                      <div className="text-sm text-[var(--color-text-muted)] mt-0.5">
+                        {nextCourse.instructor && `Prof. ${nextCourse.instructor.first_name} ${nextCourse.instructor.last_name} · `}
+                        {nextCourse.course?.course_type || 'CM'}
+                        {' · '}
+                        <span className={roomChanged ? 'text-amber-600 font-medium' : ''}>
+                          {nextCourse.room?.room_name || nextCourse.room_id}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <span className="text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full px-2.5 py-0.5 text-[var(--color-text-muted)]">
+                          {(nextCourse.start_time || '').slice(0, 5)} – {(nextCourse.end_time || '').slice(0, 5)}
+                        </span>
+                        {nextCourse.course?.credits && (
+                          <span className="text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full px-2.5 py-0.5 text-[var(--color-text-muted)]">
+                            {nextCourse.course.credits} ECTS
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="mt-6">
               <GradeEvolutionChart data={semesterAverages} />

@@ -44,11 +44,20 @@ async function startServer() {
         await Room.findOrCreate({ where: { room_id: r.room_id }, defaults: r });
       }
 
-      // Demo timetables for student (COM101, ECO101 etc.)
-      // Note: These reference courses that should be seeded by academic-service
+      // Salles pour les cours du semestre actuel de STU001
+      const extraRooms = [
+        { room_id: 'ROOM205', room_name: 'Finance Lecture Hall', room_type: 'Amphithéâtre', capacity: 80, campus_id: 'CAMP001' },
+        { room_id: 'ROOM401', room_name: 'Aeromechanics Lab', room_type: 'Laboratoire', capacity: 30, campus_id: 'CAMP001' },
+      ];
+      for (const r of extraRooms) {
+        await Room.findOrCreate({ where: { room_id: r.room_id }, defaults: r });
+      }
+
+      // Créneaux pour les cours du semestre actuel de STU001 (CRS002, CRS006)
+      // + créneaux des semestres passés visibles dans l'emploi du temps
       const ttData = [
-        { schedule_id: 'TT001', course_id: 'COM101', room_id: 'ROOM001', day_of_week: '1', start_time: '08:00', end_time: '10:00', status: 'Active' },
-        { schedule_id: 'TT002', course_id: 'ECO101', room_id: 'ROOM002', day_of_week: '3', start_time: '14:00', end_time: '16:00', status: 'Active' },
+        { schedule_id: 'SCH003', course_id: 'CRS002', instructor_id: 'INST003', room_id: 'ROOM205', day_of_week: 'Wednesday', start_time: '10:00', end_time: '12:00', semester: 1, academic_year: '2025-2026', status: 'Active' },
+        { schedule_id: 'SCH006', course_id: 'CRS006', instructor_id: 'INST004', room_id: 'ROOM401', day_of_week: 'Monday', start_time: '14:00', end_time: '17:00', semester: 1, academic_year: '2025-2026', status: 'Active' },
       ];
       for (const t of ttData) {
         try {
