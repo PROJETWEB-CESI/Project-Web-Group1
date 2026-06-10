@@ -145,7 +145,37 @@ async def _get_absences(user_id: str, campus_id: str, headers: dict) -> str:
         return r.text
 
 
+def _format_billing(data: dict) -> str:
+    if "message" in data:
+        return data["message"]
+    lines = [
+        "Résumé de facturation :",
+        f"  Total facturé  : {data.get('totalInvoiced', 0):.2f} €",
+        f"  Total payé     : {data.get('totalPaid', 0):.2f} €",
+        f"  Solde restant  : {data.get('outstanding', 0):.2f} €",
+    ]
+    overdue_count = data.get("overdueCount", 0)
+    if overdue_count:
+        lines.append(
+            f"  Impayés        : {overdue_count} paiement(s) — {data.get('overdueAmount', 0):.2f} €"
+        )
+    payments = data.get("payments", [])
+    if payments:
+        lines.append("\nDétail des paiements :")
+        status_fr = {"Paid": "Payé", "Delay": "En retard"}
+        for p in payments:
+            status = status_fr.get(p.get("status", ""), p.get("status", "?"))
+            due = (p.get("dueDate") or "")[:10]
+            lines.append(
+                f"  • {p.get('paymentId','?')} — {float(p.get('amount', 0)):.2f} € — {status}"
+                f" (S{p.get('semester','?')} {p.get('academicYear','?')}, éch. {due})"
+            )
+    return "\n".join(lines)
+
+
 async def _get_billing(user_id: str, campus_id: str, headers: dict) -> str:
+    if not user_id:
+        return "Impossible de récupérer la facturation : identifiant utilisateur manquant."
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
         r = await client.get(
             f"{BILLING_SERVICE_URL}/api/billing",
@@ -153,4 +183,7 @@ async def _get_billing(user_id: str, campus_id: str, headers: dict) -> str:
             headers=headers,
         )
         r.raise_for_status()
-        return r.text
+        try:
+            return _format_billing(r.json())
+        except Exception:
+            return r.text
