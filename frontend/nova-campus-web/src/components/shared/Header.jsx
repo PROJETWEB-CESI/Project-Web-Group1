@@ -18,7 +18,7 @@ export default function Header() {
         return (
             <div className="w-full px-3 py-3 flex items-center justify-between bg-[var(--color-surface)] border-b border-[var(--color-border)]">
                 <LogoLink />
-                <div className="flex items-center gap-4">
+                <div className="flex items-center sm:gap-4 gap-2">
                     <LanguageToggle />
                     <ThemeToggle />
                     <ProfileMenu />

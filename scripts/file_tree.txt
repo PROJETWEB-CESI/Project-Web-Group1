@@ -2,9 +2,11 @@
 +-- .env
 +-- .env.exemple
 +-- .gitignore
-+-- docker-compose.override.yml
++-- AGENT.md
++-- DEVELOPMENT.md
 +-- docker-compose.yml
 +-- README.md
++-- todo.md
 +-- .github
 |   +-- copilot-instructions.md
 +-- .vscode
@@ -14,6 +16,7 @@
 |   +-- NovaCampus_Git_Versioning_Guide.pdf
 +-- frontend
 |   +-- nova-campus-web
+|   |   +-- .dockerignore
 |   |   +-- .gitignore
 |   |   +-- Dockerfile
 |   |   +-- jsconfig.json
@@ -33,31 +36,71 @@
 |   |   |   |   +-- favicon.ico
 |   |   |   |   +-- globals.css
 |   |   |   |   +-- layout.js
+|   |   |   |   +-- not-found.js
 |   |   |   |   +-- page.js
+|   |   |   |   +-- accessibility
+|   |   |   |   |   +-- page.js
+|   |   |   |   +-- aria
+|   |   |   |   |   +-- page.js
 |   |   |   |   +-- dashboard
+|   |   |   |   |   +-- layout.js
+|   |   |   |   |   +-- page.js
 |   |   |   |   |   +-- admin
-|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   |   +-- page.js
+|   |   |   |   |   +-- assistant
+|   |   |   |   |   |   +-- page.js
 |   |   |   |   |   +-- executive
-|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   |   +-- page.js
+|   |   |   |   |   +-- help
+|   |   |   |   |   |   +-- page.js
+|   |   |   |   |   +-- profile
+|   |   |   |   |   |   +-- page.js
 |   |   |   |   |   +-- student
-|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   |   +-- page.js
 |   |   |   |   |   +-- teacher
-|   |   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   |   +-- page.js
+|   |   |   |   +-- help
+|   |   |   |   |   +-- page.js
 |   |   |   |   +-- login
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- page.js
+|   |   |   |   +-- privacy
+|   |   |   |   |   +-- page.js
 |   |   |   +-- components
 |   |   |   |   +-- admin
 |   |   |   |   |   +-- .gitkeep
 |   |   |   |   +-- executive
 |   |   |   |   |   +-- .gitkeep
 |   |   |   |   +-- shared
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- Button.jsx
+|   |   |   |   |   +-- DashboardSidebar.jsx
+|   |   |   |   |   +-- Footer.jsx
+|   |   |   |   |   +-- Header.jsx
+|   |   |   |   |   +-- Input.jsx
+|   |   |   |   |   +-- LanguageToggle.jsx
+|   |   |   |   |   +-- LogoLink.jsx
+|   |   |   |   |   +-- ProfileMenu.jsx
+|   |   |   |   |   +-- ProtectedRoute.jsx
+|   |   |   |   |   +-- ThemeToggle.jsx
 |   |   |   |   +-- student
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- AbsencesTab.jsx
+|   |   |   |   |   +-- DashboardTab.jsx
+|   |   |   |   |   +-- GradeEvolutionChart.jsx
+|   |   |   |   |   +-- GradesTab.jsx
+|   |   |   |   |   +-- HistoryTab.jsx
+|   |   |   |   |   +-- NotificationsTab.jsx
+|   |   |   |   |   +-- PaymentTab.jsx
+|   |   |   |   |   +-- ScheduleTab.jsx
+|   |   |   |   |   +-- WeekSchedule.jsx
 |   |   |   |   +-- teacher
 |   |   |   |   |   +-- .gitkeep
+|   |   |   +-- context
+|   |   |   |   +-- AuthContext.js
+|   |   |   |   +-- LanguageContext.js
+|   |   |   |   +-- NotificationContext.js
+|   |   |   |   +-- ThemeContext.js
 |   |   |   +-- lib
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- api.js
+|   |   |   |   +-- contrast.js
 +-- infrastructure
 |   +-- k8s
 |   |   +-- base
@@ -82,8 +125,9 @@
 |   +-- file_tree.txt
 |   +-- setup-nginx.ps1
 |   +-- sync-gitkeep.ps1
+|   +-- test-billing.js
+|   +-- test-scheduling.js
 |   +-- seed
-|   |   +-- .gitkeep
 |   |   +-- Dockerfile
 |   |   +-- requirements.txt
 |   |   +-- schema.sql
@@ -95,37 +139,112 @@
 |   |   +-- Dockerfile
 |   |   +-- package.json
 |   |   +-- src
+|   |   |   +-- index.js
+|   |   |   +-- attendance
+|   |   |   |   +-- attendance.model.js
+|   |   |   |   +-- attendance.route.js
+|   |   |   |   +-- attendance.service.js
 |   |   |   +-- common
 |   |   |   |   +-- utils
-|   |   |   |   |   +-- .gitkeep
+|   |   |   |   |   +-- csv.util.js
 |   |   |   +-- config
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- associations.js
+|   |   |   |   +-- database.config.js
+|   |   |   +-- courses
+|   |   |   |   +-- course.model.js
 |   |   |   +-- grades
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- grade.model.js
+|   |   |   |   +-- grade.route.js
+|   |   |   |   +-- grade.service.js
+|   |   |   +-- middleware
+|   |   |   |   +-- auth.middleware.js
 |   |   |   +-- students
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- campus.model.js
+|   |   |   |   +-- enrollment.model.js
+|   |   |   |   +-- program.model.js
+|   |   |   |   +-- student.model.js
+|   |   |   |   +-- student.route.js
+|   |   |   |   +-- student.service.js
 |   +-- ai-agent-service
+|   |   +-- .dockerignore
 |   |   +-- Dockerfile
 |   |   +-- requirements.txt
+|   |   +-- security_tests.py
 |   |   +-- agent
-|   |   |   +-- .gitkeep
-|   |   +-- docs
-|   |   |   +-- .gitkeep
+|   |   |   +-- app.py
+|   |   |   +-- config.py
+|   |   |   +-- core.py
+|   |   |   +-- models.py
+|   |   |   +-- store.py
+|   |   |   +-- __init__.py
+|   |   |   +-- middleware
+|   |   |   |   +-- auth.py
+|   |   |   |   +-- __init__.py
+|   |   |   |   +-- __pycache__
+|   |   |   |   |   +-- auth.cpython-311.pyc
+|   |   |   |   |   +-- __init__.cpython-311.pyc
+|   |   |   +-- routes
+|   |   |   |   +-- chat.py
+|   |   |   |   +-- conversations.py
+|   |   |   |   +-- health.py
+|   |   |   |   +-- __init__.py
+|   |   |   |   +-- __pycache__
+|   |   |   |   |   +-- chat.cpython-311.pyc
+|   |   |   |   |   +-- conversations.cpython-311.pyc
+|   |   |   |   |   +-- health.cpython-311.pyc
+|   |   |   |   |   +-- __init__.cpython-311.pyc
+|   |   |   +-- __pycache__
+|   |   |   |   +-- app.cpython-311.pyc
+|   |   |   |   +-- config.cpython-311.pyc
+|   |   |   |   +-- core.cpython-311.pyc
+|   |   |   |   +-- models.cpython-311.pyc
+|   |   |   |   +-- store.cpython-311.pyc
+|   |   |   |   +-- __init__.cpython-311.pyc
+|   |   +-- data
+|   |   |   +-- chroma
+|   |   |   |   +-- .gitkeep
+|   |   |   +-- conversations
+|   |   |   |   +-- .gitkeep
 |   |   +-- mcp_server
-|   |   |   +-- .gitkeep
+|   |   |   +-- __init__.py
 |   |   +-- rag
-|   |   |   +-- .gitkeep
+|   |   |   +-- indexer.py
+|   |   |   +-- retriever.py
+|   |   |   +-- seed_data.py
+|   |   |   +-- vectorstore.py
+|   |   |   +-- __init__.py
+|   |   |   +-- __pycache__
+|   |   |   |   +-- indexer.cpython-311.pyc
+|   |   |   |   +-- retriever.cpython-311.pyc
+|   |   |   |   +-- seed_data.cpython-311.pyc
+|   |   |   |   +-- vectorstore.cpython-311.pyc
+|   |   |   |   +-- __init__.cpython-311.pyc
+|   |   +-- tools
+|   |   |   +-- definitions.py
+|   |   |   +-- executor.py
+|   |   |   +-- __init__.py
+|   |   |   +-- __pycache__
+|   |   |   |   +-- executor.cpython-311.pyc
+|   |   |   |   +-- __init__.cpython-311.pyc
 |   +-- billing-service
 |   |   +-- Dockerfile
 |   |   +-- package.json
 |   |   +-- src
+|   |   |   +-- index.js
 |   |   |   +-- common
 |   |   |   |   +-- utils
 |   |   |   |   |   +-- .gitkeep
 |   |   |   +-- config
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- database.config.js
+|   |   |   +-- dunning
+|   |   |   |   +-- dunning.route.js
+|   |   |   |   +-- dunning.service.js
+|   |   |   +-- middleware
+|   |   |   |   +-- auth.middleware.js
 |   |   |   +-- payments
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- payment.model.js
+|   |   |   |   +-- payment.route.js
+|   |   |   |   +-- payment.service.js
 |   +-- gateway
 |   |   +-- Dockerfile
 |   |   +-- nginx.conf
@@ -133,6 +252,7 @@
 |   |   +-- Dockerfile
 |   |   +-- package-lock.json
 |   |   +-- package.json
+|   |   +-- README.md
 |   |   +-- src
 |   |   |   +-- index.js
 |   |   |   +-- auth
@@ -149,28 +269,58 @@
 |   |   |   +-- models
 |   |   |   |   +-- User.js
 |   |   |   +-- users
-|   |   |   |   +-- User.js
+|   |   |   |   +-- user.controller.js
+|   |   |   |   +-- user.route.js
+|   |   |   |   +-- user.service.js
 |   +-- reporting-service
 |   |   +-- Dockerfile
+|   |   +-- package-lock.json
 |   |   +-- package.json
 |   |   +-- src
+|   |   |   +-- index.js
 |   |   |   +-- common
 |   |   |   |   +-- utils
 |   |   |   |   |   +-- .gitkeep
+|   |   |   +-- comparison
+|   |   |   |   +-- comparison.route.js
+|   |   |   |   +-- comparison.service.js
 |   |   |   +-- config
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- database.config.js
 |   |   |   +-- kpis
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- kpi.route.js
+|   |   |   |   +-- kpi.service.js
+|   |   |   +-- middleware
+|   |   |   |   +-- auth.middleware.js
+|   |   |   +-- models
+|   |   |   |   +-- Attendance.js
+|   |   |   |   +-- Enrollment.js
+|   |   |   |   +-- Grade.js
+|   |   |   |   +-- Student.js
+|   |   |   +-- programmes
+|   |   |   |   +-- programme.route.js
+|   |   |   |   +-- programme.service.js
+|   |   |   +-- retention
+|   |   |   |   +-- retention.route.js
+|   |   |   |   +-- retention.service.js
 |   +-- scheduling-service
 |   |   +-- Dockerfile
 |   |   +-- package.json
 |   |   +-- src
+|   |   |   +-- index.js
 |   |   |   +-- common
 |   |   |   |   +-- utils
 |   |   |   |   |   +-- .gitkeep
 |   |   |   +-- config
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- database.config.js
+|   |   |   +-- middleware
+|   |   |   |   +-- auth.middleware.js
 |   |   |   +-- rooms
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- room.model.js
+|   |   |   |   +-- room.route.js
+|   |   |   |   +-- room.service.js
 |   |   |   +-- timetables
-|   |   |   |   +-- .gitkeep
+|   |   |   |   +-- course.model.js
+|   |   |   |   +-- instructor.model.js
+|   |   |   |   +-- timetable.model.js
+|   |   |   |   +-- timetable.route.js
+|   |   |   |   +-- timetable.service.js

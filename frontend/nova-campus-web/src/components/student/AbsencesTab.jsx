@@ -5,15 +5,15 @@ export default function AbsencesTab({ absences, justifyAbsence }) {
     <div>
       <h2 className="text-xl font-semibold mb-4">Mes absences — Semestre 1 2023/2024</h2>
       <div className="flex gap-4 mb-6">
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4 flex-1">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4 flex-1">
           <div className="text-xs text-[var(--color-text-muted)]">TAUX DE PRÉSENCE</div>
           <div className="text-3xl font-semibold mt-1 text-green-600">96%</div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4 flex-1">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4 flex-1">
           <div className="text-xs text-[var(--color-text-muted)]">ABSENCES TOTALES</div>
           <div className="text-3xl font-semibold mt-1">{absences.length}</div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4 flex-1">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4 flex-1">
           <div className="text-xs text-[var(--color-text-muted)]">NON JUSTIFIÉES</div>
           <div className="text-3xl font-semibold mt-1 text-[var(--color-error)]">
             {absences.filter(a => !a.justified).length}{' '}

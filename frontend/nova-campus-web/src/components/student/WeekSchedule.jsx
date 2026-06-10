@@ -74,7 +74,7 @@ export default function WeekSchedule({ timetables }) {
 
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] mb-6 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-3 border-b border-[var(--color-border)]">
         <span className="text-sm font-semibold text-[var(--color-text)]">Cette semaine</span>
         <Link href="?tab=schedule" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
           Voir tout →
@@ -85,7 +85,7 @@ export default function WeekSchedule({ timetables }) {
           const isToday = date.toDateString() === today.toDateString();
           const courses = byDay[i];
           return (
-            <div key={i} className={`p-3 min-h-[130px] ${isToday ? 'bg-[var(--color-surface)]' : ''}`}>
+            <div key={i} className={`p-1 sm:p-3 min-h-[130px] ${isToday ? 'bg-[var(--color-surface)]' : ''}`}>
               <div className={`text-xs font-semibold tracking-wide mb-0.5 ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
                 {DAY_LABELS[i]}
               </div>

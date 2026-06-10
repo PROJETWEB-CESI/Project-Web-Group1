@@ -63,7 +63,7 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main content area (role pages render here). Guard above ensures only matching role content stays. */}
-      <main className="flex-1 overflow-auto bg-[var(--color-bg)] p-6">
+      <main className="flex-1 overflow-auto bg-[var(--color-bg)] p-2 sm:p-6">
         {children}
       </main>
     </div>
