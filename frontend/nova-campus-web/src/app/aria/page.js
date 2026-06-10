@@ -7,7 +7,7 @@ import { useApi } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const AI = '/api/ai/api';
+const AI = '/api/ai';
 
 const SUGGESTED = [
   'Quand est mon prochain cours ?',

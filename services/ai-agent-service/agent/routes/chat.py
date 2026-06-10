@@ -18,7 +18,7 @@ def _extract_token(request: Request) -> str:
     return request.cookies.get("accessToken", "")
 
 
-@router.post("/api/chat", response_model=ChatResponse)
+@router.post("/chat", response_model=ChatResponse)
 async def chat(request: Request, body: ChatRequest, user=Depends(require_auth)):
     conversation_id = body.conversation_id or str(uuid.uuid4())
     token = _extract_token(request)
@@ -46,7 +46,7 @@ async def chat(request: Request, body: ChatRequest, user=Depends(require_auth)):
     )
 
 
-@router.post("/api/chat/stream")
+@router.post("/chat/stream")
 async def chat_stream(request: Request, body: ChatRequest, user=Depends(require_auth)):
     conversation_id = body.conversation_id or str(uuid.uuid4())
     token = _extract_token(request)
