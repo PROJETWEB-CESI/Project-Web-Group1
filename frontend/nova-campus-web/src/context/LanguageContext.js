@@ -100,7 +100,8 @@ const translations = {
     // Admin planning page
     adminPlanningTitle: 'Planning & Conflicts',
     scheduledCourses: 'scheduled courses',
-    conflictsDetected: 'conflict(s) detected',
+    conflictDetected: 'conflict detected',
+    conflictsDetected: 'conflicts detected',
     conflictsTitle: 'Conflicts detected',
     noConflicts: 'No room or instructor conflicts.',
     roomConflict: 'Room conflict',
@@ -262,7 +263,8 @@ const translations = {
     // Admin planning page
     adminPlanningTitle: 'Planning & conflits',
     scheduledCourses: 'cours planifiés',
-    conflictsDetected: 'conflit(s) détecté(s)',
+    conflictDetected: 'conflit détecté',
+    conflictsDetected: 'conflits détectés',
     conflictsTitle: 'Conflits détectés',
     noConflicts: 'Aucun conflit de salle ou d\'intervenant.',
     roomConflict: 'Conflit de salle',

@@ -34,7 +34,7 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
     <div>
       <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('adminPlanningTitle')}</h1>
       <p className="text-[var(--color-text-muted)] mb-6">
-        {timetables.length} {translate('scheduledCourses')} · {conflicts.length} {translate('conflictsDetected')}
+        {timetables.length} {translate('scheduledCourses')} · {conflicts.length} {translate(conflicts.length > 1 ? 'conflictsDetected' : 'conflictDetected')}
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
