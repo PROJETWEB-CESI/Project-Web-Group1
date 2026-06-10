@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./attendance.service');
-const { authorize, checkStudentOwnership } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Prof : justifier une absence — déclaré avant /:id pour éviter un conflit de routing
 router.post('/:id/justify', authorize(['teacher', 'admin']), async (req, res) => {
@@ -46,7 +46,7 @@ router.get('/course/:courseId', authorize(['teacher', 'admin']), async (req, res
 });
 
 // Étudiant : taux de présence, total absences, non justifiées
-router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), checkStudentOwnership(), async (req, res) => {
+router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -59,7 +59,7 @@ router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin'
 });
 
 // Étudiant : son historique de présences
-router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), checkStudentOwnership(), async (req, res) => {
+router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }

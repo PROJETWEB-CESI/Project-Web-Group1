@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./student.service');
-const { authorize, checkStudentOwnership } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Admin : liste des étudiants d'un campus avec filtres optionnels
 router.get('/', authorize(['admin']), async (req, res) => {
@@ -21,7 +21,7 @@ router.get('/', authorize(['admin']), async (req, res) => {
 });
 
 // Student/Teacher/Admin : profil d'un étudiant (students can view their own, teachers/admins can view any)
-router.get('/:id', authorize(['student', 'teacher', 'admin']), checkStudentOwnership('id'), async (req, res) => {
+router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -49,7 +49,7 @@ router.post('/', authorize(['admin']), async (req, res) => {
 });
 
 // Student/Teacher/Admin : historique des inscriptions d'un étudiant
-router.get('/:studentId/enrollments', authorize(['student', 'teacher', 'admin']), checkStudentOwnership('studentId'), async (req, res) => {
+router.get('/:studentId/enrollments', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }

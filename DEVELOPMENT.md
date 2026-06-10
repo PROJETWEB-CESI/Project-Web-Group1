@@ -15,7 +15,7 @@ docker compose up -d --build
 # https://localhost/
 ```
 
-- Use **https://localhost/** (outer nginx) as the standard access point for realistic routing, rate limiting, and same-origin `/api` calls.
+- Use **https://localhost/** as the **primary and standard** access point for both development and production testing. This routes through the outer nginx for realistic routing, rate limiting, and same-origin `/api` calls.
 - Direct access to `http://localhost:3000` (frontend) or `http://localhost:8080` (gateway) is possible for targeted debugging but may require the dev proxy fix (see below).
 - **Never** start only one service for testing features that cross boundaries.
 

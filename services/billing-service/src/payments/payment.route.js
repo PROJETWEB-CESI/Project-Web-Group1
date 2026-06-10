@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./payment.service');
-const { authorize, checkStudentOwnership } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/auth.middleware');
 
 // ── Student routes ────────────────────────────────────────────────────────────
 
 // Étudiant : résumé de facturation (solde, payé, impayé, prochaine échéance)
-router.get('/student/:studentId/summary', authorize(['student', 'admin']), checkStudentOwnership(), async (req, res) => {
+router.get('/student/:studentId/summary', authorize(['student', 'admin']), async (req, res) => {
     try {
         const summary = await service.getStudentBillingSummary(
             req.params.studentId,
@@ -19,7 +19,7 @@ router.get('/student/:studentId/summary', authorize(['student', 'admin']), check
 });
 
 // Étudiant : liste complète de ses paiements
-router.get('/student/:studentId', authorize(['student', 'admin']), checkStudentOwnership(), async (req, res) => {
+router.get('/student/:studentId', authorize(['student', 'admin']), async (req, res) => {
     try {
         const payments = await service.getPaymentsByStudent(req.params.studentId);
         res.json(payments);

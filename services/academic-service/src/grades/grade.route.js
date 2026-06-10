@@ -3,7 +3,7 @@ const multer = require('multer');
 const router = express.Router();
 const service = require('./grade.service');
 const { parseGradesCsv } = require('../common/utils/csv.util');
-const { authorize, checkStudentOwnership } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Multer stocke le fichier en mémoire (pas sur le disque)
 const upload = multer({
@@ -80,7 +80,7 @@ router.get('/course/:courseId', authorize(['teacher', 'admin']), async (req, res
 });
 
 // Étudiant : moyenne pondérée, rang dans la promo, moyenne de classe
-router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), checkStudentOwnership(), async (req, res) => {
+router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -93,7 +93,7 @@ router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin'
 });
 
 // Étudiant : ses notes publiées
-router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), checkStudentOwnership(), async (req, res) => {
+router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
