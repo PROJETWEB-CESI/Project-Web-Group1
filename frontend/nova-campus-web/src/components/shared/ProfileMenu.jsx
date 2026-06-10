@@ -117,7 +117,7 @@ export default function ProfileMenu() {
       label: translate('logout') || 'Logout',
       href: '#',
       isLogout: true,
-      icon: <LogOut className={iconClass} />,
+      icon: <LogOut className={`${iconClass} stroke-[var(--color-error)]`} />,
       className: '!text-[var(--color-error)] hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)]',
     });
 

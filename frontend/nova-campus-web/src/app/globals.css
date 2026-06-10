@@ -10,8 +10,8 @@
   --color-bg-sunken: oklch(0.97 0.005 95);
   --color-surface: oklch(1 0 0);
   --color-surface-hover: oklch(0.90 0.008 95);
-  --color-border: oklch(0.95 0.008 95);
-  --color-border-strong: oklch(0.82 0.01 95);
+  --color-border: oklch(0.90 0.008 95);
+  --color-border-strong: oklch(0.80 0.01 95);
   --color-surface-lighter: rgba(0, 0, 0, 0.10);
   --color-bg-hover: oklch(0.90 0.008 95);
   --color-bg-active: oklch(0.85 0.005 95);
