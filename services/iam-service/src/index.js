@@ -55,6 +55,7 @@ async function seedTestUsersIfEnabled() {
       campusId: 'CAMP001',
       firstName: 'Test',
       lastName: 'Student',
+      studentId: 'STU001',
     },
     {
       email: 'teacher@test.com',
@@ -100,7 +101,16 @@ async function seedTestUsersIfEnabled() {
   // Enabled: seed if not already present (idempotent)
   for (const tu of testUsers) {
     const existing = await User.findOne({ where: { email: tu.email } });
-    if (existing) continue;
+    if (existing) {
+      // Update fields that may have changed (e.g. studentId added after initial seed)
+      const updates = {};
+      if (tu.studentId && existing.studentId !== tu.studentId) updates.studentId = tu.studentId;
+      if (Object.keys(updates).length) {
+        await existing.update(updates);
+        console.log(`[DEV] Updated test user: ${tu.email} (${JSON.stringify(updates)})`);
+      }
+      continue;
+    }
 
     const passwordHash = await hashPassword(tu.password);
     await User.create({
@@ -110,6 +120,7 @@ async function seedTestUsersIfEnabled() {
       campusId: tu.campusId,
       firstName: tu.firstName,
       lastName: tu.lastName,
+      studentId: tu.studentId || null,
     });
     console.log(`[DEV] Seeded test user: ${tu.email} / ${tu.password} (role: ${tu.role})`);
   }

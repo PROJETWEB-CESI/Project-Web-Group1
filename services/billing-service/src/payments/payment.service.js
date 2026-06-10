@@ -261,18 +261,25 @@ const markDunningStage = async (paymentId, stage) => {
 // ── AI Agent summary ──────────────────────────────────────────────────────────
 
 const getBillingForAgent = async (userId, campusId) => {
-    // userId is the student_id in this context
+    const sequelize = require('../config/database.config');
+
+    // userId is the IAM UUID — resolve to the students.student_id via the users table
+    const [userRow] = await sequelize.query(
+        `SELECT "studentId" FROM users WHERE id = :userId LIMIT 1`,
+        { replacements: { userId }, type: sequelize.QueryTypes.SELECT }
+    );
+    const studentId = userRow?.studentId || userId;
+
     if (campusId) {
-        const sequelize = require('../config/database.config');
         const [row] = await sequelize.query(
-            `SELECT 1 FROM students WHERE student_id = :userId AND campus_id = :campusId LIMIT 1`,
-            { replacements: { userId, campusId }, type: sequelize.QueryTypes.SELECT }
+            `SELECT 1 FROM students WHERE student_id = :studentId AND campus_id = :campusId LIMIT 1`,
+            { replacements: { studentId, campusId }, type: sequelize.QueryTypes.SELECT }
         );
         if (!row) return { message: 'No billing records found for this user.' };
     }
 
     const payments = await Payment.findAll({
-        where: { studentId: userId },
+        where: { studentId },
         order: [['due_date', 'ASC']],
     });
 
