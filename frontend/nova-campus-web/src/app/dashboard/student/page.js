@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useNotifications } from '@/context/NotificationContext';
 import { useApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
+import GradeEvolutionChart from '@/components/student/GradeEvolutionChart';
 
 /**
  * SINGLE PATH ONLY: /dashboard/student
@@ -37,6 +38,7 @@ export default function StudentDashboard() {
   const [absences, setAbsences] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [semesterAverages, setSemesterAverages] = useState(null);
   const [timetables, setTimetables] = useState([]);
   const [notifs, setNotifs] = useState([
     { id: 1, type: 'Changement EDT', title: 'Introduction au Business lundi 4 déc. — salle modifiée', time: 'il y a 12 min', read: false },
@@ -70,7 +72,33 @@ export default function StudentDashboard() {
       setAbsences(absences);
       setEnrollments(enrollments);
       setPayments(payments);
-      
+
+      // Build semester averages from enrollments + grades
+      if (enrollments.length > 0 && grades.length > 0) {
+        // Group enrollments by "academicYear-semester", sorted chronologically
+        const semMap = new Map();
+        for (const enr of enrollments) {
+          const key = `${enr.academicYear || '?'}-S${enr.semester || '?'}`;
+          if (!semMap.has(key)) semMap.set(key, { label: `S${enr.semester}`, year: enr.academicYear, semester: enr.semester, courseIds: [] });
+          semMap.get(key).courseIds.push(enr.courseId);
+        }
+
+        const sorted = [...semMap.values()].sort((a, b) => {
+          if (a.year !== b.year) return (a.year || '').localeCompare(b.year || '');
+          return (a.semester || 0) - (b.semester || 0);
+        });
+
+        const points = sorted.map((sem) => {
+          const semGrades = grades.filter((g) => sem.courseIds.includes(g.courseId));
+          if (semGrades.length === 0) return null;
+          const weightedSum = semGrades.reduce((s, g) => s + (parseFloat(g.score || 0) * (g.coefficient || 1)), 0);
+          const totalCoeff = semGrades.reduce((s, g) => s + (g.coefficient || 1), 0);
+          return { label: sem.label, value: totalCoeff > 0 ? Math.round((weightedSum / totalCoeff) * 10) / 10 : null };
+        }).filter((p) => p !== null && p.value !== null);
+
+        if (points.length > 0) setSemesterAverages(points);
+      }
+
       // Filter timetables to only those for courses the student is enrolled in
       const enrolledCourseIds = new Set(enrollments.map(e => e.courseId));
       const filteredTimetables = allTimetables.filter(t => enrolledCourseIds.has(t.course_id));
@@ -286,6 +314,10 @@ export default function StudentDashboard() {
               <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4"><div className="text-xs text-[var(--color-text-muted)]">CRÉDITS S1</div><div className="text-3xl font-semibold mt-1">11<span className="text-base align-super">/30</span></div></div>
             </div>
             <div className="text-sm text-[var(--color-text-muted)]">Prochain cours dans 42 min • Introduction au Business (COM101) — Amphi Commerce A.<br />Cette semaine: 4 cours, 1 évaluation, 2 tâches. (Final UI — demo data; real data from services after seeding.)</div>
+
+            <div className="mt-6">
+              <GradeEvolutionChart data={semesterAverages} />
+            </div>
           </div>
         );
     }
