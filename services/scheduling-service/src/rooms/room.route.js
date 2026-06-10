@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./room.service');
+const { authorize } = require('../middleware/auth.middleware');
 
-router.get('/', async (req, res) => {
+// Student/Teacher/Admin: Get rooms (read-only)
+router.get('/', authorize(['student', 'teacher', 'admin']), async (req, res) => {
   try {
     const rooms = await service.getAllRooms(req.query.campus_id);
     res.json(rooms);
@@ -11,7 +13,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) => {
   try {
     const room = await service.getRoomById(req.params.id);
     if (!room) {
@@ -23,7 +25,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+// Admin only: Create/update/delete rooms
+router.post('/', authorize(['admin']), async (req, res) => {
   try {
     const room = await service.createRoom(req.body);
     res.status(201).json(room);
@@ -32,7 +35,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorize(['admin']), async (req, res) => {
   try {
     const room = await service.updateRoom(req.params.id, req.body);
     res.json(room);
@@ -44,7 +47,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authorize(['admin']), async (req, res) => {
   try {
     const result = await service.deleteRoom(req.params.id);
     res.json(result);

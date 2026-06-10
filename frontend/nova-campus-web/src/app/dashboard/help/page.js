@@ -1,25 +1,27 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function HelpPage() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const { translate } = useLanguage();
+  const router = useRouter();
 
   // Auth guard - redirect if not authenticated
-  if (loading) {
+  useEffect(() => {
+    if (!loading && (!isAuthenticated || !user)) {
+      logout();
+      router.replace('/login');
+    }
+  }, [loading, isAuthenticated, user, router, logout]);
+
+  if (loading || !isAuthenticated || !user) {
     return (
       <div className="flex flex-1 h-full min-h-0 items-center justify-center text-sm text-[var(--color-text-muted)]">
         Loading help center…
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="flex flex-1 h-full min-h-0 items-center justify-center text-sm text-[var(--color-text-muted)]">
-        Please log in to access the help center.
       </div>
     );
   }

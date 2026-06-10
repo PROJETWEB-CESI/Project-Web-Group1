@@ -87,8 +87,8 @@ export default function DashboardSidebar() {
         { label: translate('schedule') || 'Schedule', href: '/dashboard/student?tab=schedule', icon: Calendar, tab: 'schedule' },
         { label: translate('grades') || 'Grades', href: '/dashboard/student?tab=grades', icon: BookOpen, tab: 'grades' },
         { label: translate('absences') || 'Absences', href: '/dashboard/student?tab=absences', icon: AlertCircle, tab: 'absences' },
-        { label: translate('history') || 'History', href: '/dashboard/student?tab=history', icon: FolderOpen, tab: 'history' },
-        { label: translate('payment') || 'Payment', href: '/dashboard/student?tab=payment', icon: CreditCard, tab: 'payment' },
+        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student?tab=history', icon: FolderOpen, tab: 'history' },
+        { label: translate('payments') || 'Payments', href: '/dashboard/student?tab=payment', icon: CreditCard, tab: 'payment' },
         // Live badge (functional + updates without page refresh)
         { label: translate('notifications') || 'Notifications', href: '/dashboard/student?tab=notifications', icon: Bell, isLiveBadge: true, tab: 'notifications' },
       ];

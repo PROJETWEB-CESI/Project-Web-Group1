@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useApi } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -113,7 +114,7 @@ function MarkdownContent({ content, streaming }) {
 // ── main page ──────────────────────────────────────────────────────────────
 export default function AriaPage() {
   // ALL hooks first — no early returns before this block
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
 
   const [convs, setConvs] = useState([]);
@@ -128,20 +129,23 @@ export default function AriaPage() {
   // Auth guard and redirect to dashboard/assistant
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
+      logout();
       router.replace('/login');
     } else if (!authLoading && isAuthenticated) {
       // Redirect authenticated users to dashboard/assistant
       router.replace('/dashboard/assistant');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router, logout]);
+
+  const { apiFetch } = useApi();
 
   // Load conversation list
   const refreshConvs = useCallback(async () => {
     try {
-      const r = await fetch(`${AI}/conversations`, { credentials: 'include' });
+      const r = await apiFetch(`${AI}/conversations`);
       if (r.ok) setConvs(await r.json());
     } catch { /* ignore */ }
-  }, []);
+  }, [apiFetch]);
 
   useEffect(() => {
     if (isAuthenticated) refreshConvs();
@@ -155,7 +159,7 @@ export default function AriaPage() {
   // Handlers
   const loadConv = async (conv) => {
     try {
-      const r = await fetch(`${AI}/conversations/${conv.id}`, { credentials: 'include' });
+      const r = await apiFetch(`${AI}/conversations/${conv.id}`);
       if (!r.ok) return;
       const data = await r.json();
       setActiveId(data.id);
@@ -171,7 +175,7 @@ export default function AriaPage() {
 
   const deleteConv = async (id) => {
     try {
-      await fetch(`${AI}/conversations/${id}`, { method: 'DELETE', credentials: 'include' });
+      await apiFetch(`${AI}/conversations/${id}`, { method: 'DELETE' });
       setConvs((prev) => prev.filter((c) => c.id !== id));
       if (activeId === id) newConv();
     } catch { /* ignore */ }
@@ -195,10 +199,9 @@ export default function AriaPage() {
     setMessages((prev) => [...prev, { role: 'assistant', content: '', sources: [], streaming: true }]);
 
     try {
-      const r = await fetch(`${AI}/chat/stream`, {
+      const r = await apiFetch(`${AI}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ message: msg, conversation_id: convId, history }),
       });
 

@@ -5,7 +5,12 @@
 --  (matches Deliverable 1, sections 3.5 and 6.3)
 -- ============================================================================
 
+-- Enable UUID generation for attendances and grades tables
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 DROP TABLE IF EXISTS payments     CASCADE;
+DROP TABLE IF EXISTS grades       CASCADE;
+DROP TABLE IF EXISTS attendances  CASCADE;
 DROP TABLE IF EXISTS enrollments  CASCADE;
 DROP TABLE IF EXISTS schedules    CASCADE;
 DROP TABLE IF EXISTS courses      CASCADE;
@@ -131,6 +136,36 @@ CREATE TABLE enrollments (
     UNIQUE (student_id, course_id, academic_year)
 );
 
+CREATE TABLE attendances (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id      VARCHAR(10)  NOT NULL REFERENCES students(student_id),
+    course_id       VARCHAR(20)  NOT NULL,
+    campus_id       VARCHAR(10)  NOT NULL REFERENCES campuses(campus_id),
+    session_date    DATE         NOT NULL,
+    status          VARCHAR(20)  NOT NULL CHECK (status IN ('present', 'absent', 'late')),
+    justified       BOOLEAN      NOT NULL DEFAULT FALSE,
+    justification_note TEXT,
+    created_at      TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMP    NOT NULL DEFAULT NOW(),
+    UNIQUE (student_id, course_id, session_date)
+);
+
+CREATE TABLE grades (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id      VARCHAR(10)  NOT NULL REFERENCES students(student_id),
+    course_id       VARCHAR(20)  NOT NULL,
+    campus_id       VARCHAR(10)  NOT NULL REFERENCES campuses(campus_id),
+    evaluation_name VARCHAR(100) NOT NULL,
+    score           NUMERIC(5,2),
+    score_max       NUMERIC(5,2) NOT NULL DEFAULT 20,
+    coefficient     INTEGER       NOT NULL DEFAULT 1,
+    evaluation_date DATE         NOT NULL,
+    annotation      TEXT,
+    published_at    TIMESTAMP,
+    created_at      TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE payments (
     payment_id       VARCHAR(10)  PRIMARY KEY,
     student_id       VARCHAR(10)  NOT NULL REFERENCES students(student_id),
@@ -156,6 +191,13 @@ CREATE INDEX idx_enroll_student     ON enrollments(student_id);
 CREATE INDEX idx_enroll_course      ON enrollments(course_id);
 CREATE INDEX idx_payments_student   ON payments(student_id);
 CREATE INDEX idx_payments_status    ON payments(status);
+CREATE INDEX idx_attendances_student ON attendances(student_id);
+CREATE INDEX idx_attendances_course  ON attendances(course_id);
+CREATE INDEX idx_attendances_campus  ON attendances(campus_id);
+CREATE INDEX idx_attendances_date    ON attendances(session_date);
+CREATE INDEX idx_grades_student      ON grades(student_id);
+CREATE INDEX idx_grades_course       ON grades(course_id);
+CREATE INDEX idx_grades_campus       ON grades(campus_id);
 
 -- ---- Row-Level Security on sensitive tables (Deliverable 1, 6.3 / 6.7) ----
 -- Enforces tenant isolation at the DB layer. The table owner (used by the

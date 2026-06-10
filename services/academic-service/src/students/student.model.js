@@ -8,17 +8,6 @@ const Student = sequelize.define('Student', {
         primaryKey: true,
         field: 'student_id',
     },
-    // UUID ajouté par Sequelize lors d'une précédente sync (gardé pour les associations)
-    id: {
-        type: DataTypes.UUID,
-        allowNull: true,
-    },
-    // Référence vers l'utilisateur IAM
-    userId: {
-        type: DataTypes.UUID,
-        allowNull: true,
-        unique: true,
-    },
     firstName: {
         type: DataTypes.STRING(60),
         allowNull: true,

@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import DashboardSidebar from '@/components/shared/DashboardSidebar';
 
 export default function DashboardLayout({ children }) {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -14,7 +14,14 @@ export default function DashboardLayout({ children }) {
   // A student (for example) cannot access /dashboard/admin/* or /dashboard/teacher/* etc.
   // The sidebar + profile menu already only generate links for the current user's role.
   useEffect(() => {
-    if (loading || !isAuthenticated || !user) return;
+    if (loading) return;
+    
+    // Redirect to login if not authenticated
+    if (!isAuthenticated || !user) {
+      logout();
+      router.replace('/login');
+      return;
+    }
 
     const userRole = (user.role || 'student').toLowerCase();
     const segments = (pathname || '').split('/').filter(Boolean); // e.g. ['dashboard', 'admin', ...]

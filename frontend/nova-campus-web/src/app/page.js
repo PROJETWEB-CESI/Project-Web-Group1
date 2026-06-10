@@ -19,7 +19,7 @@ import { useLanguage } from '@/context/LanguageContext';
  * Shows a minimal loading state while auth is being determined to avoid flashes.
  */
 export default function RootRedirector() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const { translate } = useLanguage();
   const router = useRouter();
 
@@ -29,6 +29,7 @@ export default function RootRedirector() {
     }
 
     if (!isAuthenticated || !user) {
+      logout();
       router.replace('/login');
       return;
     }

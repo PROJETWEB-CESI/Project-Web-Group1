@@ -12,9 +12,13 @@ const kpiRoutes         = require('./kpis/kpi.route');
 const comparisonRoutes  = require('./comparison/comparison.route');
 const programmeRoutes   = require('./programmes/programme.route');
 const retentionRoutes   = require('./retention/retention.route');
+const { authenticate, authorize } = require('./middleware/auth.middleware');
 
 const app = express();
 const port = process.env.API_PORT || 3000;
+
+// Trust reverse proxy headers (X-Forwarded-Proto, etc.) - needed when behind nginx
+app.set('trust proxy', true);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,10 +27,11 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP' });
 });
 
-app.use('/api/kpis', kpiRoutes);
-app.use('/api/comparison', comparisonRoutes);
-app.use('/api/programmes', programmeRoutes);
-app.use('/api/retention', retentionRoutes);
+// Reporting endpoints are executive/admin only
+app.use('/kpis', authenticate, authorize(['executive', 'admin']), kpiRoutes);
+app.use('/comparison', authenticate, authorize(['executive', 'admin']), comparisonRoutes);
+app.use('/programmes', authenticate, authorize(['executive', 'admin']), programmeRoutes);
+app.use('/retention', authenticate, authorize(['executive', 'admin']), retentionRoutes);
 
 async function startServer() {
     try {

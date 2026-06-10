@@ -8,20 +8,24 @@ const Attendance = sequelize.define('Attendance', {
         primaryKey: true,
     },
     studentId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         allowNull: false,
+        field: 'student_id',
     },
     courseId: {
         type: DataTypes.STRING(20),
         allowNull: false,
+        field: 'course_id',
     },
     campusId: {
         type: DataTypes.STRING(10),
         allowNull: false,
+        field: 'campus_id',
     },
     sessionDate: {
         type: DataTypes.DATEONLY,
         allowNull: false,
+        field: 'session_date',
     },
     status: {
         type: DataTypes.ENUM('present', 'absent', 'late'),
@@ -36,6 +40,17 @@ const Attendance = sequelize.define('Attendance', {
     justificationNote: {
         type: DataTypes.TEXT,
         allowNull: true,
+        field: 'justification_note',
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'created_at',
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'updated_at',
     },
 }, {
     tableName: 'attendances',
@@ -43,7 +58,7 @@ const Attendance = sequelize.define('Attendance', {
     indexes: [
         {
             unique: true,
-            fields: ['studentId', 'courseId', 'sessionDate'],
+            fields: ['student_id', 'course_id', 'session_date'],
         },
     ],
 });

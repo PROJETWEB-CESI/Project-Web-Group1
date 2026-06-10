@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./dunning.service');
+const { authorize } = require('../middleware/auth.middleware');
 
 // Admin : aperçu du workflow de relance (aucune écriture en base)
 // GET /api/dunning/preview?campusId=CAMP001
-router.get('/preview', async (req, res) => {
+router.get('/preview', authorize(['admin']), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -18,7 +19,7 @@ router.get('/preview', async (req, res) => {
 
 // Admin : exécuter le workflow de relance automatique R1/R2/R3
 // POST /api/dunning/run   body: { campusId }
-router.post('/run', async (req, res) => {
+router.post('/run', authorize(['admin']), async (req, res) => {
     if (!req.body.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
@@ -32,7 +33,7 @@ router.post('/run', async (req, res) => {
 
 // Admin : déclencher une relance manuelle sur un paiement précis
 // POST /api/dunning/:paymentId/remind   body: { stage? }  (stage facultatif : auto-détecté si absent)
-router.post('/:paymentId/remind', async (req, res) => {
+router.post('/:paymentId/remind', authorize(['admin']), async (req, res) => {
     try {
         const result = await service.remindOne(req.params.paymentId, req.body.stage);
         if (!result) return res.status(404).json({ error: 'Paiement introuvable' });

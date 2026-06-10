@@ -3,9 +3,13 @@ const express = require('express');
 const sequelize = require('./config/database.config');
 const paymentRoutes = require('./payments/payment.route');
 const dunningRoutes = require('./dunning/dunning.route');
+const { authenticate, authorize } = require('./middleware/auth.middleware');
 
 const app = express();
 const port = process.env.API_PORT || 3000;
+
+// Trust reverse proxy headers (X-Forwarded-Proto, etc.) - needed when behind nginx
+app.set('trust proxy', true);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,8 +18,8 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP' });
 });
 
-// Used by AI agent: GET /api/billing?userId=STU001&campusId=CAMP001
-app.get('/api/billing', async (req, res) => {
+// Used by AI agent: GET /billing?userId=STU001&campusId=CAMP001
+app.get('/billing', authenticate, async (req, res) => {
     const { userId, campusId } = req.query;
     if (!userId) {
         return res.status(400).json({ error: 'userId est obligatoire' });
@@ -29,9 +33,9 @@ app.get('/api/billing', async (req, res) => {
     }
 });
 
-// Full CRUD and reporting endpoints
-app.use('/api/payments', paymentRoutes);
-app.use('/api/dunning', dunningRoutes);
+// Full CRUD and reporting endpoints - apply auth to all payment/dunning routes
+app.use('/payments', authenticate, paymentRoutes);
+app.use('/dunning', authenticate, dunningRoutes);
 
 async function startServer() {
     try {

@@ -1,12 +1,26 @@
 const AuthService = require('./auth.service');
 
-const isProduction = process.env.NODE_ENV === 'production';
+// Parse duration strings like "15m", "2d", "7d" to milliseconds
+function parseDuration(duration) {
+  const match = duration.match(/^(\d+)([smhd])$/);
+  if (!match) return null;
+  const value = parseInt(match[1], 10);
+  const unit = match[2];
+  const multipliers = { s: 1000, m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
+  return value * multipliers[unit];
+}
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: isProduction,
-  sameSite: 'lax',
-};
+const accessTokenMaxAge = parseDuration(process.env.ACCESS_TOKEN_EXPIRES_IN || '15m') || 15 * 60 * 1000;
+const refreshTokenMaxAge = parseDuration(process.env.REFRESH_TOKEN_EXPIRES_IN || '7d') || 7 * 24 * 60 * 60 * 1000;
+
+function getCookieOptions(req) {
+  return {
+    httpOnly: true,
+    secure: req?.secure === true,
+    sameSite: 'lax',
+    path: '/',
+  };
+}
 
 async function register(req, res) {
   try {
@@ -24,13 +38,14 @@ async function login(req, res) {
     const result = await AuthService.login(email, password);
 
     // Set httpOnly cookies (best practice - not exposed to JS)
+    const cookieOpts = getCookieOptions(req);
     res.cookie('accessToken', result.accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      ...cookieOpts,
+      maxAge: accessTokenMaxAge,
     });
     res.cookie('refreshToken', result.refreshToken, {
-      ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      ...cookieOpts,
+      maxAge: refreshTokenMaxAge,
     });
 
     // Do not return tokens in body
@@ -46,13 +61,14 @@ async function refresh(req, res) {
     const result = await AuthService.refreshTokens(refreshToken);
 
     // Set new cookies (rotating refresh token)
+    const cookieOpts = getCookieOptions(req);
     res.cookie('accessToken', result.accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
+      ...cookieOpts,
+      maxAge: accessTokenMaxAge,
     });
     res.cookie('refreshToken', result.refreshToken, {
-      ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      ...cookieOpts,
+      maxAge: refreshTokenMaxAge,
     });
 
     res.status(200).json({ message: 'Tokens refreshed' });
@@ -62,8 +78,9 @@ async function refresh(req, res) {
 }
 
 async function logout(req, res) {
-  res.clearCookie('accessToken', cookieOptions);
-  res.clearCookie('refreshToken', cookieOptions);
+  const cookieOpts = getCookieOptions(req);
+  res.clearCookie('accessToken', cookieOpts);
+  res.clearCookie('refreshToken', cookieOpts);
   res.status(200).json({ message: 'Logged out' });
 }
 

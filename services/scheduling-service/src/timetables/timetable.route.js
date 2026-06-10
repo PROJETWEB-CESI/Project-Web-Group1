@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./timetable.service');
+const { authorize } = require('../middleware/auth.middleware');
 
-router.get('/', async (req, res) => {
+// Student/Teacher/Admin: Get timetables (read-only)
+router.get('/', authorize(['student', 'teacher', 'admin']), async (req, res) => {
   try {
     const timetables = await service.getAllTimetables(req.query);
     res.json(timetables);
@@ -11,7 +13,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) => {
   try {
     const timetable = await service.getTimetableById(req.params.id);
     if (!timetable) {
@@ -23,7 +25,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+// Admin only: Create/update/delete timetables
+router.post('/', authorize(['admin']), async (req, res) => {
   try {
     const timetable = await service.createTimetable(req.body);
     res.status(201).json(timetable);
@@ -35,7 +38,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorize(['admin']), async (req, res) => {
   try {
     const timetable = await service.updateTimetable(req.params.id, req.body);
     res.json(timetable);
@@ -50,7 +53,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authorize(['admin']), async (req, res) => {
   try {
     const result = await service.deleteTimetable(req.params.id);
     res.json(result);

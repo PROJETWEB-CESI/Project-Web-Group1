@@ -9,13 +9,13 @@ This guide explains how to develop the frontend and backend correctly, following
 copy .env.exemple .env
 
 # 2. Start the FULL stack (required for any integration work)
-docker compose up --build
+docker compose up -d --build
 
-# Access via outer nginx (recommended):
-# http://localhost   (or https if certs are set up)
+# Access via outer nginx (standard):
+# https://localhost/
 ```
 
-- Use **http://localhost** (outer nginx) for realistic routing, rate limiting, and same-origin `/api` calls.
+- Use **https://localhost/** as the **primary and standard** access point for both development and production testing. This routes through the outer nginx for realistic routing, rate limiting, and same-origin `/api` calls.
 - Direct access to `http://localhost:3000` (frontend) or `http://localhost:8080` (gateway) is possible for targeted debugging but may require the dev proxy fix (see below).
 - **Never** start only one service for testing features that cross boundaries.
 
@@ -25,11 +25,9 @@ After changes to frontend source (thanks to volume mounts), the Next dev server 
 
 ### Running the Frontend Dev Server
 
-- **Preferred**: Full `docker compose` (the `frontend` service runs `npm run dev` with Turbopack).
-- **Local (host)**: `cd frontend/nova-campus-web && npm run dev`
-  - This hits the Next dev server on `:3000`.
-  - API calls (`/api/...`) are rewritten by `next.config.mjs` (see "API Proxy" section below).
+- **Standard**: Full `docker compose up -d --build` (the `frontend` service runs in dev mode with Turbopack).
 - The `src` directory is mounted in docker, so edits are reflected quickly.
+- Direct local dev server (`npm run dev`) is possible for targeted debugging but not recommended for integration work.
 
 ### Theming System (Light / Dark / High-Contrast)
 
@@ -73,12 +71,12 @@ Similar client-side persisted system to themes.
 - **Adding translations**: Edit the `translations` object in `LanguageContext.js`. English is the source of truth. Provide matching French strings.
 - **The toggle**: `LanguageToggle` (shared), placed next to `ThemeToggle` in the layout. Supports cycle + direct buttons.
 - **Theme labels** are also translated when the language changes (via the context).
-- **Pages/components to update**: Use `t()` for user-facing strings (login, footer, privacy, accessibility, loading states, etc.). Brand names ("NovaCampus") and technical terms usually stay in English.
+- **Pages/components to update**: Use `translate()` for user-facing strings (login, footer, privacy, accessibility, loading states, etc.). Brand names ("NovaCampus") and technical terms usually stay in English.
 - The `LanguageProvider` must wrap the app (it does, in `layout.js`).
 
 **Current scope**: Primarily the login flow, footer, privacy/accessibility pages, and toggle UIs. Expand as new UI is added.
 
-**Rule**: Do not hardcode English strings in new components. Use `t()` + add the key.
+**Rule**: Do not hardcode English strings in new components. Use `translate()` + add the key.
 
 ### Reusing Components & Avoiding Duplication
 
@@ -111,15 +109,14 @@ const { translate } = useLanguage();
 ### API Calls & Proxying (Important for Login / Backend)
 
 - Use relative `/api/...` in frontend code (e.g. `/api/auth/login`).
-- **In full docker stack** (via `http://localhost`): Outer nginx routes `/api/*` → gateway → services. No special config needed in the browser.
-- **When running Next dev server directly** (localhost:3000 or the docker frontend port):
+- **Standard access via `https://localhost/`**: Outer nginx routes `/api/*` → gateway → services. No special config needed in the browser.
+- **When running Next dev server directly** (localhost:3000):
   - `next.config.mjs` rewrites `/api/*` → the gateway.
   - We set `DEV_API_PROXY_TARGET=http://gateway:80` inside docker-compose for the frontend service (so the container can resolve the `gateway` service name).
-  - Locally on your host machine (no docker): it defaults to `http://localhost:8080`.
 - If you get 500 on `/api/auth/login` (or any API) when hitting :3000 directly:
   - Make sure the gateway is running.
   - Make sure you are using the correct proxy target (check `.env` / docker-compose).
-  - Prefer going through the outer nginx (`http://localhost`).
+  - Prefer going through the outer nginx (`https://localhost/`).
 
 In `AuthContext.js` we use `const API_BASE = '/api/auth';`.
 
@@ -127,7 +124,6 @@ In `AuthContext.js` we use `const API_BASE = '/api/auth';`.
 
 - **Loading / redirect states**: The root page acts as an auth guard and role-based router. Keep it lightweight.
 - **Dashboards**: Role-specific routes live under `/dashboard/*`. Use the shared auth context + role checks.
-- **Build & lint**: `npm run build` inside the frontend folder (or via docker) before considering a change complete.
 - **Accessibility**: The high-contrast mode + language support + proper labels (in shared Input) are part of the RGAA/GDPR requirements from the workshops. Test with the toggle.
 
 ## Backend Development (Focus: IAM Service)
@@ -136,7 +132,7 @@ The identity service is the source of truth for users, roles, JWTs, and campus t
 
 ### Running & Testing
 
-- Always start via full `docker compose up --build`.
+- Always start via full `docker compose up -d --build`.
 - Test credentials (for rapid role testing):
   1. In `.env`: `ENABLE_TEST_CREDENTIALS=true`
   2. Recreate the iam service (required for env var to take effect): `docker compose up -d --force-recreate iam-service`
@@ -186,7 +182,7 @@ See the `environment` block in `docker-compose.yml` and the root `.env.exemple`.
 
 ## General Best Practices
 
-- **Testing**: For anything involving login, auth, themes, languages, or cross-service calls → **full `docker compose up --build`**. Do not rely on isolated `npm run dev` for backend-dependent features.
+- **Testing**: For anything involving login, auth, themes, languages, or cross-service calls → **full `docker compose up -d --build`**. Do not rely on isolated `npm run dev` for backend-dependent features.
 - **Rebuilds**: After changing docker env vars (like `ENABLE_TEST_CREDENTIALS` or `DEV_API_PROXY_TARGET`), recreate the affected service(s).
 - **Git hygiene**: Run `.\scripts\sync-gitkeep.ps1` **before every commit**. No "finished" in messages. English in code/comments.
 - **Shared nothing duplication**: One Footer. One set of theme tokens. One language system. One auth context. Reuse via `components/shared` and contexts.
@@ -197,9 +193,9 @@ See the `environment` block in `docker-compose.yml` and the root `.env.exemple`.
 
 ## Common Pitfalls & Fixes
 
-- **Login 500 when using :3000 directly**: The Next dev proxy couldn't reach the gateway. Use the outer nginx (`http://localhost`) or ensure `DEV_API_PROXY_TARGET` is correct for your environment (see next.config and docker-compose).
+- **Login 500 when using :3000 directly**: The Next dev proxy couldn't reach the gateway. Use the standard `https://localhost/` or ensure `DEV_API_PROXY_TARGET` is correct for your environment (see next.config and docker-compose).
 - **Theme not applying**: Forgot to wrap in `ThemeProvider`, or used hardcoded colors instead of vars, or missing `min-h-0` / height constraints in flex layouts.
-- **Language not switching**: Not using `t()` from `useLanguage()`, or component not inside the provider tree, or missing the key in the translations object.
+- **Language not switching**: Not using `translate()` from `useLanguage()`, or component not inside the provider tree, or missing the key in the translations object.
 - **Components not themed**: Hardcoded Tailwind colors or `text-white` outside of `--color-on-primary` usage.
 - **Footer appears twice**: You created a local footer instead of using the shared one from layout.
 - **Scroll on short pages (e.g. login)**: Use the flex-1 + `min-h-dvh` + `min-h-0` pattern established in the layout and login page (see recent fixes).
@@ -211,4 +207,4 @@ See the `environment` block in `docker-compose.yml` and the root `.env.exemple`.
 - `services/<service-name>/README.md` (endpoints + test creds)
 - Workshop deliverables (for original requirements around accessibility, RGPD, microservices, etc.)
 
-Happy coding! When adding new UI, ask: "Is this using the shared theme tokens, shared components, and the language `t()` helper?"
+Happy coding! When adding new UI, ask: "Is this using the shared theme tokens, shared components, and the language `translate()` helper?"

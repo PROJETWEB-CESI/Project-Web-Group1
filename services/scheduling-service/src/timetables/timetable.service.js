@@ -1,19 +1,29 @@
 const { Op } = require('sequelize');
 const Timetable = require('./timetable.model');
+const Course = require('./course.model');
+const Instructor = require('./instructor.model');
+const Room = require('../rooms/room.model');
+
+Timetable.belongsTo(Course, { foreignKey: 'course_id', as: 'course' });
+Timetable.belongsTo(Instructor, { foreignKey: 'instructor_id', as: 'instructor' });
+Timetable.belongsTo(Room, { foreignKey: 'room_id', as: 'room' });
 
 async function getAllTimetables(filters = {}) {
   const where = {};
-  if (filters.campus_id) {
-    // Note: campus filtering would typically join through course or room, but for simplicity we assume it's passed or handled upstream
-    // Here we filter directly if campus data is denormalized, but per schema we keep it flexible
-  }
   if (filters.instructor_id) where.instructor_id = filters.instructor_id;
   if (filters.room_id) where.room_id = filters.room_id;
   if (filters.course_id) where.course_id = filters.course_id;
   if (filters.semester) where.semester = filters.semester;
   if (filters.academic_year) where.academic_year = filters.academic_year;
 
-  return await Timetable.findAll({ where });
+  return await Timetable.findAll({
+    where,
+    include: [
+      { model: Course, as: 'course', attributes: ['course_id', 'course_name', 'credits', 'course_type'] },
+      { model: Instructor, as: 'instructor', attributes: ['instructor_id', 'first_name', 'last_name'] },
+      { model: Room, as: 'room', attributes: ['room_id', 'room_name', 'building'] },
+    ],
+  });
 }
 
 async function getTimetableById(id) {
