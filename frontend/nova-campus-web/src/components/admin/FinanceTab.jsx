@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const STATUS_STYLES = {
   Paid: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
@@ -103,7 +104,7 @@ export default function FinanceTab({ payments, billingStats }) {
         {filtered.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">{translate('noInvoicesMatch')}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollShadow>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
@@ -133,7 +134,7 @@ export default function FinanceTab({ payments, billingStats }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollShadow>
         )}
       </div>
     </div>

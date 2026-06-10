@@ -1,5 +1,7 @@
 'use client';
 
+import ScrollShadow from '@/components/shared/ScrollShadow';
+
 function semesterLabel(sem) {
   if (sem.status === 'in_progress') return 'En cours';
   if (sem.status === 'validated') {
@@ -179,7 +181,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
           )}
         </div>
 
-        <div className="overflow-x-auto">
+        <ScrollShadow>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
@@ -241,7 +243,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollShadow>
       </div>
     </div>
   );
