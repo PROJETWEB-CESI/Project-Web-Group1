@@ -121,11 +121,12 @@ async function testBillingDirect(studentCookie, adminCookie) {
   // The billing service routes are under /api/payments/*, gateway strips to /payments/*
   // Direct docker network test is done via ai-agent; gateway path tested here for awareness.
 
-  // Endpoint /api/billing (used by AI agent) via gateway
+  // Endpoint /api/billing (used by AI agent) via gateway — userId is the IAM UUID
+  const STUDENT_UUID = '08113aa9-2933-4ea3-a594-f29c720595dd';
   const { data: billingData, ok: billingOk } = await req(
-    '/api/billing?userId=STU001&campusId=CAMP001',
+    `/api/billing?userId=${STUDENT_UUID}&campusId=CAMP001`,
     {
-      label: 'GET /api/billing?userId=STU001 — résumé agent IA',
+      label: 'GET /api/billing?userId=<UUID> — résumé agent IA',
       expectStatus: 200,
     }
   );
@@ -142,8 +143,8 @@ async function testBillingDirect(studentCookie, adminCookie) {
     expectStatus: 400,
   });
 
-  // userId inexistant → message "No billing records"
-  const { data: emptyData } = await req('/api/billing?userId=XXXX_NOBODY', {
+  // userId inexistant (UUID valide mais inconnu) → message "No billing records"
+  const { data: emptyData } = await req('/api/billing?userId=00000000-0000-0000-0000-000000000000', {
     label: 'GET /api/billing userId inconnu → 200 avec message',
     expectStatus: 200,
   });
