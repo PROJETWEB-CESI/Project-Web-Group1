@@ -73,4 +73,25 @@ function authorize(allowedRoles) {
     };
 }
 
-module.exports = { authenticate, authorize };
+/**
+ * Student ownership middleware - ensures student can only access their own data
+ * Checks that req.params.studentId matches req.user.id when user role is 'student'
+ * @param {string} paramName - The parameter name containing the student ID (default: 'studentId')
+ * @returns {Function} Express middleware
+ */
+function checkStudentOwnership(paramName = 'studentId') {
+    return (req, res, next) => {
+        // Only enforce for student role
+        if (req.user && req.user.role === 'student') {
+            const requestStudentId = req.params[paramName];
+            if (requestStudentId && requestStudentId !== req.user.id) {
+                return res.status(403).json({
+                    error: 'Forbidden: Students can only access their own data'
+                });
+            }
+        }
+        next();
+    };
+}
+
+module.exports = { authenticate, authorize, checkStudentOwnership };

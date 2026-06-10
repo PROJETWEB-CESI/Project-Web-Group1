@@ -58,12 +58,25 @@ export default function StudentDashboard() {
       }
     };
 
-    fetchJson(`/api/grades/student/${studentId}?campusId=${campusId}`).then(setGradesData);
-    fetchJson(`/api/attendance/student/${studentId}?campusId=${campusId}`).then(setAbsences);
-    fetchJson(`/api/students/${studentId}/enrollments?campusId=${campusId}`).then(setEnrollments);
-    fetchJson(`/api/payments/student/${studentId}`).then(setPayments);
-    fetchJson(`/api/timetables?campusId=${campusId}`).then(setTimetables);
-  }, [apiFetch]);
+    // Fetch all data in parallel
+    Promise.all([
+      fetchJson(`/api/grades/student/${studentId}?campusId=${campusId}`),
+      fetchJson(`/api/attendance/student/${studentId}?campusId=${campusId}`),
+      fetchJson(`/api/students/${studentId}/enrollments?campusId=${campusId}`),
+      fetchJson(`/api/payments/student/${studentId}`),
+      fetchJson(`/api/timetables?campusId=${campusId}`),
+    ]).then(([grades, absences, enrollments, payments, allTimetables]) => {
+      setGradesData(grades);
+      setAbsences(absences);
+      setEnrollments(enrollments);
+      setPayments(payments);
+      
+      // Filter timetables to only those for courses the student is enrolled in
+      const enrolledCourseIds = new Set(enrollments.map(e => e.courseId));
+      const filteredTimetables = allTimetables.filter(t => enrolledCourseIds.has(t.course_id));
+      setTimetables(filteredTimetables);
+    });
+  }, []);
 
   const markNotifRead = (id) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
