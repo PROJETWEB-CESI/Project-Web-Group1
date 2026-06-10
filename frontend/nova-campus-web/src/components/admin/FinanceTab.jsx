@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const STATUS_STYLES = {
   Paid: 'bg-[var(--color-success)]/10 text-[var(--color-success)]',
@@ -103,7 +104,7 @@ export default function FinanceTab({ payments, billingStats }) {
         {filtered.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">{translate('noInvoicesMatch')}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollShadow>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
@@ -122,8 +123,8 @@ export default function FinanceTab({ payments, billingStats }) {
                       <div className="font-medium text-[var(--color-text)]">{p.first_name} {p.last_name}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{p.email}</div>
                     </td>
-                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{p.due_date}</td>
-                    <td className="px-4 py-2.5">{formatEuro(p.amount)}</td>
+                    <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
+                    <td className="px-4 py-2.5 whitespace-nowrap">{formatEuro(p.amount)}</td>
                     <td className="px-4 py-2.5">
                       <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${STATUS_STYLES[statusLabel(p)] || STATUS_STYLES.PENDING}`}>
                         {statusLabel(p)}
@@ -133,7 +134,7 @@ export default function FinanceTab({ payments, billingStats }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollShadow>
         )}
       </div>
     </div>

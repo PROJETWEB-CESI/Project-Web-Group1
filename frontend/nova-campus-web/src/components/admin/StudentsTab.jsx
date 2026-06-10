@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const STATUS_STYLES = {
   Active:    'bg-[var(--color-success)]/10 text-[var(--color-success)]',
@@ -100,7 +101,7 @@ export default function StudentsTab({ students }) {
         {filtered.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">{translate('noStudentsMatch')}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollShadow>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
@@ -128,7 +129,7 @@ export default function StudentsTab({ students }) {
                     </td>
                     <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{s.studentId}</td>
                     <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{s.program?.programName || s.programId}</td>
-                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{s.enrollmentYear || '—'}</td>
+                    <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">{s.enrollmentYear || '—'}</td>
                     <td className="px-4 py-2.5">
                       <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${PAYMENT_STYLES[s.paymentStatus] || 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
                         {PAYMENT_LABELS[s.paymentStatus] ? translate(PAYMENT_LABELS[s.paymentStatus]) : (s.paymentStatus || '—')}
@@ -143,7 +144,7 @@ export default function StudentsTab({ students }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollShadow>
         )}
       </div>
     </div>

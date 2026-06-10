@@ -1,5 +1,7 @@
 'use client';
 
+import ScrollShadow from '@/components/shared/ScrollShadow';
+
 const STATUS_COLORS = {
   red:   'bg-red-50 text-red-600 border border-red-200',
   green: 'bg-green-50 text-green-700 border border-green-200',
@@ -79,7 +81,7 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats, 
           <h3 className="font-semibold text-base text-[var(--color-text)]">Historique</h3>
         </div>
 
-        <div className="overflow-x-auto">
+        <ScrollShadow>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
@@ -133,7 +135,7 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats, 
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollShadow>
       </div>
     </div>
   );
