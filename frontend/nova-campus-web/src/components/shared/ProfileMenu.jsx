@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useApi } from '@/lib/api';
 import {
   Home,
   Calendar,
@@ -25,12 +26,39 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
+// Two timetable entries overlap if they share the same day/semester/year
+// and their time ranges intersect
+function timesOverlap(a, b) {
+  return a.day_of_week === b.day_of_week
+    && a.semester === b.semester
+    && a.academic_year === b.academic_year
+    && a.start_time < b.end_time
+    && b.start_time < a.end_time;
+}
+
+// Counts room/instructor double-bookings among a campus's timetables
+function countConflicts(timetables) {
+  let count = 0;
+  for (let i = 0; i < timetables.length; i++) {
+    for (let j = i + 1; j < timetables.length; j++) {
+      const a = timetables[i];
+      const b = timetables[j];
+      if (a.schedule_id === b.schedule_id) continue;
+      if (!timesOverlap(a, b)) continue;
+      if ((a.room_id && a.room_id === b.room_id) || (a.instructor_id && a.instructor_id === b.instructor_id)) count++;
+    }
+  }
+  return count;
+}
+
 export default function ProfileMenu() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const { translate } = useLanguage();
-  const { clearNotifications } = useNotifications();
+  const { notificationCount, clearNotifications } = useNotifications();
+  const { apiFetch } = useApi();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [adminBadges, setAdminBadges] = useState({ planning: 0, finance: 0 });
   const menuRef = useRef(null);
 
   const toggleMenu = useCallback(() => setIsOpen((prev) => !prev), []);
@@ -47,11 +75,41 @@ export default function ProfileMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [closeMenu]);
 
+  const role = (user?.role || 'student').toLowerCase();
+  const campusId = user?.campusId;
+
+  // Same live "Planning & Conflicts" / "Payments & Tuition" badges as the sidebar
+  useEffect(() => {
+    if (role !== 'admin' || !campusId) return;
+
+    const fetchJson = async (url) => {
+      try {
+        const res = await apiFetch(url);
+        return res.ok ? await res.json() : null;
+      } catch {
+        return null;
+      }
+    };
+
+    Promise.all([
+      fetchJson(`/api/payments/stats?campusId=${campusId}`),
+      fetchJson(`/api/rooms?campus_id=${campusId}`),
+      fetchJson(`/api/timetables/`),
+    ]).then(([billingStats, rooms, timetables]) => {
+      const finance = billingStats?.overdueCount ?? 0;
+      let planning = 0;
+      if (Array.isArray(rooms) && Array.isArray(timetables)) {
+        const roomIds = new Set(rooms.map((r) => r.room_id));
+        planning = countConflicts(timetables.filter((t) => roomIds.has(t.room_id)));
+      }
+      setAdminBadges({ planning, finance });
+    });
+  }, [role, campusId]);
+
   if (loading || !isAuthenticated || !user) {
     return null;
   }
 
-  const role = (user.role || 'student').toLowerCase();
   const dashboardHref = `/dashboard/${role}`;
 
   const iconClass = "w-4 h-4 mr-2 flex-shrink-0 text-[var(--color-text-muted)]";
@@ -76,7 +134,7 @@ export default function ProfileMenu() {
         { label: translate('absences') || 'Absences', href: '/dashboard/student?tab=absences', icon: <AlertCircle className={iconClass} /> },
         { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student?tab=history', icon: <FolderOpen className={iconClass} /> },
         { label: translate('payments') || 'Payments', href: '/dashboard/student?tab=payment', icon: <CreditCard className={iconClass} /> },
-        { label: translate('notifications') || 'Notifications', href: '/dashboard/student?tab=notifications', icon: <Bell className={iconClass} /> }
+        { label: translate('notifications') || 'Notifications', href: '/dashboard/student?tab=notifications', icon: <Bell className={iconClass} />, isLiveBadge: true }
       );
     } else if (role === 'teacher') {
       items.push(
@@ -89,8 +147,8 @@ export default function ProfileMenu() {
     } else if (role === 'admin') {
       items.push(
         { label: translate('studentsEnrollments') || 'Students & Enrollments', href: '/dashboard/admin/students', icon: <Users className={iconClass} /> },
-        { label: translate('planningConflicts') || 'Planning & Conflicts', href: '/dashboard/admin/planning', icon: <Calendar className={iconClass} /> },
-        { label: translate('paymentsScolarite') || 'Payments & Tuition', href: '/dashboard/admin/finance', icon: <CreditCard className={iconClass} /> }
+        { label: translate('planningConflicts') || 'Planning & Conflicts', href: '/dashboard/admin/planning', icon: <Calendar className={iconClass} />, badge: adminBadges.planning },
+        { label: translate('paymentsScolarite') || 'Payments & Tuition', href: '/dashboard/admin/finance', icon: <CreditCard className={iconClass} />, badge: adminBadges.finance }
       );
     } else if (role === 'executive') {
       items.push(
@@ -159,10 +217,21 @@ export default function ProfileMenu() {
 
           <nav className="pt-1 space-y-0.5" role="menu">
             {menuItems.map((item, index) => {
+              // Live notification count (student) or live conflict/overdue counts (admin),
+              // matching the sidebar's badge behavior.
+              const liveBadge = item.isLiveBadge ? notificationCount : null;
+              const showBadge = (item.badge || liveBadge) && (liveBadge ?? item.badge) > 0;
+              const badgeValue = liveBadge ?? item.badge;
+
               const content = (
-                <span className="flex items-center">
+                <span className="flex items-center w-full">
                   {item.icon}
-                  <span>{item.label}</span>
+                  <span className="flex-1 truncate">{item.label}</span>
+                  {showBadge && (
+                    <span className="ml-2 text-[12px] leading-none px-2 py-1 rounded-full bg-[var(--color-error)] text-[var(--color-on-primary)] font-medium">
+                      {badgeValue}
+                    </span>
+                  )}
                 </span>
               );
 
