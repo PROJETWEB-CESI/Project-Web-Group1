@@ -187,7 +187,7 @@ export default function ProfileMenu() {
     
     // Help center above Logout
     items.push(
-      { label: translate('helpCenter') || 'Help Center', href: '/dashboard/help', icon: <HelpCircle className={iconClass} />, dividerBefore: true }
+      { label: translate('helpCenter') || 'Help Center', href: '/help', icon: <HelpCircle className={iconClass} />, dividerBefore: true }
     );
     
     // Logout always absolutely last (red)
