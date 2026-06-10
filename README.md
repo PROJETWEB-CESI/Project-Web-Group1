@@ -14,7 +14,7 @@ copy .env.exemple .env
 docker compose down --rmi all
 
 # 3. Build and start the entire stack
-docker compose up --build
+docker compose up -d --build
 ```
 
 Wait until you see healthy services in `docker compose ps` and the frontend log line like:
@@ -25,7 +25,7 @@ nova-frontend    |  GET / 200 in 74ms (next.js: 5ms, application-code: 69ms)
 
 The application is then available at:
 
-- **http://localhost** (via outer Nginx with TLS termination - recommended)
+- **https://localhost** (via outer Nginx with TLS termination - recommended)
 - **http://localhost:3000** (direct to Next.js frontend - useful for dev)
 
 ## Environment & Configuration
