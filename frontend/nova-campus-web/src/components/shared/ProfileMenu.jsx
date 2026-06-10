@@ -141,7 +141,8 @@ export default function ProfileMenu() {
     const items = [
       {
         label: translate('myDashboard') || 'My Dashboard',
-        href: dashboardHref,
+        // For students, the dashboard is the ?tab=dashboard view of /dashboard/student
+        href: role === 'student' ? '/dashboard/student?tab=dashboard' : dashboardHref,
         icon: <Home className={iconClass} />,
       },
     ];
