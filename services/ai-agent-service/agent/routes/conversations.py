@@ -6,13 +6,13 @@ from agent.store import list_conversations, get_conversation, delete_conversatio
 router = APIRouter()
 
 
-@router.get("/api/conversations", response_model=list[ConversationSummary])
+@router.get("/conversations", response_model=list[ConversationSummary])
 async def get_conversations(user=Depends(require_auth)):
     user_id = _user_id_from(user)
     return await list_conversations(user_id)
 
 
-@router.get("/api/conversations/{conversation_id}", response_model=ConversationDetail)
+@router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
 async def get_conversation_detail(conversation_id: str, user=Depends(require_auth)):
     user_id = _user_id_from(user)
     conv = await get_conversation(conversation_id)
@@ -21,7 +21,7 @@ async def get_conversation_detail(conversation_id: str, user=Depends(require_aut
     return conv
 
 
-@router.delete("/api/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_conversation(conversation_id: str, user=Depends(require_auth)):
     user_id = _user_id_from(user)
     deleted = await delete_conversation(conversation_id, user_id)

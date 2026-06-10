@@ -5,7 +5,7 @@ from agent.config import OLLAMA_HOST
 router = APIRouter()
 
 
-@router.get("/api/health")
+@router.get("/health")
 async def health():
     ollama_ok = False
     try:
