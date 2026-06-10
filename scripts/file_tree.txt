@@ -129,9 +129,11 @@
 |   +-- test-scheduling.js
 |   +-- seed
 |   |   +-- Dockerfile
+|   |   +-- entrypoint.sh
 |   |   +-- requirements.txt
 |   |   +-- schema.sql
 |   |   +-- seed.py
+|   |   +-- seed_extra_students.sql
 |   |   +-- data
 |   |   |   +-- EN_-_NOVACAMPUS_ALLIANCE_DATABASE.xlsx
 +-- services
@@ -147,6 +149,7 @@
 |   |   |   +-- common
 |   |   |   |   +-- utils
 |   |   |   |   |   +-- csv.util.js
+|   |   |   |   |   +-- student.util.js
 |   |   |   +-- config
 |   |   |   |   +-- associations.js
 |   |   |   |   +-- database.config.js

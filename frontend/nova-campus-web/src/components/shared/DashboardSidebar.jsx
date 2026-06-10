@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useApi } from '@/lib/api';
 import {
   Home,
   Calendar,
@@ -23,19 +25,76 @@ import {
   Building,
 } from 'lucide-react';
 
+// Two timetable entries overlap if they share the same day/semester/year
+// and their time ranges intersect
+function timesOverlap(a, b) {
+  return a.day_of_week === b.day_of_week
+    && a.semester === b.semester
+    && a.academic_year === b.academic_year
+    && a.start_time < b.end_time
+    && b.start_time < a.end_time;
+}
+
+// Counts room/instructor double-bookings among a campus's timetables
+function countConflicts(timetables) {
+  let count = 0;
+  for (let i = 0; i < timetables.length; i++) {
+    for (let j = i + 1; j < timetables.length; j++) {
+      const a = timetables[i];
+      const b = timetables[j];
+      if (a.schedule_id === b.schedule_id) continue;
+      if (!timesOverlap(a, b)) continue;
+      if ((a.room_id && a.room_id === b.room_id) || (a.instructor_id && a.instructor_id === b.instructor_id)) count++;
+    }
+  }
+  return count;
+}
+
 export default function DashboardSidebar() {
   const { user, logout, loading, isAuthenticated } = useAuth();
   const { translate } = useLanguage();
   const { notificationCount, clearNotifications } = useNotifications();
+  const { apiFetch } = useApi();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const [adminBadges, setAdminBadges] = useState({ planning: 0, finance: 0 });
+
+  const role = (user?.role || 'student').toLowerCase();
+  const campusId = user?.campusId;
+
+  useEffect(() => {
+    if (role !== 'admin' || !campusId) return;
+
+    const fetchJson = async (url) => {
+      try {
+        const res = await apiFetch(url);
+        return res.ok ? await res.json() : null;
+      } catch {
+        return null;
+      }
+    };
+
+    Promise.all([
+      fetchJson(`/api/payments/stats?campusId=${campusId}`),
+      fetchJson(`/api/rooms?campus_id=${campusId}`),
+      fetchJson(`/api/timetables/`),
+    ]).then(([billingStats, rooms, timetables]) => {
+      const finance = billingStats?.overdueCount ?? 0;
+      let planning = 0;
+      if (Array.isArray(rooms) && Array.isArray(timetables)) {
+        const roomIds = new Set(rooms.map((r) => r.room_id));
+        planning = countConflicts(timetables.filter((t) => roomIds.has(t.room_id)));
+      }
+      setAdminBadges({ planning, finance });
+    });
+  }, [role, campusId]);
 
   if (loading || !isAuthenticated || !user) {
     return null;
   }
 
-  const role = (user.role || 'student').toLowerCase();
   const dashboardHref = `/dashboard/${role}`;
 
   const iconClass = 'w-4 h-4 mr-2.5 flex-shrink-0';
@@ -112,9 +171,9 @@ export default function DashboardSidebar() {
     } else if (role === 'admin') {
       mainItems = [
         { label: translate('myDashboard') || 'My Dashboard', href: dashboardHref, icon: Home },
-        { label: translate('studentsEnrollments') || 'Students & Enrollments', href: '/dashboard/admin/students', icon: Users, badge: 6 },
-        { label: translate('planningConflicts') || 'Planning & Conflicts', href: '/dashboard/admin/planning', icon: Calendar, badge: 1 },
-        { label: translate('paymentsScolarite') || 'Payments & Tuition', href: '/dashboard/admin/finance', icon: CreditCard, badge: 3 },
+        { label: translate('studentsEnrollments') || 'Students & Enrollments', href: '/dashboard/admin/students', icon: Users },
+        { label: translate('planningConflicts') || 'Planning & Conflicts', href: '/dashboard/admin/planning', icon: Calendar, badge: adminBadges.planning },
+        { label: translate('paymentsScolarite') || 'Payments & Tuition', href: '/dashboard/admin/finance', icon: CreditCard, badge: adminBadges.finance },
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles },
