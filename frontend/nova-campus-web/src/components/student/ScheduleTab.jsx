@@ -8,13 +8,13 @@ const END_HOUR = 19;
 const SCH_HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 const SCH_DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const SCH_DAY_KEYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+// Course color palette built from theme tokens so it follows light/dark/high-contrast themes
 const SCH_PALETTE = [
-  { bg: 'bg-blue-50',   border: 'border-l-blue-500',   text: 'text-blue-800'   },
-  { bg: 'bg-green-50',  border: 'border-l-green-500',  text: 'text-green-800'  },
-  { bg: 'bg-amber-50',  border: 'border-l-amber-500',  text: 'text-amber-800'  },
-  { bg: 'bg-purple-50', border: 'border-l-purple-500', text: 'text-purple-800' },
-  { bg: 'bg-pink-50',   border: 'border-l-pink-500',   text: 'text-pink-800'   },
-  { bg: 'bg-teal-50',   border: 'border-l-teal-500',   text: 'text-teal-800'   },
+  { bg: 'bg-[var(--color-primary)]/10',      border: 'border-l-[var(--color-primary)]',      text: 'text-[var(--color-primary)]'      },
+  { bg: 'bg-[var(--color-accent)]/10',       border: 'border-l-[var(--color-accent)]',       text: 'text-[var(--color-accent)]'       },
+  { bg: 'bg-[var(--color-success)]/10',      border: 'border-l-[var(--color-success)]',      text: 'text-[var(--color-success)]'      },
+  { bg: 'bg-[var(--color-primary-soft)]/20', border: 'border-l-[var(--color-primary-soft)]', text: 'text-[var(--color-primary)]'      },
+  { bg: 'bg-[var(--color-accent-soft)]/20',  border: 'border-l-[var(--color-accent-soft)]',  text: 'text-[var(--color-accent)]'       },
 ];
 
 const schToMin = (ts) => {
@@ -92,11 +92,11 @@ export default function ScheduleTab({ timetables }) {
             const isToday = weekOffset === 0 && date.toDateString() === schNow.toDateString();
             return (
               <div key={`hdr-${dayKey}`}
-                className={`text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-blue-50' : 'bg-[var(--color-surface)]'}`}>
-                <div className={`text-xs font-semibold tracking-widest ${isToday ? 'text-blue-600' : 'text-[var(--color-text-muted)]'}`}>
+                className={`text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-[var(--color-primary)]/10' : 'bg-[var(--color-surface)]'}`}>
+                <div className={`text-xs font-semibold tracking-widest ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
                   {SCH_DAY_LABELS[i]}
                 </div>
-                <div className={`text-2xl font-light mt-0.5 ${isToday ? 'text-blue-600' : 'text-[var(--color-text)]'}`}>
+                <div className={`text-2xl font-light mt-0.5 ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)]'}`}>
                   {date.getDate()}
                 </div>
               </div>
@@ -118,7 +118,7 @@ export default function ScheduleTab({ timetables }) {
             const isToday = weekOffset === 0 && schWeekDays[i].toDateString() === schNow.toDateString();
             return (
               <div key={dayKey}
-                className={`border-l border-[var(--color-border)] relative ${isToday ? 'bg-blue-50/30' : ''}`}
+                className={`border-l border-[var(--color-border)] relative ${isToday ? 'bg-[var(--color-primary)]/5' : ''}`}
                 style={{ height: `${SCH_HOURS.length * HOUR_HEIGHT}px` }}>
 
                 {SCH_HOURS.map(h => (
@@ -154,7 +154,7 @@ export default function ScheduleTab({ timetables }) {
                       )}
                       {heightPx > 76 && t.room && (
                         <div className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5 leading-none">
-                          <span className="text-red-400 text-[10px]">●</span>
+                          <span className="text-[var(--color-error)] text-[10px]">●</span>
                           {t.room.room_name}
                         </div>
                       )}
