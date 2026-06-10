@@ -159,6 +159,8 @@ async function startServer() {
             { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, sessionDate: '2025-10-20', status: 'present', justified: false },
             { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, sessionDate: '2025-11-03', status: 'present', justified: false },
             { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, sessionDate: '2025-11-10', status: 'late', justified: false },
+            // Nouvelle absence non justifiée
+            { studentId: demoStudentId, courseId: 'CRS006', campusId: demoCampus, sessionDate: '2025-11-17', status: 'absent', justified: false },
           ];
           for (const a of attData) {
             await Attendance.findOrCreate({ where: { studentId: a.studentId, courseId: a.courseId, sessionDate: a.sessionDate }, defaults: a });

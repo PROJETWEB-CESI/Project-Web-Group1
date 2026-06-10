@@ -1,4 +1,7 @@
 const Attendance = require('./attendance.model');
+const Course = require('../courses/course.model');
+
+Attendance.belongsTo(Course, { foreignKey: 'courseId', as: 'course' });
 
 // Retourne toutes les présences d'une session (cours + date) — réservé prof/admin
 const getAttendanceByCourse = async (courseId, campusId, sessionDate) => {
@@ -15,6 +18,7 @@ const getAttendanceByStudent = async (studentId, campusId) => {
     return Attendance.findAll({
         where: { studentId, campusId },
         order: [['sessionDate', 'DESC']],
+        include: [{ model: Course, as: 'course', attributes: ['courseId', 'courseName'] }],
     });
 };
 

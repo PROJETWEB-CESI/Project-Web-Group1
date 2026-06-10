@@ -1,66 +1,119 @@
 'use client';
 
-export default function AbsencesTab({ absences, justifyAbsence }) {
+const STATUS_COLORS = {
+  red:   'bg-red-50 text-red-600 border border-red-200',
+  green: 'bg-green-50 text-green-700 border border-green-200',
+};
+
+function resolveStatus(a) {
+  if (a.justified) return { label: 'Justifiée', color: 'green' };
+  return { label: 'Non justifiée', color: 'red' };
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = String(dateStr).split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function formatTime(t) {
+  return t ? String(t).slice(0, 5) : null;
+}
+
+export default function AbsencesTab({ absences = [], timetables = [], attStats }) {
+  // Build lookup by courseId → timetable entry (first match)
+  const ttMap = {};
+  for (const t of timetables) {
+    if (t.course_id && !ttMap[t.course_id]) ttMap[t.course_id] = t;
+  }
+
+  // Only display absence and late records
+  const records = absences.filter(a => a.status === 'absent' || a.status === 'late');
+
+  const unjustifiedCount = records.filter(a => !a.justified && !a.pendingJustification).length;
+
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Mes absences — Semestre 1 2023/2024</h2>
-      <div className="flex gap-4 mb-6">
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4 flex-1">
-          <div className="text-xs text-[var(--color-text-muted)]">TAUX DE PRÉSENCE</div>
-          <div className="text-3xl font-semibold mt-1 text-green-600">96%</div>
+    <div className="space-y-6">
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Taux de présence</p>
+          <p className="text-3xl font-bold mt-2 text-green-600">
+            {attStats?.attendanceRate != null ? `${attStats.attendanceRate}%` : '—'}
+          </p>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4 flex-1">
-          <div className="text-xs text-[var(--color-text-muted)]">ABSENCES TOTALES</div>
-          <div className="text-3xl font-semibold mt-1">{absences.length}</div>
+        <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Absences totales</p>
+          <p className="text-3xl font-bold mt-2 text-[var(--color-text)]">{records.length}</p>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4 flex-1">
-          <div className="text-xs text-[var(--color-text-muted)]">NON JUSTIFIÉES</div>
-          <div className="text-3xl font-semibold mt-1 text-[var(--color-error)]">
-            {absences.filter(a => !a.justified).length}{' '}
-            <span className="text-base">(seuil alerte : 4)</span>
-          </div>
+        <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Non justifiées</p>
+          <p className="text-3xl font-bold mt-2 text-red-500">{unjustifiedCount}</p>
         </div>
       </div>
 
-      <h3 className="font-medium mb-2">Historique</h3>
-      <div className="border border-[var(--color-border)] rounded-lg overflow-hidden bg-[var(--color-bg-elev)]">
-        <table className="w-full text-sm">
-          <thead className="bg-[var(--color-surface)]">
-            <tr>
-              <th className="p-3 text-left">Date</th>
-              <th className="p-3 text-left">Cours</th>
-              <th className="p-3 text-left">Statut</th>
-              <th className="p-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--color-border)] text-[var(--color-text)]">
-            {absences.length > 0 ? absences.map(a => (
-              <tr key={a.id}>
-                <td className="p-3">{a.sessionDate}</td>
-                <td className="p-3">{a.courseId}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs ${!a.justified ? 'bg-[var(--color-error)]/10 text-[var(--color-error)]' : 'bg-[var(--color-success)]/10 text-[var(--color-success)]'}`}>
-                    {a.status}{a.justified ? ' (justifiée)' : ''}
-                  </span>
-                </td>
-                <td className="p-3 text-right">
-                  {!a.justified && (
-                    <button
-                      onClick={() => justifyAbsence(a.id)}
-                      className="text-sm px-3 py-1 rounded border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]"
-                    >
-                      Justifier
-                    </button>
-                  )}
-                </td>
+      {/* History table */}
+      <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-[var(--color-border)]">
+          <h3 className="font-semibold text-base text-[var(--color-text)]">Historique</h3>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Date</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Créneau</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Cours</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Enseignant</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Statut</th>
               </tr>
-            )) : (
-              <tr>
-                <td colSpan="4" className="p-3 text-[var(--color-text-muted)]">Aucune absence.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[var(--color-border)]">
+              {records.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-8 text-center text-[var(--color-text-muted)]">
+                    Aucune absence enregistrée.
+                  </td>
+                </tr>
+              ) : records.map(a => {
+                const tt = ttMap[a.courseId];
+                const courseName = a.course?.courseName ?? tt?.course?.course_name ?? a.courseId;
+                const instructor = tt?.instructor;
+                const instructorName = instructor
+                  ? `${instructor.first_name} ${instructor.last_name}`
+                  : '—';
+                const start = formatTime(tt?.start_time);
+                const end   = formatTime(tt?.end_time);
+                const timeSlot = start && end ? `${start} – ${end}` : '—';
+                const s = resolveStatus(a);
+
+                return (
+                  <tr key={a.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
+                    <td className="px-5 py-4 text-[var(--color-text-muted)] whitespace-nowrap">
+                      {formatDate(a.sessionDate)}
+                    </td>
+                    <td className="px-5 py-4 text-[var(--color-text-muted)] whitespace-nowrap">
+                      {timeSlot}
+                    </td>
+                    <td className="px-5 py-4 font-medium text-[var(--color-text)]">
+                      {courseName}
+                    </td>
+                    <td className="px-5 py-4 text-[var(--color-text-muted)]">
+                      {instructorName}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[s.color]}`}>
+                        {s.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
