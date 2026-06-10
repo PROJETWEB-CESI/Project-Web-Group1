@@ -290,18 +290,18 @@ export default function StudentDashboard() {
             {/* ── Calendar grid ── */}
             <div className="border border-[var(--color-border)] rounded-lg overflow-hidden bg-[var(--color-bg-elev)]">
 
-              {/* Headers + time grid in one scroll container → columns always aligned */}
-              <div className="overflow-y-auto" style={{ maxHeight: '620px' }}>
+              {/* Headers + time grid — no scroll, full height */}
+              <div>
                 <div className="grid" style={{ gridTemplateColumns: '56px repeat(5, 1fr)' }}>
 
                   {/* ── Sticky day headers (6 cells, row 1) ── */}
-                  <div className="sticky top-0 z-10 border-b border-r border-[var(--color-border)] bg-[var(--color-surface)]" />
+                  <div className="border-b border-r border-[var(--color-border)] bg-[var(--color-surface)]" />
                   {SCH_DAY_KEYS.map((dayKey, i) => {
                     const date    = schWeekDays[i];
                     const isToday = weekOffset === 0 && date.toDateString() === schNow.toDateString();
                     return (
                       <div key={`hdr-${dayKey}`}
-                        className={`sticky top-0 z-10 text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-blue-50' : 'bg-[var(--color-surface)]'}`}>
+                        className={`text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-blue-50' : 'bg-[var(--color-surface)]'}`}>
                         <div className={`text-xs font-semibold tracking-widest ${isToday ? 'text-blue-600' : 'text-[var(--color-text-muted)]'}`}>
                           {SCH_DAY_LABELS[i]}
                         </div>
