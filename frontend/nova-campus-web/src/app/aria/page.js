@@ -236,9 +236,11 @@ export default function AriaPage() {
             });
           } else if (evt.type === 'delta') {
             setMessages((prev) => {
+              if (!prev.length) return prev;
               const next = [...prev];
               const last = next[next.length - 1];
-              next[next.length - 1] = { ...last, content: last.content + evt.text };
+              if (!last) return prev;
+              next[next.length - 1] = { ...last, content: (last.content ?? '') + evt.text };
               return next;
             });
           } else if (evt.type === 'done') {
@@ -283,7 +285,7 @@ export default function AriaPage() {
   const groups = groupConvs(convs);
 
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden">
+    <div className="flex-1 flex h-full overflow-hidden">
 
       {/* ── Sidebar gauche ── */}
       <aside className="w-60 flex-shrink-0 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-surface)]">
