@@ -20,7 +20,15 @@ function formatTime(t) {
   return t ? String(t).slice(0, 5) : null;
 }
 
-export default function AbsencesTab({ absences = [], timetables = [], attStats }) {
+function formatSemesterLabel(raw) {
+  if (!raw) return null;
+  // "S1 2025-2026" → "Semestre 1 2025/2026"
+  const match = raw.match(/^S(\d+)\s+(\d{4})-(\d{4})$/);
+  if (match) return `Semestre ${match[1]} ${match[2]}/${match[3]}`;
+  return raw;
+}
+
+export default function AbsencesTab({ absences = [], timetables = [], attStats, studentProfile, kpis }) {
   // Build lookup by courseId → timetable entry (first match)
   const ttMap = {};
   for (const t of timetables) {
@@ -32,8 +40,20 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats }
 
   const unjustifiedCount = records.filter(a => !a.justified && !a.pendingJustification).length;
 
+  const programName   = studentProfile?.program?.programName ?? null;
+  const semesterLabel = formatSemesterLabel(kpis?.currentSemesterLabel);
+  const subtitle      = [programName, semesterLabel].filter(Boolean).join(' · ');
+
   return (
     <div className="space-y-6">
+
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-1">Mes absences</h1>
+        {subtitle && (
+          <p className="text-sm text-[var(--color-text-muted)]">{subtitle}</p>
+        )}
+      </div>
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
