@@ -24,7 +24,7 @@ export default function LanguageToggle() {
         className="flex items-center gap-1.5 rounded-full sm:px-1.5 md:py-0.25 px-3 py-1 font-medium hover:bg-[var(--color-bg-hover)] active:bg-[var(--color-bg-active)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
         title={`${translate('language')}: ${langFull[currentLanguage]}. Click to switch.`}
       >
-        <Globe className="w-5 h-5 sm:w-4 sm:h-4" aria-hidden="true" />
+        <Globe className="hidden sm:inline w-5 h-5 sm:w-4 sm:h-4" aria-hidden="true" />
         <span className="sm:inline font-mono">{langDisplay[currentLanguage]}</span>
       </button>
 

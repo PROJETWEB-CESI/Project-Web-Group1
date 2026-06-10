@@ -64,10 +64,10 @@ export default function LogoLink() {
 
       {/* Wordmark */}
       <div className="flex flex-col leading-[0.85] -space-y-px">
-        <span className={`text-[2em] font-semibold tracking-[-0.015em] transition-colors ${textColor}`}>
+        <span className={`text-[1.25em] sm:text-[2em] font-semibold tracking-[-0.015em] transition-colors ${textColor}`}>
           Novacampus
         </span>
-        <span className={`text-[1em] tracking-[0.01em] transition-colors ${textColor}`}>
+        <span className={`text-[0.75em] sm:text-[1em] tracking-[0.01em] transition-colors ${textColor}`}>
           Alliance
         </span>
       </div>

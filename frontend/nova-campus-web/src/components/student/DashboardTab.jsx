@@ -51,26 +51,26 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">MOYENNE {kpis.currentSemesterLabel || '—'}</div>
           <div className="text-3xl font-semibold mt-1">
             {kpis.average !== null ? kpis.average.toFixed(1).replace('.', ',') : '—'}
             {kpis.average !== null && <span className="text-base align-super">/20</span>}
           </div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">TAUX DE PRÉSENCE</div>
           <div className={`text-3xl font-semibold mt-1 ${kpis.attendanceRate !== null ? (kpis.attendanceRate >= 80 ? 'text-green-600' : 'text-[var(--color-error)]') : ''}`}>
             {kpis.attendanceRate !== null ? `${kpis.attendanceRate}%` : '—'}
           </div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">FRAIS DE SCOLARITÉ</div>
           <div className="text-3xl font-semibold mt-1">
             {kpis.tuition !== null ? `${kpis.tuition.toLocaleString('fr-FR')} €` : '—'}
           </div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">CRÉDITS {kpis.currentSemesterLabel || '—'}</div>
           <div className="text-3xl font-semibold mt-1">
             {kpis.credits !== null ? kpis.credits : '—'}

@@ -11,19 +11,19 @@ export default function ExecutiveDashboard() {
       <p className="text-[var(--color-text-muted)] mb-6">Tableau de bord exécutif — Direction générale</p>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">ÉTUDIANTS TOTAL</div>
           <div className="text-3xl font-semibold mt-1">1 605</div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">CA S1 2023-2024</div>
           <div className="text-3xl font-semibold mt-1">7.13 M€</div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">TAUX DE RÉUSSITE</div>
           <div className="text-3xl font-semibold mt-1">87.6%</div>
         </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
           <div className="text-xs text-[var(--color-text-muted)]">TAUX D'IMPAYÉS MOYEN</div>
           <div className="text-3xl font-semibold mt-1">7.4%</div>
         </div>
