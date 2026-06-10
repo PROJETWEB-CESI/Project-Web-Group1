@@ -124,7 +124,7 @@ async def _get_grades(user_id: str, campus_id: str, headers: dict) -> str:
         return "Impossible de récupérer les notes : identifiant utilisateur manquant."
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
         r = await client.get(
-            f"{ACADEMIC_SERVICE_URL}/api/grades/student/{user_id}",
+            f"{ACADEMIC_SERVICE_URL}/grades/student/{user_id}",
             params={"campusId": campus_id} if campus_id else {},
             headers=headers,
         )
@@ -137,7 +137,7 @@ async def _get_absences(user_id: str, campus_id: str, headers: dict) -> str:
         return "Impossible de récupérer les absences : identifiant utilisateur manquant."
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
         r = await client.get(
-            f"{ACADEMIC_SERVICE_URL}/api/attendance/student/{user_id}",
+            f"{ACADEMIC_SERVICE_URL}/attendance/student/{user_id}",
             params={"campusId": campus_id} if campus_id else {},
             headers=headers,
         )
@@ -178,7 +178,7 @@ async def _get_billing(user_id: str, campus_id: str, headers: dict) -> str:
         return "Impossible de récupérer la facturation : identifiant utilisateur manquant."
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
         r = await client.get(
-            f"{BILLING_SERVICE_URL}/api/billing",
+            f"{BILLING_SERVICE_URL}/billing",
             params={"userId": user_id, "campusId": campus_id},
             headers=headers,
         )
