@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const service = require('./attendance.service');
+const { resolveStudentId } = require('../common/utils/student.util');
 const { authorize } = require('../middleware/auth.middleware');
 
 // Prof : justifier une absence — déclaré avant /:id pour éviter un conflit de routing
@@ -64,7 +65,8 @@ router.get('/student/:studentId', authorize(['student', 'teacher', 'admin']), as
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
     try {
-        const records = await service.getAttendanceByStudent(req.params.studentId, req.query.campusId);
+        const studentId = await resolveStudentId(req.params.studentId);
+        const records = await service.getAttendanceByStudent(studentId, req.query.campusId);
         res.json(records);
     } catch (err) {
         res.status(500).json({ error: err.message });
