@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getCourseColor } from '@/lib/courseColors';
 
 const HOUR_HEIGHT = 64;
 const START_HOUR = 8;
@@ -8,14 +9,6 @@ const END_HOUR = 19;
 const SCH_HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 const SCH_DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const SCH_DAY_KEYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-// Course color palette built from theme tokens so it follows light/dark/high-contrast themes
-const SCH_PALETTE = [
-  { bg: 'bg-[var(--color-primary)]/10',      border: 'border-l-[var(--color-primary)]',      text: 'text-[var(--color-primary)]'      },
-  { bg: 'bg-[var(--color-accent)]/10',       border: 'border-l-[var(--color-accent)]',       text: 'text-[var(--color-accent)]'       },
-  { bg: 'bg-[var(--color-success)]/10',      border: 'border-l-[var(--color-success)]',      text: 'text-[var(--color-success)]'      },
-  { bg: 'bg-[var(--color-primary-soft)]/20', border: 'border-l-[var(--color-primary-soft)]', text: 'text-[var(--color-primary)]'      },
-  { bg: 'bg-[var(--color-accent-soft)]/20',  border: 'border-l-[var(--color-accent-soft)]',  text: 'text-[var(--color-accent)]'       },
-];
 
 const schToMin = (ts) => {
   const p = (ts || `${START_HOUR}:00`).split(':').map(Number);
@@ -24,15 +17,6 @@ const schToMin = (ts) => {
 
 export default function ScheduleTab({ timetables }) {
   const [weekOffset, setWeekOffset] = useState(0);
-
-  const schColorMap = {};
-  let schColorIdx = 0;
-  for (const t of timetables) {
-    if (!schColorMap[t.course_id]) {
-      schColorMap[t.course_id] = SCH_PALETTE[schColorIdx % SCH_PALETTE.length];
-      schColorIdx++;
-    }
-  }
 
   const schByDay = {};
   for (const k of SCH_DAY_KEYS) schByDay[k] = [];
@@ -134,7 +118,7 @@ export default function ScheduleTab({ timetables }) {
                   if (startMin < 0 || startMin >= (END_HOUR - START_HOUR) * 60) return null;
                   const topPx    = (startMin / 60) * HOUR_HEIGHT + 2;
                   const heightPx = Math.max(((endMin - startMin) / 60) * HOUR_HEIGHT - 4, 26);
-                  const v        = schColorMap[t.course_id] || SCH_PALETTE[0];
+                  const v        = getCourseColor(t.course_id);
                   return (
                     <div key={j}
                       className={`absolute left-1 right-1 overflow-hidden rounded-r-md border-l-4 px-2 py-1.5 ${v.bg} ${v.border}`}
