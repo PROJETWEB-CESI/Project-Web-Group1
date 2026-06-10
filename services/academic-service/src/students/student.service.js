@@ -1,5 +1,6 @@
 const Student = require('./student.model');
 const Enrollment = require('./enrollment.model');
+const Course = require('../courses/course.model');
 
 // Retourne le profil complet d'un étudiant avec ses inscriptions actives
 const getStudentById = async (id, campusId) => {
@@ -53,7 +54,8 @@ const getEnrollmentsByStudent = async (studentId, campusId) => {
     // Get all enrollments for this student (no campus filter needed on enrollments table)
     return Enrollment.findAll({
         where: { studentId },
-        order: [['academicYear', 'DESC'], ['semester', 'ASC']],
+        include: [{ model: Course, as: 'course', attributes: ['courseId', 'courseName', 'credits'] }],
+        order: [['academicYear', 'ASC'], ['semester', 'ASC']],
     });
 };
 

@@ -40,6 +40,7 @@ export default function StudentDashboard() {
   const [payments, setPayments] = useState([]);
   const [semesterAverages, setSemesterAverages] = useState(null);
   const [timetables, setTimetables] = useState([]);
+  const [kpis, setKpis] = useState({ average: null, attendanceRate: null, tuition: null, credits: null, totalCredits: null, currentSemesterLabel: null });
   const [notifs, setNotifs] = useState([
     { id: 1, type: 'Changement EDT', title: 'Introduction au Business lundi 4 déc. — salle modifiée', time: 'il y a 12 min', read: false },
     { id: 2, type: 'Échéance', title: 'Examen Économie Internationale dans 7 jours', time: 'il y a 1 h', read: false },
@@ -65,13 +66,14 @@ export default function StudentDashboard() {
       fetchJson(`/api/grades/student/${studentId}?campusId=${campusId}`),
       fetchJson(`/api/attendance/student/${studentId}?campusId=${campusId}`),
       fetchJson(`/api/students/${studentId}/enrollments?campusId=${campusId}`),
-      fetchJson(`/api/payments/student/${studentId}`),
+      fetchJson(`/api/payments/student/${studentId}/summary`),
       fetchJson(`/api/timetables?campusId=${campusId}`),
-    ]).then(([grades, absences, enrollments, payments, allTimetables]) => {
+      fetchJson(`/api/attendance/student/${studentId}/stats?campusId=${campusId}`),
+    ]).then(([grades, absences, enrollments, paymentSummary, allTimetables, attendanceStats]) => {
       setGradesData(grades);
       setAbsences(absences);
       setEnrollments(enrollments);
-      setPayments(payments);
+      setPayments(Array.isArray(paymentSummary) ? paymentSummary : []);
 
       // Build semester averages from enrollments + grades
       if (enrollments.length > 0 && grades.length > 0) {
@@ -97,6 +99,38 @@ export default function StudentDashboard() {
         }).filter((p) => p !== null && p.value !== null);
 
         if (points.length > 0) setSemesterAverages(points);
+      }
+
+      // KPIs — semestre actuel = dernière entrée chronologique dans enrollments
+      if (enrollments.length > 0) {
+        const sorted = [...enrollments].sort((a, b) => {
+          if (a.academicYear !== b.academicYear) return (a.academicYear || '').localeCompare(b.academicYear || '');
+          return (a.semester || 0) - (b.semester || 0);
+        });
+        const lastYear = sorted[sorted.length - 1].academicYear;
+        const lastSem  = sorted[sorted.length - 1].semester;
+        const current  = sorted.filter(e => e.academicYear === lastYear && e.semester === lastSem);
+        const currentCourseIds = new Set(current.map(e => e.courseId));
+
+        // Moyenne pondérée du semestre actuel
+        const semGrades = grades.filter(g => currentCourseIds.has(g.courseId));
+        const wSum = semGrades.reduce((s, g) => s + parseFloat(g.score || 0) * (g.coefficient || 1), 0);
+        const wCoeff = semGrades.reduce((s, g) => s + (g.coefficient || 1), 0);
+        const average = wCoeff > 0 ? Math.round((wSum / wCoeff) * 10) / 10 : null;
+
+        // Crédits : somme des crédits des cours du semestre actuel (validés ou en cours)
+        const earnedCredits = current.reduce((s, e) => s + (e.course?.credits || 0), 0);
+        // Total ECTS théoriques tous semestres confondus
+        const totalCredits  = enrollments.reduce((s, e) => s + (e.course?.credits || 0), 0);
+
+        setKpis({
+          average,
+          attendanceRate: attendanceStats?.attendanceRate ?? null,
+          tuition: paymentSummary?.totalInvoiced ?? null,
+          credits: earnedCredits,
+          totalCredits,
+          currentSemesterLabel: `S${lastSem} ${lastYear}`,
+        });
       }
 
       // Filter timetables to only those for courses the student is enrolled in
@@ -308,10 +342,32 @@ export default function StudentDashboard() {
             <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('myDashboard') || 'My Dashboard'}</h1>
             <p className="text-[var(--color-text-muted)] mb-6">{studentInfo}</p>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4"><div className="text-xs text-[var(--color-text-muted)]">MOYENNE S1</div><div className="text-3xl font-semibold mt-1">14,2<span className="text-base align-super">/20</span></div></div>
-              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4"><div className="text-xs text-[var(--color-text-muted)]">TAUX DE PRÉSENCE</div><div className="text-3xl font-semibold mt-1 text-green-600">96%</div></div>
-              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4"><div className="text-xs text-[var(--color-text-muted)]">FRAIS DE SCOLARITÉ</div><div className="text-3xl font-semibold mt-1">4 250 €</div></div>
-              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4"><div className="text-xs text-[var(--color-text-muted)]">CRÉDITS S1</div><div className="text-3xl font-semibold mt-1">11<span className="text-base align-super">/30</span></div></div>
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+                <div className="text-xs text-[var(--color-text-muted)]">MOYENNE {kpis.currentSemesterLabel || '—'}</div>
+                <div className="text-3xl font-semibold mt-1">
+                  {kpis.average !== null ? kpis.average.toFixed(1).replace('.', ',') : '—'}
+                  {kpis.average !== null && <span className="text-base align-super">/20</span>}
+                </div>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+                <div className="text-xs text-[var(--color-text-muted)]">TAUX DE PRÉSENCE</div>
+                <div className={`text-3xl font-semibold mt-1 ${kpis.attendanceRate !== null ? (kpis.attendanceRate >= 80 ? 'text-green-600' : 'text-[var(--color-error)]') : ''}`}>
+                  {kpis.attendanceRate !== null ? `${kpis.attendanceRate}%` : '—'}
+                </div>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+                <div className="text-xs text-[var(--color-text-muted)]">FRAIS DE SCOLARITÉ</div>
+                <div className="text-3xl font-semibold mt-1">
+                  {kpis.tuition !== null ? `${kpis.tuition.toLocaleString('fr-FR')} €` : '—'}
+                </div>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+                <div className="text-xs text-[var(--color-text-muted)]">CRÉDITS {kpis.currentSemesterLabel || '—'}</div>
+                <div className="text-3xl font-semibold mt-1">
+                  {kpis.credits !== null ? kpis.credits : '—'}
+                  {kpis.totalCredits > 0 && <span className="text-base align-super">/{kpis.totalCredits}</span>}
+                </div>
+              </div>
             </div>
             <div className="text-sm text-[var(--color-text-muted)]">Prochain cours dans 42 min • Introduction au Business (COM101) — Amphi Commerce A.<br />Cette semaine: 4 cours, 1 évaluation, 2 tâches. (Final UI — demo data; real data from services after seeding.)</div>
 
