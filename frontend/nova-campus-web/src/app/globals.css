@@ -154,6 +154,10 @@
   --color-surface-lighter: rgba(255, 255, 255, 0.50);
   font-size: 1.05em;
 
+  hr {
+    border-top-width: 2px !important;
+  }
+
   /* Course/timetable color palette - high-contrast: bright hues on dark soft backgrounds. */
   --color-course-1: oklch(0.85 0.18 30);
   --color-course-1-soft: oklch(0.30 0.08 30);

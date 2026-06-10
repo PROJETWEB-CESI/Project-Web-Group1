@@ -289,8 +289,8 @@ export default function ProfileMenu() {
                     // underline-offset-2 moves the underline (global + any hover) 2px lower than default. Only applied in ProfileMenu and Sidebar.
                     className={`fakeLink block w-full rounded-md px-3 py-1.5 text-left hover:bg-[var(--color-surface-hover)] focus:bg-[var(--color-surface)] focus:outline-none ${
                       active
-                        ? 'bg-[var(--color-primary-soft)] !text-[var(--color-primary)] font-medium'
-                        : '!text-[var(--color-text)] hover:!text-[var(--color-link-hover)]'
+                        ? 'bg-[var(--color-primary-soft)] !text-[var(--color-text)] font-medium'
+                        : '!text-[var(--color-text-muted)] hover:!text-[var(--color-link-hover)]'
                     }`}
                     role="menuitem"
                     aria-current={active ? 'page' : undefined}
