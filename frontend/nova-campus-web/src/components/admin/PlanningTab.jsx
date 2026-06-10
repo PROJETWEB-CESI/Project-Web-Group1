@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/context/LanguageContext';
 import { getCourseColor } from '@/lib/courseColors';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const DAY_MAP = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
 
@@ -87,7 +88,8 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
           {timetables.length === 0 ? (
             <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">{translate('noCoursesPlanned')}</p>
           ) : (
-            <div className="grid grid-cols-5 divide-x divide-[var(--color-border)]">
+            <ScrollShadow>
+            <div className="grid grid-cols-5 min-w-[700px] divide-x divide-[var(--color-border)]">
               {DAY_LABELS.map((label, i) => (
                 <div key={label} className="p-2 sm:p-3 min-h-[200px]">
                   <div className="text-xs font-semibold tracking-wide mb-2 text-[var(--color-text-muted)]">{label}</div>
@@ -120,6 +122,7 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
                 </div>
               ))}
             </div>
+            </ScrollShadow>
           )}
         </div>
       </div>

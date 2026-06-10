@@ -230,7 +230,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                         <span className="text-[var(--color-text-muted)]">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-[var(--color-text-muted)]">
+                    <td className="px-5 py-4 text-[var(--color-text-muted)] whitespace-nowrap">
                       {e.finalGrade != null ? `${parseFloat(e.finalGrade).toFixed(2)}/20` : '—'}
                     </td>
                     <td className="px-5 py-4">
