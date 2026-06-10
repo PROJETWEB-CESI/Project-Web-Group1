@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { getCourseColor, EXAM_COLOR } from '@/lib/courseColors';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const DAY_MAP = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
@@ -53,7 +54,8 @@ export default function WeekSchedule({ timetables }) {
           Voir tout →
         </Link>
       </div>
-      <div className="grid grid-cols-5 divide-x divide-[var(--color-border)]">
+      <ScrollShadow>
+      <div className="grid grid-cols-5 min-w-[600px] divide-x divide-[var(--color-border)]">
         {weekDays.map((date, i) => {
           const isToday = date.toDateString() === today.toDateString();
           const courses = byDay[i];
@@ -88,6 +90,7 @@ export default function WeekSchedule({ timetables }) {
           );
         })}
       </div>
+      </ScrollShadow>
     </div>
   );
 }

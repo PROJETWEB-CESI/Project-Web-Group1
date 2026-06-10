@@ -137,9 +137,9 @@ export default function DashboardTab({ campus, kpis, byProgram, overduePayments,
                       <div className="font-medium text-[var(--color-text)]">{p.first_name} {p.last_name}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{p.payment_id}</div>
                     </td>
-                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{p.due_date}</td>
-                    <td className="px-4 py-2.5">{formatEuro(p.amount)}</td>
-                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{p.daysOverdue} {translate('daysSuffix')}</td>
+                    <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
+                    <td className="px-4 py-2.5 whitespace-nowrap">{formatEuro(p.amount)}</td>
+                    <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">{p.daysOverdue} {translate('daysSuffix')}</td>
                     <td className="px-4 py-2.5">
                       <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${STAGE_STYLES[p.dunningStage] || STAGE_STYLES.PENDING}`}>
                         {p.dunningStage || 'PENDING'}

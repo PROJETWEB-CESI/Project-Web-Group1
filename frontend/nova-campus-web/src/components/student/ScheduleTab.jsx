@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getCourseColor } from '@/lib/courseColors';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const HOUR_HEIGHT = 64;
 const START_HOUR = 8;
@@ -68,7 +69,8 @@ export default function ScheduleTab({ timetables }) {
       </div>
 
       <div className="border border-[var(--color-border)] rounded-lg overflow-hidden bg-[var(--color-bg-elev)]">
-        <div className="grid" style={{ gridTemplateColumns: '56px repeat(5, 1fr)' }}>
+        <ScrollShadow>
+        <div className="grid" style={{ gridTemplateColumns: '56px repeat(5, minmax(140px, 1fr))', minWidth: '756px' }}>
 
           <div className="border-b border-r border-[var(--color-border)] bg-[var(--color-surface)]" />
           {SCH_DAY_KEYS.map((dayKey, i) => {
@@ -150,6 +152,7 @@ export default function ScheduleTab({ timetables }) {
           })}
 
         </div>
+        </ScrollShadow>
       </div>
     </div>
   );

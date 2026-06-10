@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Wraps horizontally-scrollable content (tables, etc.) and shows inset shadows
-// on the edges that still have content to scroll to, so users on narrow
-// screens know more content is available.
+// Wraps horizontally-scrollable content (tables, etc.) and shows shadow
+// overlays on the edges that still have content to scroll to, so users on
+// narrow screens know more content is available. The overlays are layered on
+// top of the scrollable content so they stay visible above table/grid
+// backgrounds (an inset box-shadow on the scroll container would be hidden
+// behind opaque cell backgrounds).
 export default function ScrollShadow({ children, className = '' }) {
   const ref = useRef(null);
   const [showLeft, setShowLeft] = useState(false);
@@ -30,18 +33,25 @@ export default function ScrollShadow({ children, className = '' }) {
     };
   }, [update, children]);
 
-  const shadowLeft = 'inset 15px 0 15px -15px var(--color-border-stronger)';
-  const shadowRight = 'inset -15px 0 15px -15px var(--color-border-stronger)';
-  const boxShadow = [showLeft && shadowLeft, showRight && shadowRight].filter(Boolean).join(', ');
-
   return (
-    <div
-      ref={ref}
-      onScroll={update}
-      className={`overflow-x-auto ${className}`}
-      style={boxShadow ? { boxShadow } : undefined}
-    >
-      {children}
+    <div className="relative">
+      <div ref={ref} onScroll={update} className={`overflow-x-auto ${className}`}>
+        {children}
+      </div>
+      <div
+        className="pointer-events-none absolute inset-y-0 left-0 w-[15px] transition-opacity duration-250"
+        style={{
+          background: 'linear-gradient(to right, var(--color-border), transparent)',
+          opacity: showLeft ? 1 : 0,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 w-[15px] transition-opacity duration-250"
+        style={{
+          background: 'linear-gradient(to left, var(--color-border), transparent)',
+          opacity: showRight ? 1 : 0,
+        }}
+      />
     </div>
   );
 }
