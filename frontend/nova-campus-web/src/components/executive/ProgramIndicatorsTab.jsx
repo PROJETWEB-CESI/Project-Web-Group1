@@ -92,8 +92,8 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
                       <span className="font-medium text-[var(--color-text)] truncate pr-2">{p.programName} <span className="text-[var(--color-text-muted)] font-normal">· {p.campusName}</span></span>
                       <span className="text-[var(--color-success)] font-medium flex-shrink-0">{p.fillRate}%</span>
                     </div>
-                    <div className="h-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
-                      <div className="h-full rounded-full bg-[var(--color-success)]" style={{ width: `${Math.min(100, p.fillRate)}%` }} />
+                    <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-[var(--color-success)] transition-all duration-1000" style={{ width: `${Math.min(100, p.fillRate)}%` }} />
                     </div>
                   </div>
                 ))}
@@ -118,8 +118,8 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
                       <span className="font-medium text-[var(--color-text)] truncate pr-2">{p.programName} <span className="text-[var(--color-text-muted)] font-normal">· {p.campusName}</span></span>
                       <span className="text-[var(--color-error)] font-medium flex-shrink-0">{p.fillRate}%</span>
                     </div>
-                    <div className="h-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
-                      <div className="h-full rounded-full bg-[var(--color-error)]" style={{ width: `${Math.min(100, p.fillRate)}%` }} />
+                    <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-[var(--color-error)] transition-all duration-1000" style={{ width: `${Math.min(100, p.fillRate)}%` }} />
                     </div>
                   </div>
                 ))}

@@ -93,9 +93,9 @@ export default function DashboardTab({ campus, kpis, byProgram, overduePayments,
                         {p.studentCount}{p.maxStudents ? ` / ${p.maxStudents}` : ''}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-[var(--color-surface)] overflow-hidden">
+                    <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-[var(--color-primary)]"
+                        className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-1000"
                         style={{ width: `${pct !== null ? pct : 100}%` }}
                       />
                     </div>
