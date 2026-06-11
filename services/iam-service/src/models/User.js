@@ -43,6 +43,18 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'active',
   },
+  emailNotifications: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'email_notifications',
+  },
+  inAppNotifications: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'in_app_notifications',
+  },
 }, {
   tableName: 'users',
   timestamps: true,

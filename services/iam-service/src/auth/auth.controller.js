@@ -48,7 +48,8 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = req.body;
-    const result = await AuthService.login(email, password);
+    const meta = { userAgent: req.headers['user-agent'], ip: req.ip };
+    const result = await AuthService.login(email, password, meta);
 
     // Set httpOnly cookies (best practice - not exposed to JS)
     res.cookie('accessToken', result.accessToken, {
@@ -77,7 +78,8 @@ async function login(req, res) {
 async function refresh(req, res) {
   try {
     const refreshToken = req.cookies?.refreshToken;
-    const result = await AuthService.refreshTokens(refreshToken);
+    const meta = { userAgent: req.headers['user-agent'], ip: req.ip };
+    const result = await AuthService.refreshTokens(refreshToken, meta);
 
     // Set new cookies (rotating refresh token)
     res.cookie('accessToken', result.accessToken, {
@@ -103,6 +105,11 @@ async function refresh(req, res) {
 }
 
 async function logout(req, res) {
+  const refreshToken = req.cookies?.refreshToken;
+  if (refreshToken) {
+    await AuthService.revokeSessionByRefreshToken(refreshToken);
+  }
+
   const cookieOpts = getCookieOptions(req);
   res.clearCookie('accessToken', cookieOpts);
   res.clearCookie('refreshToken', cookieOpts);
@@ -160,6 +167,31 @@ async function changePassword(req, res) {
   }
 }
 
+async function listSessions(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const currentRefreshToken = req.cookies?.refreshToken;
+    const sessions = await AuthService.listSessions(req.user.id, currentRefreshToken);
+    res.json({ sessions });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+async function revokeSession(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    await AuthService.revokeSession(req.user.id, req.params.id);
+    res.json({ message: 'Session revoked' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -169,4 +201,6 @@ module.exports = {
   me,
   updateMe,
   changePassword,
+  listSessions,
+  revokeSession,
 };

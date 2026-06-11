@@ -9,17 +9,31 @@ import { useApi } from '@/lib/api';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 
-const NOTIFICATION_PREFS_KEY = 'novacampus.notificationPreferences';
+function describeSession(userAgent) {
+  if (!userAgent) return 'Unknown device';
 
-function loadNotificationPrefs() {
-  if (typeof window === 'undefined') return { email: true, inApp: true };
+  let browser = 'Unknown browser';
+  if (/Edg\//.test(userAgent)) browser = 'Edge';
+  else if (/Chrome\//.test(userAgent)) browser = 'Chrome';
+  else if (/Firefox\//.test(userAgent)) browser = 'Firefox';
+  else if (/Safari\//.test(userAgent)) browser = 'Safari';
+
+  let os = 'Unknown OS';
+  if (/Windows/.test(userAgent)) os = 'Windows';
+  else if (/Mac OS X/.test(userAgent)) os = 'macOS';
+  else if (/Android/.test(userAgent)) os = 'Android';
+  else if (/iPhone|iPad/.test(userAgent)) os = 'iOS';
+  else if (/Linux/.test(userAgent)) os = 'Linux';
+
+  return `${browser} on ${os}`;
+}
+
+function formatSessionDate(value) {
+  if (!value) return '-';
   try {
-    const raw = window.localStorage.getItem(NOTIFICATION_PREFS_KEY);
-    if (!raw) return { email: true, inApp: true };
-    const parsed = JSON.parse(raw);
-    return { email: parsed.email !== false, inApp: parsed.inApp !== false };
+    return new Date(value).toLocaleString();
   } catch {
-    return { email: true, inApp: true };
+    return '-';
   }
 }
 
@@ -203,24 +217,82 @@ export default function ProfilePage() {
     }
   };
 
-  // Notifications tab: local preferences
+  // Notifications tab: server-side preferences
   const [notifPrefs, setNotifPrefs] = useState({ email: true, inApp: true });
   const [notifSaved, setNotifSaved] = useState(false);
+  const [savingNotifPrefs, setSavingNotifPrefs] = useState(false);
+  const [notifMessage, setNotifMessage] = useState(null);
 
   useEffect(() => {
-    setNotifPrefs(loadNotificationPrefs());
-  }, []);
+    if (!user) return;
+    setNotifPrefs({
+      email: user.emailNotifications !== false,
+      inApp: user.inAppNotifications !== false,
+    });
+  }, [user]);
 
   const handleNotifToggle = (key) => {
     setNotifPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
     setNotifSaved(false);
   };
 
-  const handleSaveNotifPrefs = (e) => {
+  const handleSaveNotifPrefs = async (e) => {
     e.preventDefault();
-    window.localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(notifPrefs));
-    setNotifSaved(true);
-    setTimeout(() => setNotifSaved(false), 2000);
+    setSavingNotifPrefs(true);
+    setNotifMessage(null);
+    setNotifSaved(false);
+    try {
+      const res = await apiFetch('/api/auth/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailNotifications: notifPrefs.email,
+          inAppNotifications: notifPrefs.inApp,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || translate('preferencesSaveError') || 'Could not save preferences.');
+      }
+      setUser((prev) => (prev ? { ...prev, ...data.user } : data.user));
+      setNotifSaved(true);
+      setTimeout(() => setNotifSaved(false), 2000);
+    } catch (err) {
+      setNotifMessage({ type: 'error', text: err.message });
+    } finally {
+      setSavingNotifPrefs(false);
+    }
+  };
+
+  // Sessions tab: real session list from the server
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [revokingSessionId, setRevokingSessionId] = useState(null);
+
+  const loadSessions = () => {
+    setLoadingSessions(true);
+    apiFetch('/api/auth/sessions')
+      .then((res) => (res.ok ? res.json() : { sessions: [] }))
+      .then((data) => setSessions(data.sessions || []))
+      .catch(() => setSessions([]))
+      .finally(() => setLoadingSessions(false));
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'sessions') return;
+    loadSessions();
+  }, [activeTab]);
+
+  const handleRevokeSession = async (sessionId) => {
+    setRevokingSessionId(sessionId);
+    try {
+      const res = await apiFetch(`/api/auth/sessions/${sessionId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      }
+    } finally {
+      setRevokingSessionId(null);
+    }
   };
 
   const tabs = [
@@ -447,12 +519,17 @@ export default function ProfilePage() {
                 </label>
 
                 <div className="flex items-center gap-3 pt-2">
-                  <Button type="submit">
+                  <Button type="submit" loading={savingNotifPrefs}>
                     {translate('save') || 'Save'}
                   </Button>
                   {notifSaved && (
                     <span className="text-sm text-[var(--color-success)]">
                       {translate('preferencesSaved') || 'Preferences saved.'}
+                    </span>
+                  )}
+                  {notifMessage && (
+                    <span className="text-sm text-[var(--color-error)]">
+                      {notifMessage.text}
                     </span>
                   )}
                 </div>
@@ -486,16 +563,56 @@ export default function ProfilePage() {
             {activeTab === 'sessions' && (
               <div className="space-y-4 max-w-md">
                 <h2 className="text-sm font-medium text-[var(--color-text)]">
-                  {translate('sessionsTitle') || 'Active session'}
+                  {translate('sessionsTitle') || 'Active sessions'}
                 </h2>
-                <div className="border border-[var(--color-border)] rounded-lg p-4">
-                  <div className="font-medium text-sm text-[var(--color-text)]">
-                    {translate('sessionsCurrentDevice') || 'This device'}
+
+                {loadingSessions ? (
+                  <div className="text-sm text-[var(--color-text-muted)]">
+                    {translate('loading') || 'Loading...'}
                   </div>
-                  <div className="text-xs text-[var(--color-text-muted)] mt-1">
-                    {translate('sessionsCurrentDeviceHint') || 'You are currently signed in on this browser.'}
+                ) : sessions.length === 0 ? (
+                  <div className="text-sm text-[var(--color-text-muted)]">
+                    {translate('sessionsNone') || 'No active sessions found.'}
                   </div>
-                </div>
+                ) : (
+                  sessions.map((session) => (
+                    <div key={session.id} className="border border-[var(--color-border)] rounded-lg p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-medium text-sm text-[var(--color-text)]">
+                            {describeSession(session.userAgent)}
+                            {session.isCurrent && (
+                              <span className="ml-2 inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] align-middle">
+                                {translate('sessionsCurrentDevice') || 'This device'}
+                              </span>
+                            )}
+                          </div>
+                          {session.ipAddress && (
+                            <div className="text-xs text-[var(--color-text-muted)] mt-1">
+                              {session.ipAddress}
+                            </div>
+                          )}
+                          <div className="text-xs text-[var(--color-text-muted)] mt-1">
+                            {(translate('sessionsLastActive') || 'Last active')}: {formatSessionDate(session.lastUsedAt)}
+                          </div>
+                        </div>
+                        {!session.isCurrent && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            loading={revokingSessionId === session.id}
+                            className="!text-[var(--color-error)] hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)]"
+                            onClick={() => handleRevokeSession(session.id)}
+                          >
+                            {translate('sessionsRevoke') || 'Revoke'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+
                 <SignOutButton />
               </div>
             )}
