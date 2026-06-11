@@ -40,6 +40,19 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(20),
     allowNull: true,
   },
+  instructorId: {
+    type: DataTypes.STRING(10),
+    allowNull: true,
+    field: 'instructor_id',
+  },
+  specialty: {
+    type: DataTypes.STRING(120),
+    allowNull: true,
+  },
+  department: {
+    type: DataTypes.STRING(60),
+    allowNull: true,
+  },
   firstName: {
     type: DataTypes.STRING(60),
     allowNull: true,

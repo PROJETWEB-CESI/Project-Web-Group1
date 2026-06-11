@@ -82,7 +82,7 @@ const getStudentGradeStats = async (studentId, campusId, courseId) => {
 const getCourseGradeStats = async (courseId, campusId) => {
     if (!courseId || !campusId) throw new Error('courseId et campusId sont obligatoires');
     const grades = await Grade.findAll({ where: { courseId, campusId, score: { [Op.not]: null } } });
-    if (grades.length === 0) return { count: 0, average: null, median: null, stdDev: null, passRate: null };
+    if (grades.length === 0) return { studentsCount: 0, average: null, median: null, stdDev: null, passRate: null };
 
     const scores = grades.map(g => parseFloat(g.score)).sort((a, b) => a - b);
     const avg = scores.reduce((s, v) => s + v, 0) / scores.length;
@@ -91,8 +91,9 @@ const getCourseGradeStats = async (courseId, campusId) => {
         : scores[Math.floor(scores.length / 2)];
     const stdDev = +Math.sqrt(scores.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / scores.length).toFixed(2);
     const passRate = +(scores.filter(s => s >= 10).length / scores.length * 100).toFixed(1);
+    const studentsCount = new Set(grades.map(g => g.studentId)).size;
 
-    return { count: scores.length, average: +avg.toFixed(2), median: +median.toFixed(2), stdDev, passRate };
+    return { studentsCount, average: +avg.toFixed(2), median: +median.toFixed(2), stdDev, passRate };
 };
 
 module.exports = {

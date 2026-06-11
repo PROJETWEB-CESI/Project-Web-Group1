@@ -149,6 +149,7 @@ export default function DashboardSidebar() {
     } else if (role === 'teacher') {
       mainItems = [
         { label: translate('myDashboard') || 'My Dashboard', href: dashboardHref, icon: Home },
+        { label: translate('schedule') || 'Schedule', href: '/dashboard/teacher/schedule', icon: Calendar },
         { label: translate('myCourses') || 'My Courses', href: '/dashboard/teacher/courses', icon: BookOpen },
         { label: translate('gradeEntry') || 'Grade Entry', href: '/dashboard/teacher/grades', icon: FileText },
         { label: translate('attendance') || 'Attendance & Absences', href: '/dashboard/teacher/attendance', icon: Users },

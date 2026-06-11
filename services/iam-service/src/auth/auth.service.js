@@ -71,6 +71,7 @@ async function login(email, password, meta = {}) {
     role: user.role,
     campusId: user.campusId,
     sid: session.id,
+    instructorId: user.instructorId || null,
   };
 
   const accessToken = generateAccessToken(payload);
@@ -107,6 +108,7 @@ async function refreshTokens(refreshToken, meta = {}) {
     role: decoded.role,
     campusId: decoded.campusId,
     sid: session.id,
+    instructorId: decoded.instructorId || null,
   };
 
   const newAccessToken = generateAccessToken(payload);
