@@ -16,7 +16,7 @@ import NotificationsTab  from '@/components/student/NotificationsTab';
 
 export default function StudentDashboard() {
   const searchParams = useSearchParams();
-  const { clearNotifications } = useNotifications();
+  const { clearNotifications, markOneRead, setNotificationCount } = useNotifications();
   const { user } = useAuth();
 
   const currentTab = (searchParams?.get('tab') || 'dashboard').toLowerCase();
@@ -123,14 +123,17 @@ export default function StudentDashboard() {
       const enrolledIds = new Set(enr.map(e => e.courseId));
       setTimetables(allTimetables.filter(t => enrolledIds.has(t.course_id)));
 
-      if (Array.isArray(notifications)) setNotifs(notifications);
+      if (Array.isArray(notifications)) {
+        setNotifs(notifications);
+        setNotificationCount(notifications.filter(n => !n.read).length);
+      }
     });
   }, [user]);
 
   const markNotifRead = (id) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     apiFetch(`/api/notifications/${id}/read`, { method: 'PUT' }).catch(() => {});
-    if (currentTab === 'notifications') clearNotifications();
+    markOneRead();
   };
 
   const markAllRead = () => {

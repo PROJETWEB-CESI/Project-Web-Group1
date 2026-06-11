@@ -110,8 +110,10 @@ export default function NotificationsTab({ notifs, markNotifRead, markAllRead })
   const counts = useMemo(() => {
     const c = { all: notifs.length, unread: 0 };
     for (const n of notifs) {
-      if (!n.read) c.unread = (c.unread || 0) + 1;
-      c[n.type] = (c[n.type] || 0) + 1;
+      if (!n.read) {
+        c.unread = (c.unread || 0) + 1;
+        c[n.type] = (c[n.type] || 0) + 1;
+      }
     }
     return c;
   }, [notifs]);
