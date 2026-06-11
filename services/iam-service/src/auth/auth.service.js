@@ -57,22 +57,25 @@ async function login(email, password, meta = {}) {
     throw new Error('Invalid email or password');
   }
 
+  const session = await Session.create({
+    userId: user.id,
+    refreshTokenHash: '',
+    userAgent: meta.userAgent || null,
+    ipAddress: meta.ip || null,
+  });
+
   const payload = {
     id: user.id,
     email: user.email,
     role: user.role,
     campusId: user.campusId,
+    sid: session.id,
   };
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  await Session.create({
-    userId: user.id,
-    refreshTokenHash: hashToken(refreshToken),
-    userAgent: meta.userAgent || null,
-    ipAddress: meta.ip || null,
-  });
+  await session.update({ refreshTokenHash: hashToken(refreshToken) });
 
   const { passwordHash: _ph, ...safeUser } = user.toJSON();
   return { accessToken, refreshToken, user: safeUser };
@@ -89,7 +92,7 @@ async function refreshTokens(refreshToken, meta = {}) {
   }
 
   const session = await Session.findOne({
-    where: { userId: decoded.id, refreshTokenHash: hashToken(refreshToken) },
+    where: { id: decoded.sid, userId: decoded.id, refreshTokenHash: hashToken(refreshToken) },
   });
   if (!session) {
     throw new Error('Session has been revoked');
@@ -100,6 +103,7 @@ async function refreshTokens(refreshToken, meta = {}) {
     email: decoded.email,
     role: decoded.role,
     campusId: decoded.campusId,
+    sid: session.id,
   };
 
   const newAccessToken = generateAccessToken(payload);
