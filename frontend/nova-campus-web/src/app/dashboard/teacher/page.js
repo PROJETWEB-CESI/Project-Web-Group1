@@ -9,6 +9,7 @@ import TeacherKpiCards from '@/components/teacher/TeacherKpiCards';
 import TeacherNextCourse from '@/components/teacher/TeacherNextCourse';
 import TeacherPendingGrades from '@/components/teacher/TeacherPendingGrades';
 import TeacherCoursePerformance from '@/components/teacher/TeacherCoursePerformance';
+import TeacherGradeDistribution from '@/components/teacher/TeacherGradeDistribution';
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function TeacherDashboard() {
   const [timetables, setTimetables]                 = useState([]);
   const [pendingGrades, setPendingGrades]           = useState([]);
   const [coursePerformance, setCoursePerformance]   = useState([]);
+  const [gradeDistribution, setGradeDistribution]   = useState([]);
   const [publishing, setPublishing]                 = useState({});
   const [loading, setLoading]                       = useState(true);
 
@@ -55,10 +57,11 @@ export default function TeacherDashboard() {
 
         if (courseIds.length > 0 && campusId) {
           const qs = `courseIds=${courseIds.join(',')}&campusId=${campusId}`;
-          const [stats, pending, perf] = await Promise.all([
+          const [stats, pending, perf, dist] = await Promise.all([
             fetchJson(`/api/teacher/courses/stats?${qs}`),
             fetchJson(`/api/teacher/courses/pending-grades?${qs}`),
             fetchJson(`/api/teacher/courses/performance?${qs}`),
+            fetchJson(`/api/teacher/courses/distribution?${qs}`),
           ]);
           if (stats) {
             setStudentsCount(stats.studentsCount);
@@ -66,6 +69,7 @@ export default function TeacherDashboard() {
           }
           if (Array.isArray(pending)) setPendingGrades(pending);
           if (Array.isArray(perf))    setCoursePerformance(perf);
+          if (Array.isArray(dist))    setGradeDistribution(dist);
         } else {
           setStudentsCount(0);
         }
@@ -100,14 +104,16 @@ export default function TeacherDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">
-        {user?.firstName ? `${translate('hello', { name: user.firstName })} 👋` : null}
-      </h1>
-      {user?.specialty && (
-        <p className="text-[var(--color-text-muted)] mb-6">
-          Prof. {user.specialty}
-        </p>
-      )}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">
+          {user?.firstName ? `${translate('hello', { name: user.firstName })} 👋` : null}
+        </h1>
+        {user?.specialty && (
+          <p className="text-[var(--color-text-muted)] mt-1">
+            Prof. {user.specialty}{user?.department ? ` · ${user.department}` : ''}
+          </p>
+        )}
+      </div>
 
       <TeacherKpiCards
         loading={loading}
@@ -131,6 +137,7 @@ export default function TeacherDashboard() {
             onPublish={handlePublish}
           />
           <TeacherCoursePerformance coursePerformance={coursePerformance} />
+          <TeacherGradeDistribution distribution={gradeDistribution} />
         </>
       )}
     </div>
