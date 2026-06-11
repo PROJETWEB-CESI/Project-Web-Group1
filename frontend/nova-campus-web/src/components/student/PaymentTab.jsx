@@ -1,6 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/context/LanguageContext';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const LABELS_FR = [
   "Acompte d'inscription",
@@ -103,73 +104,79 @@ export default function PaymentTab({ payments, billingSummary, payEcheance }) {
 
       <h3 className="font-semibold mb-3">{translate('echeancierLabel')}</h3>
       <div className="border border-[var(--color-border)] rounded-xl overflow-hidden">
-        <div className="grid grid-cols-[140px_1fr_110px_160px] px-4 py-2.5 bg-[var(--color-bg-sunken)] border-b border-[var(--color-border)]">
-          {[
-            translate('colDueDate').toUpperCase(),
-            translate('colDescription'),
-            translate('colAmount').toUpperCase(),
-            translate('colStatus').toUpperCase(),
-          ].map(h => (
-            <div key={h} className="text-xs font-semibold tracking-wider text-[var(--color-text-muted)]">
-              {h}
-            </div>
-          ))}
-        </div>
-
         {payments.length === 0 ? (
           <div className="px-4 py-6 text-sm text-center text-[var(--color-text-muted)] bg-[var(--color-bg-elev)]">
             {translate('noPaymentsAvailable')}
           </div>
-        ) : payments.map((p, idx) => {
-          const paid    = isPaid(p.status);
-          const delayed = isDelay(p.status);
-          const days    = !paid ? daysUntil(p.dueDate) : null;
-          const upcoming = !paid && !delayed;
-
-          return (
-            <div
-              key={p.paymentId || idx}
-              className={[
-                'grid grid-cols-[140px_1fr_110px_160px] items-center px-4 py-3.5',
-                'border-b border-[var(--color-border)] last:border-b-0',
-                upcoming
-                  ? 'bg-[var(--color-course-1-soft)]'
-                  : 'bg-[var(--color-bg-elev)]',
-              ].join(' ')}
-            >
-              <div className={`text-sm ${upcoming ? 'font-semibold' : 'text-[var(--color-text)]'}`}>
-                {formatDate(p.dueDate)}
+        ) : (
+          <ScrollShadow>
+            <div className="min-w-[640px]">
+              <div className="grid grid-cols-[140px_1fr_110px_160px] px-4 py-2.5 bg-[var(--color-bg-sunken)] border-b border-[var(--color-border)]">
+                {[
+                  translate('colDueDate').toUpperCase(),
+                  translate('colDescription'),
+                  translate('colAmount').toUpperCase(),
+                  translate('colStatus').toUpperCase(),
+                ].map(h => (
+                  <div key={h} className="text-xs font-semibold tracking-wider text-[var(--color-text-muted)]">
+                    {h}
+                  </div>
+                ))}
               </div>
 
-              <div className="text-sm text-[var(--color-text)]">
-                {getLabel(p, idx, isFrench)}
-              </div>
+              {payments.map((p, idx) => {
+                const paid    = isPaid(p.status);
+                const delayed = isDelay(p.status);
+                const days    = !paid ? daysUntil(p.dueDate) : null;
+                const upcoming = !paid && !delayed;
 
-              <div className="text-sm font-semibold text-[var(--color-text)]">
-                {formatEuro(p.amount)}
-              </div>
-
-              <div className="flex items-center gap-2">
-                {paid ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-success)]/10 text-[var(--color-success)]">
-                    {translate('paymentStatusPaid')}
-                  </span>
-                ) : delayed ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-error)]/10 text-[var(--color-error)]">
-                    {translate('paymentStatusDelay')}
-                  </span>
-                ) : (
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--color-course-1)' }}
+                return (
+                  <div
+                    key={p.paymentId || idx}
+                    className={[
+                      'grid grid-cols-[140px_1fr_110px_160px] items-center px-4 py-3.5',
+                      'border-b border-[var(--color-border)] last:border-b-0',
+                      upcoming
+                        ? 'bg-[var(--color-course-1-soft)]'
+                        : 'bg-[var(--color-bg-elev)]',
+                    ].join(' ')}
                   >
-                    {translate('paymentStatusToPay')}{days !== null ? ` · ${translate('inXDays', { n: days })}` : ''}
-                  </span>
-                )}
-              </div>
+                    <div className={`text-sm ${upcoming ? 'font-semibold' : 'text-[var(--color-text)]'}`}>
+                      {formatDate(p.dueDate)}
+                    </div>
+
+                    <div className="text-sm text-[var(--color-text)] pr-4">
+                      {getLabel(p, idx, isFrench)}
+                    </div>
+
+                    <div className="text-sm font-semibold text-[var(--color-text)]">
+                      {formatEuro(p.amount)}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {paid ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-success)]/10 text-[var(--color-success)]">
+                          {translate('paymentStatusPaid')}
+                        </span>
+                      ) : delayed ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-error)]/10 text-[var(--color-error)]">
+                          {translate('paymentStatusDelay')}
+                        </span>
+                      ) : (
+                        <span
+                          className="text-sm font-medium"
+                          style={{ color: 'var(--color-course-1)' }}
+                        >
+                          {translate('paymentStatusToPay')}{days !== null ? ` · ${translate('inXDays', { n: days })}` : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </ScrollShadow>
+        )}
       </div>
     </div>
   );

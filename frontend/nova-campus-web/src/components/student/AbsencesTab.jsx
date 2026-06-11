@@ -4,8 +4,8 @@ import ScrollShadow from '@/components/shared/ScrollShadow';
 import { useLanguage } from '@/context/LanguageContext';
 
 const STATUS_COLORS = {
-  red:   'bg-red-50 text-red-600 border border-red-200',
-  green: 'bg-green-50 text-green-700 border border-green-200',
+  red:   'bg-[color-mix(in_oklch,var(--color-error)_10%,transparent)] text-[var(--color-error)] border border-[color-mix(in_oklch,var(--color-error)_20%,transparent)]',
+  green: 'bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)] text-[var(--color-success)] border border-[color-mix(in_oklch,var(--color-success)_20%,transparent)]',
 };
 
 function formatDate(dateStr) {
@@ -62,7 +62,7 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats, 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{translate('kpiAttendanceRate')}</p>
-          <p className="text-3xl font-bold mt-2 text-green-600">
+          <p className="text-3xl font-bold mt-2 text-[var(--color-success)]">
             {attStats?.attendanceRate != null ? `${attStats.attendanceRate}%` : '—'}
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats, 
         </div>
         <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{translate('unjustifiedAbsences')}</p>
-          <p className="text-3xl font-bold mt-2 text-red-500">{unjustifiedCount}</p>
+          <p className="text-3xl font-bold mt-2 text-[var(--color-error)]">{unjustifiedCount}</p>
         </div>
       </div>
 
