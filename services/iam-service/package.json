@@ -7,6 +7,9 @@
     "start:dev": "node src/index.js"
   },
   "type": "commonjs",
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.6",
