@@ -1,11 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, KeyRound } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import ScrollShadow from '@/components/shared/ScrollShadow';
 import Button from '@/components/shared/Button';
 import CreateStudentModal from '@/components/admin/CreateStudentModal';
+import ResetPasswordModal from '@/components/admin/ResetPasswordModal';
 
 const STATUS_STYLES = {
   Active:    'bg-[var(--color-success)]/10 text-[var(--color-success)]',
@@ -41,6 +42,7 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
   const [programFilter, setProgramFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [resetPasswordStudent, setResetPasswordStudent] = useState(null);
 
   const programs = useMemo(() => {
     const map = new Map();
@@ -67,7 +69,7 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
     <div>
       <div className="flex items-start justify-between gap-4 mb-1">
         <h1 className="text-2xl font-semibold tracking-tight">{translate('adminStudentsTitle')}</h1>
-        <Button onClick={() => setShowCreateModal(true)}>
+        <Button size="sm" onClick={() => setShowCreateModal(true)}>
           <Plus className="w-4 h-4 mr-1.5" />
           {translate('newEnrollment') || 'New enrollment'}
         </Button>
@@ -85,6 +87,13 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
             setShowCreateModal(false);
             onStudentCreated?.(student);
           }}
+        />
+      )}
+
+      {resetPasswordStudent && (
+        <ResetPasswordModal
+          student={resetPasswordStudent}
+          onClose={() => setResetPasswordStudent(null)}
         />
       )}
 
@@ -133,6 +142,7 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
                   <th className="px-4 py-2 font-normal">{translate('colEntryYear')}</th>
                   <th className="px-4 py-2 font-normal">{translate('colPayment')}</th>
                   <th className="px-4 py-2 font-normal">{translate('colStatus')}</th>
+                  <th className="px-4 py-2 font-normal w-0">{translate('colActions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,6 +171,18 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
                       <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${STATUS_STYLES[s.status] || 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
                         {STATUS_LABELS[s.status] ? translate(STATUS_LABELS[s.status]) : (s.status || '—')}
                       </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="!text-[var(--color-error)] hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)] whitespace-nowrap"
+                        onClick={() => setResetPasswordStudent(s)}
+                      >
+                        <KeyRound className="w-3.5 h-3.5 mr-1.5" />
+                        {translate('resetPassword') || 'Reset password'}
+                      </Button>
                     </td>
                   </tr>
                 ))}

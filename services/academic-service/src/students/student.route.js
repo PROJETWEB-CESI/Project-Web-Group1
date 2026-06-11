@@ -74,17 +74,31 @@ router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) 
     }
 });
 
-// Admin : créer un dossier étudiant (le studentId est généré côté serveur)
+// Admin : créer un dossier étudiant (le studentId et l'email sont générés côté serveur)
 router.post('/', authorize(['admin']), async (req, res) => {
-    const { campusId, programId, firstName, lastName, email, enrollmentYear } = req.body;
-    if (!campusId || !programId || !firstName || !lastName || !email || !enrollmentYear) {
-        return res.status(400).json({ error: 'Champs obligatoires manquants : campusId, programId, firstName, lastName, email, enrollmentYear' });
+    const { campusId, programId, firstName, lastName, enrollmentYear } = req.body;
+    if (!campusId || !programId || !firstName || !lastName || !enrollmentYear) {
+        return res.status(400).json({ error: 'Champs obligatoires manquants : campusId, programId, firstName, lastName, enrollmentYear' });
     }
     try {
         const student = await service.createStudent(req.body);
         res.status(201).json(student);
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+// Admin : supprimer un dossier étudiant (annulation d'une création échouée)
+router.delete('/:id', authorize(['admin']), async (req, res) => {
+    if (!req.query.campusId) {
+        return res.status(400).json({ error: 'campusId est obligatoire' });
+    }
+    try {
+        const deleted = await service.deleteStudent(req.params.id, req.query.campusId);
+        if (!deleted) return res.status(404).json({ error: 'Étudiant introuvable' });
+        res.status(204).send();
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

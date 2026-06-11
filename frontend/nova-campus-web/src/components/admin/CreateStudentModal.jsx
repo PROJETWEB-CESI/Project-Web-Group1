@@ -25,7 +25,6 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState(() => generatePassword());
   const [programId, setProgramId] = useState(programs[0]?.programId || '');
   const [enrollmentYear, setEnrollmentYear] = useState(currentYear);
@@ -34,7 +33,7 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !password || !programId || !enrollmentYear) {
+    if (!firstName || !lastName || !password || !programId || !enrollmentYear) {
       setError(translate('createStudentMissingFields') || 'Please fill in all fields.');
       return;
     }
@@ -42,41 +41,34 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
     setSubmitting(true);
     setError('');
 
-    let createdUser = null;
+    let createdStudent = null;
     try {
-      const userRes = await apiFetch('/api/auth/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role: 'student', campusId, firstName, lastName }),
-      });
-      const userData = await userRes.json().catch(() => ({}));
-      if (!userRes.ok) {
-        throw new Error(userData.error || translate('createStudentUserError') || 'Could not create the user account.');
-      }
-      createdUser = userData;
-
       const studentRes = await apiFetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campusId, programId, firstName, lastName, email, enrollmentYear: Number(enrollmentYear) }),
+        body: JSON.stringify({ campusId, programId, firstName, lastName, enrollmentYear: Number(enrollmentYear) }),
       });
       const studentData = await studentRes.json().catch(() => ({}));
       if (!studentRes.ok) {
         throw new Error(studentData.error || translate('createStudentRecordError') || 'Could not create the student record.');
       }
+      createdStudent = studentData;
 
-      // Link the IAM account to the new student record.
-      await apiFetch(`/api/auth/users/${createdUser.id}`, {
-        method: 'PUT',
+      const userRes = await apiFetch('/api/auth/users', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: studentData.studentId }),
+        body: JSON.stringify({ email: studentData.email, password, role: 'student', campusId, firstName, lastName, studentId: studentData.studentId }),
       });
+      const userData = await userRes.json().catch(() => ({}));
+      if (!userRes.ok) {
+        throw new Error(userData.error || translate('createStudentUserError') || 'Could not create the user account.');
+      }
 
       onCreated({ ...studentData, program: programs.find((p) => p.programId === programId) });
     } catch (err) {
-      // Roll back the IAM account if the student record could not be created.
-      if (createdUser) {
-        await apiFetch(`/api/auth/users/${createdUser.id}`, { method: 'DELETE' }).catch(() => {});
+      // Roll back the student record if the IAM account could not be created.
+      if (createdStudent) {
+        await apiFetch(`/api/students/${createdStudent.studentId}?campusId=${campusId}`, { method: 'DELETE' }).catch(() => {});
       }
       setError(err.message);
     } finally {
@@ -115,13 +107,13 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
             />
           </div>
 
-          <Input
-            label={translate('emailAddress') || 'Email address'}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          {firstName && lastName && (
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {translate('emailAddress') || 'Email address'}: {`${firstName}.${lastName}`.toLowerCase().replace(/\s+/g, '')}@novacampus.fr
+              {' '}
+              <span className="italic">({translate('generatedEmailHint') || 'generated automatically, a number is appended if already taken'})</span>
+            </p>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">

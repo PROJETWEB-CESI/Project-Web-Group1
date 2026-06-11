@@ -51,20 +51,50 @@ const generateNextStudentId = async () => {
     return `STU${String(max + 1).padStart(3, '0')}`;
 };
 
-// Crée un nouveau dossier étudiant (le studentId est généré automatiquement)
+// Normalise un nom pour l'utiliser dans une adresse email (minuscules, sans accents/espaces)
+const normalizeForEmail = (str) =>
+    (str || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z]/g, '');
+
+// Génère une adresse email <prenom>.<nom>@novacampus.fr, en ajoutant un numéro en cas de doublon
+const generateEmail = async (firstName, lastName) => {
+    const base = `${normalizeForEmail(firstName)}.${normalizeForEmail(lastName)}`;
+    let suffix = 1;
+    let email = `${base}@novacampus.fr`;
+    while (await Student.findOne({ where: { email } })) {
+        suffix += 1;
+        email = `${base}${suffix}@novacampus.fr`;
+    }
+    return email;
+};
+
+// Crée un nouveau dossier étudiant (le studentId et l'email sont générés automatiquement)
 const createStudent = async (data) => {
     const studentId = await generateNextStudentId();
+    const email = await generateEmail(data.firstName, data.lastName);
     return Student.create({
         studentId,
         campusId: data.campusId,
         programId: data.programId,
         firstName: data.firstName,
         lastName: data.lastName,
-        email: data.email,
+        email,
         enrollmentYear: data.enrollmentYear,
         status: data.status || 'Active',
         paymentStatus: data.paymentStatus || 'Up to date',
     });
+};
+
+// Supprime un dossier étudiant (utilisé pour annuler une création en cas d'échec)
+const deleteStudent = async (id, campusId) => {
+    if (!id || !campusId) throw new Error('id et campusId sont obligatoires');
+    const student = await Student.findOne({ where: { studentId: id, campusId } });
+    if (!student) return null;
+    await student.destroy();
+    return true;
 };
 
 // Returns all programs of a campus (for forms)
@@ -176,6 +206,7 @@ module.exports = {
     getStudentById,
     getStudents,
     createStudent,
+    deleteStudent,
     updateStudent,
     getEnrollmentsByStudent,
     createEnrollment,
