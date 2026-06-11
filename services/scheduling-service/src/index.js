@@ -3,6 +3,7 @@ const express = require('express');
 const sequelize = require('./config/database.config');
 const roomRoutes = require('./rooms/room.route');
 const timetableRoutes = require('./timetables/timetable.route');
+const reservationRoutes = require('./reservations/reservation.route');
 const { authenticate, authorize } = require('./middleware/auth.middleware');
 
 const app = express();
@@ -22,6 +23,7 @@ app.get('/api/health', (req, res) => {
 // Apply authentication middleware to all service routes
 app.use('/rooms', authenticate, roomRoutes);
 app.use('/timetables', authenticate, timetableRoutes);
+app.use('/reservations', authenticate, reservationRoutes);
 
 async function startServer() {
   try {
