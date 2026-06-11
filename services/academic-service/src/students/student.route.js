@@ -26,6 +26,16 @@ router.get('/', authorize(['admin']), query('search').optional().isString(), asy
     }
 });
 
+// Executive : list of all campuses (for cross-campus dashboards)
+router.get('/campuses', authorize(['admin', 'executive']), async (req, res) => {
+    try {
+        const campuses = await service.getAllCampuses();
+        res.json(campuses);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Admin/Teacher : campus information
 router.get('/campuses/:campusId', authorize(['admin', 'executive', 'teacher']), async (req, res) => {
     try {
@@ -42,6 +52,16 @@ router.get('/campus/:campusId/stats', authorize(['admin', 'executive']), async (
     try {
         const stats = await service.getCampusStats(req.params.campusId);
         res.json(stats);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Executive : enrollment trend by entry year for a campus
+router.get('/campus/:campusId/trend', authorize(['admin', 'executive']), async (req, res) => {
+    try {
+        const trend = await service.getEnrollmentTrend(req.params.campusId);
+        res.json(trend);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
