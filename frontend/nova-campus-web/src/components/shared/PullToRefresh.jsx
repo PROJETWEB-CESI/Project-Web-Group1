@@ -5,6 +5,7 @@ import { RefreshCw } from 'lucide-react';
 
 const PULL_THRESHOLD = 70;
 const MAX_PULL = 110;
+const INDICATOR_SIZE = 40;
 
 // Wraps scrollable dashboard content and lets touch users pull down from the
 // top of the scroll area to reload the page (mobile "swipe down to refresh").
@@ -67,16 +68,23 @@ export default function PullToRefresh({ children, className = '' }) {
     };
   }, [pullDistance, refreshing]);
 
+  const indicatorOffset = Math.min(pullDistance, MAX_PULL) - INDICATOR_SIZE;
+
   return (
     <div ref={containerRef} className={`relative overflow-auto ${className}`}>
       <div
-        className="absolute left-0 right-0 top-0 flex items-center justify-center overflow-hidden text-[var(--color-primary)]"
-        style={{ height: pullDistance, marginTop: -pullDistance, transition: refreshing ? 'none' : 'height 0.2s, margin-top 0.2s' }}
+        className="absolute left-0 right-0 top-0 flex justify-center pointer-events-none"
+        style={{ transform: `translateY(${indicatorOffset}px)`, transition: refreshing ? 'none' : 'transform 0.2s' }}
       >
-        <RefreshCw
-          className={refreshing ? 'w-5 h-5 animate-spin' : 'w-5 h-5'}
-          style={refreshing ? undefined : { transform: `rotate(${(pullDistance / PULL_THRESHOLD) * 180}deg)` }}
-        />
+        <div
+          className="flex items-center justify-center rounded-full bg-[var(--color-surface)] shadow-md text-[var(--color-primary)]"
+          style={{ width: INDICATOR_SIZE, height: INDICATOR_SIZE }}
+        >
+          <RefreshCw
+            className={refreshing ? 'w-5 h-5 animate-spin' : 'w-5 h-5'}
+            style={refreshing ? undefined : { transform: `rotate(${(pullDistance / PULL_THRESHOLD) * 180}deg)` }}
+          />
+        </div>
       </div>
       <div style={{ transform: `translateY(${pullDistance}px)`, transition: refreshing ? 'none' : 'transform 0.2s' }}>
         {children}

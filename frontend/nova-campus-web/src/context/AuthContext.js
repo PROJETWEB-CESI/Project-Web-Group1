@@ -1,15 +1,21 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getCsrfToken } from '@/lib/api';
 
 const AuthContext = createContext(null);
 
 const API_BASE = '/api/auth'; // Proxied through nginx in full stack
 
+// How often to check that the current session is still valid, so a session
+// revoked from another device signs this device out without a manual refresh.
+const SESSION_CHECK_INTERVAL_MS = 15000;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Helper to refresh access token using httpOnly refresh cookie
   const refreshAccessToken = async () => {
@@ -56,6 +62,38 @@ export function AuthProvider({ children }) {
 
     loadUser();
   }, []);
+
+  // Periodically verify the session is still valid so that revoking it from
+  // another device signs this device out without needing a manual refresh.
+  useEffect(() => {
+    if (loading || !user) return;
+
+    const checkSession = async () => {
+      try {
+        let res = await fetch(`${API_BASE}/me`, { credentials: 'include' });
+
+        if (res.status === 401) {
+          try {
+            await refreshAccessToken();
+            res = await fetch(`${API_BASE}/me`, { credentials: 'include' });
+          } catch (err) {
+            res = null;
+          }
+        }
+
+        if (!res || !res.ok) {
+          setUser(null);
+          localStorage.removeItem('authToken');
+          router.replace('/login');
+        }
+      } catch (err) {
+        // Network error: ignore, will retry on next interval
+      }
+    };
+
+    const interval = setInterval(checkSession, SESSION_CHECK_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [loading, user, router]);
 
   const login = async (email, password) => {
     const res = await fetch(`${API_BASE}/login`, {
