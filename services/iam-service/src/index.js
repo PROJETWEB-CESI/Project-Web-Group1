@@ -4,6 +4,8 @@ const cookieParser = require('cookie-parser');
 const sequelize = require('./config/database.config');
 const authRoutes = require('./auth/auth.route');
 const userRoutes = require('./users/user.route');
+const notificationRoutes = require('./notifications/notification.route');
+require('./notifications/notification.model'); // register model for sequelize.sync
 
 const app = express();
 const port = process.env.API_PORT || 3000;
@@ -42,6 +44,7 @@ app.use(authRoutes);
 // User management mounted at /users so that gateway /api/auth/users
 // (prefix-stripped) reaches here.
 app.use('/users', userRoutes);
+app.use('/notifications', notificationRoutes);
 
 async function seedTestUsersIfEnabled() {
   const { hashPassword } = require('./common/utils/bcrypt.util');
@@ -126,6 +129,79 @@ async function seedTestUsersIfEnabled() {
   }
 }
 
+async function seedTestNotificationsIfEnabled() {
+  if (!isTestCredentialsEnabled()) return;
+
+  const User = require('./models/User');
+  const Notification = require('./notifications/notification.model');
+
+  const student = await User.findOne({ where: { email: 'student@test.com' } });
+  if (!student) return;
+
+  const now = Date.now();
+  const ago = (ms) => new Date(now - ms);
+  const MIN = 60 * 1000;
+  const H   = 60 * MIN;
+  const D   = 24 * H;
+
+  const samples = [
+    {
+      type: 'timetable',
+      title: "Introduction au Business du lundi 4 déc. — salle modifiée",
+      body:  "Le cours est déplacé de B-204 à l'Amphi Commerce A. Pensez à mettre à jour votre itinéraire.",
+      source: 'Service scolarité',
+      read: false,
+      createdAt: ago(12 * MIN),
+    },
+    {
+      type: 'deadline',
+      title: 'Examen Économie Internationale dans 7 jours',
+      body:  'DST le 11 décembre à 09h00. Souhaitez-vous une fiche de révision ciblée ?',
+      source: 'Aria · automatisé',
+      read: false,
+      createdAt: ago(1 * H),
+    },
+    {
+      type: 'absence',
+      title: "Justificatif accepté — absence du 4 nov.",
+      body:  "Votre certificat médical pour l'absence en Économie Internationale a été validé.",
+      source: 'Service scolarité',
+      read: false,
+      createdAt: ago(2 * D),
+    },
+    {
+      type: 'announcement',
+      title: 'Fermeture exceptionnelle du campus — 21 déc.',
+      body:  'Le campus sera fermé pour les vacances de Noël. Reprise des cours le 8 janvier 2024.',
+      source: 'Direction Paris Center',
+      read: false,
+      createdAt: ago(3 * D),
+    },
+    {
+      type: 'grade',
+      title: 'Note Quiz 1 — Introduction au Business',
+      body:  'Votre note pour le Quiz 1 du 12 octobre est désormais disponible : 15 / 20.',
+      source: 'Prof. Jean Mercier',
+      read: false,
+      createdAt: ago(4 * D),
+    },
+    {
+      type: 'deadline',
+      title: 'Inscriptions S2 — ouverture le 8 janvier 2024',
+      body:  'Choix des options à valider avant le 22 janvier. Les places en Marketing Stratégique sont limitées.',
+      source: 'Service scolarité',
+      read: false,
+      createdAt: ago(5 * D),
+    },
+  ];
+
+  await Notification.destroy({ where: { userId: student.id } });
+  for (const n of samples) {
+    await Notification.create({ ...n, userId: student.id });
+  }
+  console.log('[DEV] Seeded demo notifications for student@test.com (6 entries, all unread)');
+}
+
 async function startServer() {
   try {
     await sequelize.authenticate();
@@ -135,6 +211,7 @@ async function startServer() {
     console.log('Database synced');
 
     await seedTestUsersIfEnabled();
+    await seedTestNotificationsIfEnabled();
 
     app.listen(port, () => {
       console.log(`Auth service running on port ${port}`);
