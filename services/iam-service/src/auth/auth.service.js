@@ -1,11 +1,21 @@
 const crypto = require('crypto');
+const geoip = require('geoip-lite');
 const { hashPassword, comparePassword } = require('../common/utils/bcrypt.util');
 const { generateAccessToken, generateRefreshToken, verifyToken } = require('../common/utils/jwt.util');
 const User = require('../models/User');
+const { NOTIFICATION_CATEGORIES } = require('../models/User');
 const Session = require('../models/Session');
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function locateIp(ip) {
+  if (!ip) return null;
+  const normalized = ip.replace('::ffff:', '');
+  const geo = geoip.lookup(normalized);
+  if (!geo) return null;
+  return [geo.city, geo.country].filter(Boolean).join(', ') || null;
 }
 
 async function register(email, password, opts = {}) {
@@ -121,6 +131,7 @@ async function listSessions(userId, currentRefreshToken) {
     id: session.id,
     userAgent: session.userAgent,
     ipAddress: session.ipAddress,
+    location: locateIp(session.ipAddress),
     createdAt: session.createdAt,
     lastUsedAt: session.lastUsedAt,
     isCurrent: !!currentHash && session.refreshTokenHash === currentHash,
@@ -156,7 +167,7 @@ async function updateProfile(userId, data) {
     throw new Error('User not found');
   }
 
-  const { firstName, lastName, email, emailNotifications, inAppNotifications } = data;
+  const { firstName, lastName, email, phone, address, notificationPreferences } = data;
 
   if (email && email !== user.email) {
     const existing = await User.findOne({ where: { email } });
@@ -165,12 +176,26 @@ async function updateProfile(userId, data) {
     }
   }
 
+  let mergedPreferences = user.notificationPreferences;
+  if (notificationPreferences && typeof notificationPreferences === 'object') {
+    mergedPreferences = { ...user.notificationPreferences };
+    for (const category of NOTIFICATION_CATEGORIES) {
+      if (notificationPreferences[category]) {
+        mergedPreferences[category] = {
+          ...mergedPreferences[category],
+          ...notificationPreferences[category],
+        };
+      }
+    }
+  }
+
   await user.update({
     firstName: firstName !== undefined ? firstName : user.firstName,
     lastName: lastName !== undefined ? lastName : user.lastName,
     email: email !== undefined ? email : user.email,
-    emailNotifications: emailNotifications !== undefined ? !!emailNotifications : user.emailNotifications,
-    inAppNotifications: inAppNotifications !== undefined ? !!inAppNotifications : user.inAppNotifications,
+    phone: phone !== undefined ? phone : user.phone,
+    address: address !== undefined ? address : user.address,
+    notificationPreferences: mergedPreferences,
   });
 
   const { passwordHash: _ph, ...safe } = user.toJSON();

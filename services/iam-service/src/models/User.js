@@ -1,6 +1,16 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database.config');
 
+const NOTIFICATION_CATEGORIES = ['schedule', 'grades', 'payments', 'messages', 'announcements'];
+
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  schedule: { email: true, inApp: true, push: true },
+  grades: { email: true, inApp: true, push: false },
+  payments: { email: true, inApp: false, push: false },
+  messages: { email: true, inApp: true, push: true },
+  announcements: { email: true, inApp: false, push: false },
+};
+
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
@@ -43,17 +53,19 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'active',
   },
-  emailNotifications: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
-    field: 'email_notifications',
+  phone: {
+    type: DataTypes.STRING(30),
+    allowNull: true,
   },
-  inAppNotifications: {
-    type: DataTypes.BOOLEAN,
+  address: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  notificationPreferences: {
+    type: DataTypes.JSONB,
     allowNull: false,
-    defaultValue: true,
-    field: 'in_app_notifications',
+    defaultValue: DEFAULT_NOTIFICATION_PREFERENCES,
+    field: 'notification_preferences',
   },
 }, {
   tableName: 'users',
@@ -61,3 +73,5 @@ const User = sequelize.define('User', {
 });
 
 module.exports = User;
+module.exports.NOTIFICATION_CATEGORIES = NOTIFICATION_CATEGORIES;
+module.exports.DEFAULT_NOTIFICATION_PREFERENCES = DEFAULT_NOTIFICATION_PREFERENCES;
