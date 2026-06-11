@@ -25,6 +25,7 @@ export default function StudentDashboard() {
   const [absences,         setAbsences]         = useState([]);
   const [enrollments,      setEnrollments]      = useState([]);
   const [payments,         setPayments]         = useState([]);
+  const [billingSummary,   setBillingSummary]   = useState(null);
   const [semesterAverages, setSemesterAverages] = useState(null);
   const [timetables,       setTimetables]       = useState([]);
   const [studentProfile,   setStudentProfile]   = useState(null);
@@ -68,7 +69,12 @@ export default function StudentDashboard() {
       setGradesData(grades);
       setAbsences(att);
       setEnrollments(enr);
-      setPayments(Array.isArray(paymentSummary) ? paymentSummary : []);
+      if (paymentSummary && !Array.isArray(paymentSummary)) {
+        setBillingSummary(paymentSummary);
+        setPayments(Array.isArray(paymentSummary.payments) ? paymentSummary.payments : []);
+      } else {
+        setPayments([]);
+      }
 
       if (enr.length > 0 && grades.length > 0) {
         const semMap = new Map();
@@ -133,7 +139,7 @@ export default function StudentDashboard() {
   };
 
   const payEcheance = (index) => {
-    setPayments(prev => prev.map((p, i) => i === index ? { ...p, status: 'Payé' } : p));
+    setPayments(prev => prev.map((p, i) => i === index ? { ...p, status: 'Paid' } : p));
   };
 
   const renderTab = () => {
@@ -142,7 +148,7 @@ export default function StudentDashboard() {
       case 'grades':        return <GradesTab        gradesData={gradesData} enrollments={enrollments} kpis={kpis} gradeStats={gradeStats} studentId={user?.studentId} campusId={user?.campusId} programName={studentProfile?.program?.programName} />;
       case 'absences':      return <AbsencesTab      absences={absences} timetables={timetables} attStats={attStats} studentProfile={studentProfile} kpis={kpis} justifyAbsence={justifyAbsence} />;
       case 'history':       return <HistoryTab       enrollments={enrollments} studentProfile={studentProfile} />;
-      case 'payment':       return <PaymentTab       payments={payments} payEcheance={payEcheance} />;
+      case 'payment':       return <PaymentTab       payments={payments} billingSummary={billingSummary} payEcheance={payEcheance} />;
       case 'notifications': return <NotificationsTab notifs={notifs} markNotifRead={markNotifRead} markAllRead={markAllRead} />;
       default:              return <DashboardTab     studentProfile={studentProfile} kpis={kpis} timetables={timetables} semesterAverages={semesterAverages} />;
     }
