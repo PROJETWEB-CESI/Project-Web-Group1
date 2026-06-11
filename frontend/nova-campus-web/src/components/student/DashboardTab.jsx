@@ -100,15 +100,15 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
       value: att !== null ? `${att}%` : '—',
       suffix: null,
       icon: <IconUserCheck />,
-      accent: attGood ? 'text-emerald-600 bg-emerald-500/10' : att !== null ? 'text-red-500 bg-red-500/10' : 'text-[var(--color-text-muted)] bg-[var(--color-surface)]',
-      valueColor: att !== null ? (attGood ? 'text-emerald-600' : 'text-red-500') : '',
+      accent: attGood ? 'text-[var(--color-success)] bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)]' : att !== null ? 'text-[var(--color-error)] bg-[color-mix(in_oklch,var(--color-error)_10%,transparent)]' : 'text-[var(--color-text-muted)] bg-[var(--color-surface)]',
+      valueColor: att !== null ? (attGood ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]') : '',
     },
     {
       label: translate('kpiTuitionFees'),
       value: kpis.tuition !== null ? `${kpis.tuition.toLocaleString('fr-FR')} €` : '—',
       suffix: null,
       icon: <IconCreditCard />,
-      accent: 'text-amber-600 bg-amber-500/10',
+      accent: 'text-[var(--color-course-2)] bg-[var(--color-course-2-soft)]',
       valueColor: '',
     },
     {
@@ -116,7 +116,7 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
       value: kpis.credits !== null ? kpis.credits : '—',
       suffix: kpis.totalCredits > 0 ? `/${kpis.totalCredits}` : null,
       icon: <IconTrophy />,
-      accent: 'text-violet-600 bg-violet-500/10',
+      accent: 'text-[var(--color-course-7)] bg-[var(--color-course-7-soft)]',
       valueColor: '',
     },
   ];
@@ -168,7 +168,7 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
             </div>
             <div className="flex items-center gap-2">
               {roomChanged && (
-                <span className="text-xs font-medium text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-1">
+                <span className="text-xs font-medium text-[var(--color-course-2)] bg-[var(--color-course-2-soft)] border border-[color-mix(in_oklch,var(--color-course-2)_20%,transparent)] rounded-full px-2.5 py-1">
                   ⚠ {translate('roomChanged')}
                 </span>
               )}
@@ -194,7 +194,7 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
                 {nextCourse.room && (
                   <span className={`inline-flex items-center gap-1 text-xs rounded-full px-2.5 py-0.5 border ${
                     roomChanged
-                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-600'
+                      ? 'bg-[var(--color-course-2-soft)] border-[color-mix(in_oklch,var(--color-course-2)_20%,transparent)] text-[var(--color-course-2)]'
                       : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-muted)]'
                   }`}>
                     <IconPin />

@@ -54,9 +54,9 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
   const { translate } = useLanguage();
 
   const STATUS_BADGE = {
-    'Validated':  { label: translate('statusValidated'), cls: 'bg-green-50 text-green-700 border border-green-200' },
-    'In Progress':{ label: translate('statusInProgress'), cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
-    'Enrolled':   { label: translate('statusEnrolled'), cls: 'bg-gray-100 text-gray-600 border border-gray-200' },
+    'Validated':  { label: translate('statusValidated'), cls: 'bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)] text-[var(--color-success)] border border-[color-mix(in_oklch,var(--color-success)_20%,transparent)]' },
+    'In Progress': { label: translate('statusInProgress'), cls: 'bg-[var(--color-primary-soft)] text-[var(--color-text-primary-on-primary)] border border-[color-mix(in_oklch,var(--color-primary)_20%,transparent)]' },
+    'Enrolled':   { label: translate('statusEnrolled'), cls: 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]' },
   };
 
   const semesterCardLabel = (s) => {
@@ -124,7 +124,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
             </p>
             <div className="mt-3 h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#0f172a] rounded-full transition-all duration-1000"
+                className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-1000"
                 style={{ width: totalSemesters > 0 ? `${(validatedCount / totalSemesters) * 100}%` : '0%' }}
               />
             </div>
@@ -159,17 +159,17 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                 key={s.number}
                 className={`rounded-xl p-3 flex flex-col gap-1 text-center transition-colors
                   ${isActive
-                    ? 'bg-[#0f172a] text-white'
+                    ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
                     : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]'
                   }`}
               >
-                <p className={`text-[10px] font-semibold uppercase tracking-widest ${isActive ? 'text-blue-200' : 'text-[var(--color-text-muted)]'}`}>
+                <p className={`text-[10px] font-semibold uppercase tracking-widest ${isActive ? 'text-[color-mix(in_oklch,var(--color-on-primary)_70%,transparent)]' : 'text-[var(--color-text-muted)]'}`}>
                   {translate('semesterLabel', { n: s.number })}
                 </p>
-                <p className={`text-sm font-bold mt-0.5 ${isActive ? 'text-white' : 'text-[var(--color-text)]'}`}>
+                <p className={`text-sm font-bold mt-0.5 ${isActive ? 'text-[var(--color-on-primary)]' : 'text-[var(--color-text)]'}`}>
                   {semesterCardLabel(s)}
                 </p>
-                <p className={`text-[10px] mt-0.5 ${isActive ? 'text-blue-300' : 'text-[var(--color-text-muted)]'}`}>
+                <p className={`text-[10px] mt-0.5 ${isActive ? 'text-[color-mix(in_oklch,var(--color-on-primary)_70%,transparent)]' : 'text-[var(--color-text-muted)]'}`}>
                   {s.academicYear}
                 </p>
               </div>
@@ -207,7 +207,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                   </td>
                 </tr>
               ) : currentEnrollments.map(e => {
-                const badge = STATUS_BADGE[e.status] ?? { label: e.status, cls: 'bg-gray-100 text-gray-600 border border-gray-200' };
+                const badge = STATUS_BADGE[e.status] ?? { label: e.status, cls: 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]' };
                 const rate  = e.attendanceRate != null ? parseFloat(e.attendanceRate) : null;
                 const crds  = e.course?.credits;
                 return (
@@ -226,7 +226,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                         <div className="flex items-center gap-2">
                           <div className="w-24 h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-green-500 rounded-full"
+                              className="h-full bg-[var(--color-success)] rounded-full transition-all duration-1000"
                               style={{ width: `${Math.min(rate, 100)}%` }}
                             />
                           </div>
@@ -240,7 +240,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                       {e.finalGrade != null ? `${parseFloat(e.finalGrade).toFixed(2)}/20` : '—'}
                     </td>
                     <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}>
+                      <span className={`inline-flex whitespace-nowrap items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}>
                         {badge.label}
                       </span>
                     </td>
