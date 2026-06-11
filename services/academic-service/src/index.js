@@ -9,6 +9,7 @@ const { authenticate } = require('./middleware/auth.middleware');
 require('./config/associations');
 
 const app = express();
+app.disable('x-powered-by');
 const port = process.env.API_PORT || 3000;
 
 // Trust reverse proxy headers (X-Forwarded-Proto, etc.) - needed when behind nginx

@@ -20,17 +20,8 @@ function verifyToken(token) {
     }
 }
 
-function decodeToken(token) {
-    try {
-        return jwt.decode(token);
-    } catch (err) {
-        return null;
-    }
-}
-
 module.exports = {
     generateAccessToken,
     generateRefreshToken,
-    verifyToken,
-    decodeToken
+    verifyToken
 };
