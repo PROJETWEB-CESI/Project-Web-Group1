@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -57,7 +57,6 @@ export default function DashboardSidebar() {
   const { apiFetch } = useApi();
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [adminBadges, setAdminBadges] = useState({ planning: 0, finance: 0 });
 
@@ -106,12 +105,6 @@ export default function DashboardSidebar() {
     if (!pathname) return false;
     const href = item.href || '';
 
-    // For single student path /dashboard/student: use ?tab= to switch only main content (no full reload, layout stays).
-    if (pathname.startsWith('/dashboard/student') && item.tab) {
-      const currentTab = searchParams?.get('tab') || 'dashboard';
-      return currentTab === item.tab;
-    }
-
     if (href === dashboardHref) return pathname === href || pathname === `/dashboard/${role}`;
     return pathname === href || pathname.startsWith(href + '/');
   };
@@ -139,17 +132,15 @@ export default function DashboardSidebar() {
     let toolsItems = [];
 
     if (role === 'student') {
-      // SINGLE PATH ONLY per requirement: /dashboard/student?tab=... 
-      // Only main content area in dashboard layout changes (no full page load, shell stays mounted).
       mainItems = [
-        { label: translate('myDashboard') || 'My Dashboard', href: '/dashboard/student?tab=dashboard', icon: Home, tab: 'dashboard' },
-        { label: translate('schedule') || 'Schedule', href: '/dashboard/student?tab=schedule', icon: Calendar, tab: 'schedule' },
-        { label: translate('grades') || 'Grades', href: '/dashboard/student?tab=grades', icon: BookOpen, tab: 'grades' },
-        { label: translate('absences') || 'Absences', href: '/dashboard/student?tab=absences', icon: AlertCircle, tab: 'absences' },
-        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student?tab=history', icon: FolderOpen, tab: 'history' },
-        { label: translate('payments') || 'Payments', href: '/dashboard/student?tab=payment', icon: CreditCard, tab: 'payment' },
+        { label: translate('myDashboard') || 'My Dashboard', href: dashboardHref, icon: Home },
+        { label: translate('schedule') || 'Schedule', href: '/dashboard/student/schedule', icon: Calendar },
+        { label: translate('grades') || 'Grades', href: '/dashboard/student/grades', icon: BookOpen },
+        { label: translate('absences') || 'Absences', href: '/dashboard/student/absences', icon: AlertCircle },
+        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student/history', icon: FolderOpen },
+        { label: translate('payments') || 'Payments', href: '/dashboard/student/payment', icon: CreditCard },
         // Live badge (functional + updates without page refresh)
-        { label: translate('notifications') || 'Notifications', href: '/dashboard/student?tab=notifications', icon: Bell, isLiveBadge: true, tab: 'notifications' },
+        { label: translate('notifications') || 'Notifications', href: '/dashboard/student/notifications', icon: Bell, isLiveBadge: true },
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles }, // fake references real /aria/ while inside dashboard shell

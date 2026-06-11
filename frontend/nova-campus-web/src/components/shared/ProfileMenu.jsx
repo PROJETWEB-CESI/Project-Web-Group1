@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -58,7 +58,6 @@ export default function ProfileMenu() {
   const { apiFetch } = useApi();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [adminBadges, setAdminBadges] = useState({ planning: 0, finance: 0 });
   const menuRef = useRef(null);
@@ -114,21 +113,11 @@ export default function ProfileMenu() {
 
   const dashboardHref = `/dashboard/${role}`;
 
-  // Same active-page detection as the sidebar: for /dashboard/student, the
-  // ?tab= query param drives which entry is highlighted; otherwise compare paths.
   const isActive = (item) => {
     if (!pathname || !item.href || item.href === '#') return false;
 
-    const [itemPath, itemQuery] = item.href.split('?');
-    const itemTab = new URLSearchParams(itemQuery || '').get('tab');
-
-    if (pathname.startsWith('/dashboard/student') && itemTab) {
-      const currentTab = searchParams?.get('tab') || 'dashboard';
-      return pathname.startsWith(itemPath) && currentTab === itemTab;
-    }
-
-    if (itemPath === dashboardHref) return pathname === itemPath || pathname === `/dashboard/${role}`;
-    return pathname === itemPath || pathname.startsWith(itemPath + '/');
+    if (item.href === dashboardHref) return pathname === item.href || pathname === `/dashboard/${role}`;
+    return pathname === item.href || pathname.startsWith(item.href + '/');
   };
 
   const iconClass = "w-4 h-4 mr-2 flex-shrink-0 text-[var(--color-text-muted)]";
@@ -141,20 +130,19 @@ export default function ProfileMenu() {
     const items = [
       {
         label: translate('myDashboard') || 'My Dashboard',
-        // For students, the dashboard is the ?tab=dashboard view of /dashboard/student
-        href: role === 'student' ? '/dashboard/student?tab=dashboard' : dashboardHref,
+        href: dashboardHref,
         icon: <Home className={iconClass} />,
       },
     ];
 
     if (role === 'student') {
       items.push(
-        { label: translate('timetable') || 'Timetable', href: '/dashboard/student?tab=schedule', icon: <Calendar className={iconClass} /> },
-        { label: translate('grades') || 'Grades & Evaluations', href: '/dashboard/student?tab=grades', icon: <BookOpen className={iconClass} /> },
-        { label: translate('absences') || 'Absences', href: '/dashboard/student?tab=absences', icon: <AlertCircle className={iconClass} /> },
-        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student?tab=history', icon: <FolderOpen className={iconClass} /> },
-        { label: translate('payments') || 'Payments', href: '/dashboard/student?tab=payment', icon: <CreditCard className={iconClass} /> },
-        { label: translate('notifications') || 'Notifications', href: '/dashboard/student?tab=notifications', icon: <Bell className={iconClass} />, isLiveBadge: true }
+        { label: translate('timetable') || 'Timetable', href: '/dashboard/student/schedule', icon: <Calendar className={iconClass} /> },
+        { label: translate('grades') || 'Grades & Evaluations', href: '/dashboard/student/grades', icon: <BookOpen className={iconClass} /> },
+        { label: translate('absences') || 'Absences', href: '/dashboard/student/absences', icon: <AlertCircle className={iconClass} /> },
+        { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student/history', icon: <FolderOpen className={iconClass} /> },
+        { label: translate('payments') || 'Payments', href: '/dashboard/student/payment', icon: <CreditCard className={iconClass} /> },
+        { label: translate('notifications') || 'Notifications', href: '/dashboard/student/notifications', icon: <Bell className={iconClass} />, isLiveBadge: true }
       );
     } else if (role === 'teacher') {
       items.push(
