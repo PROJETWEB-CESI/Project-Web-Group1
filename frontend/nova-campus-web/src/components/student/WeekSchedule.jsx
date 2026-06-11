@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { getCourseColor, EXAM_COLOR } from '@/lib/courseColors';
 import ScrollShadow from '@/components/shared/ScrollShadow';
+import { useLanguage } from '@/context/LanguageContext';
 
-const DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
+const DAY_TRANS_KEYS = ['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri'];
 const DAY_MAP = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
 
 function getWeekDays() {
@@ -29,6 +30,8 @@ function shortName(name, id) {
 }
 
 export default function WeekSchedule({ timetables }) {
+  const { translate } = useLanguage();
+
   if (!timetables || timetables.length === 0) return null;
 
   const weekDays = getWeekDays();
@@ -49,9 +52,9 @@ export default function WeekSchedule({ timetables }) {
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] mb-6 overflow-hidden">
       <div className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-3 border-b border-[var(--color-border)]">
-        <span className="text-sm font-semibold text-[var(--color-text)]">Cette semaine</span>
+        <span className="text-sm font-semibold text-[var(--color-text)]">{translate('thisWeek')}</span>
         <Link href="?tab=schedule" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
-          Voir tout →
+          {translate('viewAll')} →
         </Link>
       </div>
       <ScrollShadow>
@@ -62,7 +65,7 @@ export default function WeekSchedule({ timetables }) {
           return (
             <div key={i} className={`p-1 sm:p-3 min-h-[130px] ${isToday ? 'bg-[var(--color-surface)]' : ''}`}>
               <div className={`text-xs font-semibold tracking-wide mb-0.5 ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
-                {DAY_LABELS[i]}
+                {translate(DAY_TRANS_KEYS[i])}
               </div>
               <div className={`text-2xl font-light mb-3 ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)]'}`}>
                 {date.getDate()}

@@ -204,8 +204,8 @@ export default function DashboardSidebar() {
     // Live notification count (replaces static badge). Functional: clicking the item clears it (as if viewed).
     // Updates live via context (no page refresh needed). Number uses --color-on-primary per spec.
     const liveBadge = item.isLiveBadge ? notificationCount : null;
-    const showBadge = (item.badge || liveBadge) && (liveBadge ?? item.badge) > 0;
-    const badgeValue = liveBadge ?? item.badge;
+    const badgeValue = liveBadge ?? item.badge ?? 0;
+    const showBadge = badgeValue > 0;
 
     const content = (
       <>

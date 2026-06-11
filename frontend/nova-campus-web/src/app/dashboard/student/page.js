@@ -16,7 +16,7 @@ import NotificationsTab  from '@/components/student/NotificationsTab';
 
 export default function StudentDashboard() {
   const searchParams = useSearchParams();
-  const { clearNotifications } = useNotifications();
+  const { clearNotifications, markOneRead, setNotificationCount } = useNotifications();
   const { user } = useAuth();
 
   const currentTab = (searchParams?.get('tab') || 'dashboard').toLowerCase();
@@ -62,7 +62,8 @@ export default function StudentDashboard() {
       fetchJson(`/api/attendance/student/${studentId}/stats?campusId=${campusId}`),
       fetchJson(`/api/students/${studentId}?campusId=${campusId}`),
       fetchJson(`/api/grades/student/${studentId}/stats?campusId=${campusId}`),
-    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats]) => {
+      fetchJson('/api/notifications'),
+    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats, notifications]) => {
       if (profile?.firstName) setStudentProfile(profile);
       if (stats?.rank != null) setGradeStats(stats);
       if (attStats) setAttStats(attStats);
@@ -121,16 +122,23 @@ export default function StudentDashboard() {
 
       const enrolledIds = new Set(enr.map(e => e.courseId));
       setTimetables(allTimetables.filter(t => enrolledIds.has(t.course_id)));
+
+      if (Array.isArray(notifications)) {
+        setNotifs(notifications);
+        setNotificationCount(notifications.filter(n => !n.read).length);
+      }
     });
   }, [user]);
 
   const markNotifRead = (id) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    if (currentTab === 'notifications') clearNotifications();
+    apiFetch(`/api/notifications/${id}/read`, { method: 'PUT' }).catch(() => {});
+    markOneRead();
   };
 
   const markAllRead = () => {
     setNotifs(prev => prev.map(n => ({ ...n, read: true })));
+    apiFetch('/api/notifications/read-all', { method: 'PUT' }).catch(() => {});
     clearNotifications();
   };
 

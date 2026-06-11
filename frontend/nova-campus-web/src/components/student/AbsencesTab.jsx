@@ -1,16 +1,12 @@
 'use client';
 
 import ScrollShadow from '@/components/shared/ScrollShadow';
+import { useLanguage } from '@/context/LanguageContext';
 
 const STATUS_COLORS = {
   red:   'bg-red-50 text-red-600 border border-red-200',
   green: 'bg-green-50 text-green-700 border border-green-200',
 };
-
-function resolveStatus(a) {
-  if (a.justified) return { label: 'Justifiée', color: 'green' };
-  return { label: 'Non justifiée', color: 'red' };
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
@@ -24,34 +20,39 @@ function formatTime(t) {
 
 function formatSemesterLabel(raw) {
   if (!raw) return null;
-  // "S1 2025-2026" → "Semestre 1 2025/2026"
   const match = raw.match(/^S(\d+)\s+(\d{4})-(\d{4})$/);
-  if (match) return `Semestre ${match[1]} ${match[2]}/${match[3]}`;
+  if (match) return `${match[1]} ${match[2]}/${match[3]}`;
   return raw;
 }
 
 export default function AbsencesTab({ absences = [], timetables = [], attStats, studentProfile, kpis }) {
-  // Build lookup by courseId → timetable entry (first match)
+  const { translate } = useLanguage();
+
   const ttMap = {};
   for (const t of timetables) {
     if (t.course_id && !ttMap[t.course_id]) ttMap[t.course_id] = t;
   }
 
-  // Only display absence and late records
   const records = absences.filter(a => a.status === 'absent' || a.status === 'late');
 
   const unjustifiedCount = records.filter(a => !a.justified && !a.pendingJustification).length;
 
   const programName   = studentProfile?.program?.programName ?? null;
-  const semesterLabel = formatSemesterLabel(kpis?.currentSemesterLabel);
+  const semesterRaw   = formatSemesterLabel(kpis?.currentSemesterLabel);
+  const semesterLabel = semesterRaw ? `S${semesterRaw}` : null;
   const subtitle      = [programName, semesterLabel].filter(Boolean).join(' · ');
+
+  const resolveStatus = (a) => {
+    if (a.justified) return { label: translate('justified'), color: 'green' };
+    return { label: translate('notJustified'), color: 'red' };
+  };
 
   return (
     <div className="space-y-6">
 
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-1">Mes absences</h1>
+        <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-1">{translate('myAbsences')}</h1>
         {subtitle && (
           <p className="text-sm text-[var(--color-text-muted)]">{subtitle}</p>
         )}
@@ -60,17 +61,17 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats, 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Taux de présence</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{translate('kpiAttendanceRate')}</p>
           <p className="text-3xl font-bold mt-2 text-green-600">
             {attStats?.attendanceRate != null ? `${attStats.attendanceRate}%` : '—'}
           </p>
         </div>
         <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Absences totales</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{translate('totalAbsences')}</p>
           <p className="text-3xl font-bold mt-2 text-[var(--color-text)]">{records.length}</p>
         </div>
         <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">Non justifiées</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{translate('unjustifiedAbsences')}</p>
           <p className="text-3xl font-bold mt-2 text-red-500">{unjustifiedCount}</p>
         </div>
       </div>
@@ -78,25 +79,25 @@ export default function AbsencesTab({ absences = [], timetables = [], attStats, 
       {/* History table */}
       <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[var(--color-border)]">
-          <h3 className="font-semibold text-base text-[var(--color-text)]">Historique</h3>
+          <h3 className="font-semibold text-base text-[var(--color-text)]">{translate('historyLabel')}</h3>
         </div>
 
         <ScrollShadow>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Date</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Créneau</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Cours</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Enseignant</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Statut</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colDate')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colTimeSlot')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colCourse')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colInstructor')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
               {records.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-8 text-center text-[var(--color-text-muted)]">
-                    Aucune absence enregistrée.
+                    {translate('noAbsencesRecorded')}
                   </td>
                 </tr>
               ) : records.map(a => {

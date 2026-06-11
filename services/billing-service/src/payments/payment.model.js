@@ -54,6 +54,11 @@ const Payment = sequelize.define('Payment', {
         type: DataTypes.STRING(160),
         allowNull: true,
     },
+    notesEn: {
+        type: DataTypes.STRING(160),
+        allowNull: true,
+        field: 'notes_en',
+    },
 }, {
     tableName: 'payments',
     timestamps: false,
