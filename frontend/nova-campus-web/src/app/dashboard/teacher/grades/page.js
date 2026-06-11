@@ -138,8 +138,36 @@ function ScoreCell({ grade, student, evalMeta, courseId, campusId, apiFetch, onS
 }
 
 /* ── One evaluation block ── */
-function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGradeSaved, onPublish, publishing, defaultOpen }) {
+function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGradeSaved, onPublish, onUnpublish, onDelete, publishing, defaultOpen }) {
   const [isOpen, setIsOpen] = useState(defaultOpen ?? false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [actioning, setActioning] = useState(null); // 'unpublish' | 'delete'
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) { setShowMenu(false); setConfirmDelete(false); } };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showMenu]);
+
+  const handleUnpublish = async (e) => {
+    e.stopPropagation();
+    setActioning('unpublish');
+    await onUnpublish(evalData.name);
+    setActioning(null);
+    setShowMenu(false);
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    setActioning('delete');
+    await onDelete(evalData.name);
+    setActioning(null);
+    setShowMenu(false);
+    setConfirmDelete(false);
+  };
 
   const gradedCount    = students.filter(s => evalData.gradeById[s.studentId]?.score != null).length;
   const anyGrade       = students.some(s => evalData.gradeById[s.studentId]);
@@ -162,15 +190,15 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
     : null;
 
   return (
-    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden flex shadow-sm">
+    <div className="relative rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] flex shadow-sm">
       {/* Left status strip */}
-      <div className={`w-1 flex-shrink-0 ${stripColor}`} />
+      <div className={`w-1 flex-shrink-0 rounded-l-xl ${stripColor}`} />
 
       <div className="flex-1 min-w-0">
-        {/* Header button */}
-        <button
+        {/* Header row — div instead of button so we can nest a real button inside */}
+        <div
           onClick={() => setIsOpen(o => !o)}
-          className="w-full text-left flex items-center gap-4 px-4 py-4 hover:bg-[var(--color-surface)] transition-colors"
+          className="w-full flex items-center gap-4 px-4 py-4 hover:bg-[var(--color-surface)] transition-colors cursor-pointer select-none"
         >
           {/* Name + meta */}
           <div className="flex-1 min-w-0">
@@ -191,8 +219,8 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
             </div>
           </div>
 
-          {/* Right: progress + status + chevron */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          {/* Right: progress + status badge + ⋮ menu + chevron */}
+          <div className="flex items-center gap-3 flex-shrink-0">
             {/* Progress */}
             <div className="flex flex-col items-end gap-1.5 w-24">
               <div className="text-sm">
@@ -209,12 +237,76 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
               {badgeLabel}
             </span>
 
+            {/* ⋮ Actions menu — stops propagation so it doesn't toggle the accordion */}
+            <div className="relative" ref={menuRef} onClick={e => e.stopPropagation()}>
+              <button
+                onClick={() => { setShowMenu(o => !o); setConfirmDelete(false); }}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-border)] transition-colors"
+                title="Actions"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
+                  <path d="M8 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM8 6.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM9.5 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z" />
+                </svg>
+              </button>
+
+              {showMenu && (
+                <div className="absolute right-0 top-9 z-20 w-52 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl py-1 overflow-hidden">
+                  {anyUnpublished || allPublished ? (
+                    <button
+                      onClick={handleUnpublish}
+                      disabled={actioning === 'unpublish'}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-bg-elev)] transition-colors disabled:opacity-50"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-amber-500 flex-shrink-0">
+                        <path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" />
+                      </svg>
+                      {actioning === 'unpublish' ? 'Dépublication…' : 'Dépublier les notes'}
+                    </button>
+                  ) : null}
+
+                  <div className="mx-2 my-1 h-px bg-[var(--color-border)]" />
+
+                  {!confirmDelete ? (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-500/5 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 flex-shrink-0">
+                        <path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.712Z" clipRule="evenodd" />
+                      </svg>
+                      Supprimer l'évaluation
+                    </button>
+                  ) : (
+                    <div className="px-3 py-2.5">
+                      <p className="text-xs font-semibold text-red-600 mb-2">Supprimer toutes les notes ?<br /><span className="font-normal text-[var(--color-text-muted)]">Cette action est irréversible.</span></p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleDelete}
+                          disabled={actioning === 'delete'}
+                          className="flex-1 text-xs font-semibold py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                        >
+                          {actioning === 'delete' ? 'Suppression…' : 'Confirmer'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="flex-1 text-xs font-semibold py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-elev)] transition-colors"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Chevron */}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
               className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </div>
-        </button>
+        </div>
 
         {isOpen && (
           <div className="border-t border-[var(--color-border)]">
@@ -406,6 +498,31 @@ export default function TeacherGradesPage() {
       setGrades(prev => prev.map(g => g.publishedAt ? g : { ...g, publishedAt: new Date().toISOString() }));
     } catch {}
     setPublishing(false);
+  }, [selectedCourseId, user, apiFetch]);
+
+  const handleUnpublish = useCallback(async (evaluationName) => {
+    if (!selectedCourseId || !user?.campusId) return;
+    try {
+      await apiFetch(`/api/grades/course/${selectedCourseId}/unpublish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campusId: user.campusId, evaluationName }),
+      });
+      setGrades(prev => prev.map(g =>
+        g.evaluationName === evaluationName ? { ...g, publishedAt: null } : g
+      ));
+    } catch {}
+  }, [selectedCourseId, user, apiFetch]);
+
+  const handleDeleteEval = useCallback(async (evaluationName) => {
+    if (!selectedCourseId || !user?.campusId) return;
+    try {
+      await apiFetch(
+        `/api/grades/course/${selectedCourseId}/evaluation?campusId=${encodeURIComponent(user.campusId)}&evaluationName=${encodeURIComponent(evaluationName)}`,
+        { method: 'DELETE' }
+      );
+      setGrades(prev => prev.filter(g => g.evaluationName !== evaluationName));
+    } catch {}
   }, [selectedCourseId, user, apiFetch]);
 
   const handleCreateEval = useCallback(() => {
@@ -636,6 +753,8 @@ export default function TeacherGradesPage() {
                     apiFetch={apiFetch}
                     onGradeSaved={handleGradeSaved}
                     onPublish={handlePublish}
+                    onUnpublish={handleUnpublish}
+                    onDelete={handleDeleteEval}
                     publishing={publishing}
                     defaultOpen={pendingEvals.some(p => p.name === ev.name)}
                   />
