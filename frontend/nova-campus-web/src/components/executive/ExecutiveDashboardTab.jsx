@@ -71,7 +71,7 @@ export default function ExecutiveDashboardTab({ kpis, campusPerformance, alerts,
                         {c.totalStudents ?? <Dash />} {translate('studentsLabel')} · {c.successRate !== null ? `${c.successRate}%` : <Dash />}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-[var(--color-surface)] overflow-hidden">
+                    <div className="h-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[var(--color-primary)]"
                         style={{ width: `${Math.max(4, Math.round(((c.totalStudents || 0) / maxStudents) * 100))}%` }}
@@ -132,7 +132,7 @@ export default function ExecutiveDashboardTab({ kpis, campusPerformance, alerts,
                         {p.studentCount}{p.maxStudents ? ` / ${p.maxStudents}` : ''}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-[var(--color-surface)] overflow-hidden">
+                    <div className="h-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[var(--color-accent)]"
                         style={{ width: `${pct !== null ? pct : 100}%` }}

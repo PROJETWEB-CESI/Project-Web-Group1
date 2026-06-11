@@ -4,8 +4,6 @@ import { Building2, Table2, LineChart } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import ScrollShadow from '@/components/shared/ScrollShadow';
 
-const BORDER_COLORS = ['border-t-blue-500', 'border-t-violet-500', 'border-t-emerald-500', 'border-t-amber-500'];
-
 function Dash() {
   return <span className="opacity-30">—</span>;
 }
@@ -31,10 +29,10 @@ export default function CampusIndicatorsTab({ campuses, groupAverages, trendYear
       <p className="text-[var(--color-text-muted)] mb-6">{translate('campusIndicatorsSubtitle')}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {campuses.map((c, i) => (
+        {campuses.map((c) => (
           <div
             key={c.campusId}
-            className={`rounded-xl border border-t-4 ${BORDER_COLORS[i % BORDER_COLORS.length]} border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4`}
+            className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4"
           >
             <div className="flex items-center gap-2 mb-3">
               <Building2 size={16} className="text-[var(--color-text-muted)]" />
