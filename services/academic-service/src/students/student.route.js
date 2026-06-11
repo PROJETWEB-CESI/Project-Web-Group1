@@ -12,7 +12,7 @@ router.get('/', authorize(['admin']), async (req, res) => {
         const students = await service.getStudents(req.query.campusId, {
             programId: req.query.programId,
             status: req.query.status,
-            search: req.query.search,
+            search: typeof req.query.search === 'string' ? req.query.search : undefined,
         });
         res.json(students);
     } catch (err) {

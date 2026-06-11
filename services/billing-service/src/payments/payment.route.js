@@ -83,7 +83,7 @@ router.get('/', authorize(['admin']), async (req, res) => {
             status:       req.query.status,
             academicYear: req.query.academicYear,
             semester:     req.query.semester ? parseInt(req.query.semester, 10) : undefined,
-            search:       req.query.search,
+            search:       typeof req.query.search === 'string' ? req.query.search : undefined,
         });
         res.json(payments);
     } catch (err) {

@@ -38,13 +38,18 @@ async function login(req, res) {
     const result = await AuthService.login(email, password);
 
     // Set httpOnly cookies (best practice - not exposed to JS)
-    const cookieOpts = getCookieOptions(req);
     res.cookie('accessToken', result.accessToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: accessTokenMaxAge,
     });
     res.cookie('refreshToken', result.refreshToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: refreshTokenMaxAge,
     });
 
@@ -61,13 +66,18 @@ async function refresh(req, res) {
     const result = await AuthService.refreshTokens(refreshToken);
 
     // Set new cookies (rotating refresh token)
-    const cookieOpts = getCookieOptions(req);
     res.cookie('accessToken', result.accessToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: accessTokenMaxAge,
     });
     res.cookie('refreshToken', result.refreshToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: refreshTokenMaxAge,
     });
 
