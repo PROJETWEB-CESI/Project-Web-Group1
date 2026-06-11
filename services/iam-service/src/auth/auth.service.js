@@ -5,6 +5,7 @@ const { generateAccessToken, generateRefreshToken, verifyToken } = require('../c
 const User = require('../models/User');
 const { NOTIFICATION_CATEGORIES } = require('../models/User');
 const Session = require('../models/Session');
+const sseHub = require('../events/sseHub');
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
@@ -77,6 +78,8 @@ async function login(email, password, meta = {}) {
 
   await session.update({ refreshTokenHash: hashToken(refreshToken) });
 
+  sseHub.broadcastToUser(user.id, 'sessions-changed');
+
   const { passwordHash: _ph, ...safeUser } = user.toJSON();
   return { accessToken, refreshToken, user: safeUser };
 }
@@ -121,7 +124,11 @@ async function refreshTokens(refreshToken, meta = {}) {
 
 async function revokeSessionByRefreshToken(refreshToken) {
   if (!refreshToken) return;
-  await Session.destroy({ where: { refreshTokenHash: hashToken(refreshToken) } });
+  const hash = hashToken(refreshToken);
+  const session = await Session.findOne({ where: { refreshTokenHash: hash } });
+  if (!session) return;
+  await session.destroy();
+  sseHub.broadcastToUser(session.userId, 'sessions-changed');
 }
 
 async function listSessions(userId, currentRefreshToken) {
@@ -148,6 +155,8 @@ async function revokeSession(userId, sessionId) {
     throw new Error('Session not found');
   }
   await session.destroy();
+  sseHub.notifySessionRevoked(sessionId);
+  sseHub.broadcastToUser(userId, 'sessions-changed');
   return true;
 }
 

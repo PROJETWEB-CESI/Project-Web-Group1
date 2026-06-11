@@ -10,8 +10,6 @@ import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 import ScrollShadow from '@/components/shared/ScrollShadow';
 
-const SESSIONS_POLL_INTERVAL_MS = 10000;
-
 const NOTIFICATION_CATEGORIES = ['schedule', 'grades', 'payments', 'messages', 'announcements'];
 const NOTIFICATION_CHANNELS = ['email', 'inApp', 'push'];
 
@@ -93,7 +91,7 @@ function ToggleSwitch({ checked, onChange, disabled }) {
 }
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, sessionsVersion } = useAuth();
   const { translate, language, setLanguage, languages } = useLanguage();
   const { apiFetch } = useApi();
   const { theme, setTheme } = useTheme();
@@ -356,9 +354,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (activeTab !== 'sessions') return;
     loadSessions();
-    const interval = setInterval(loadSessions, SESSIONS_POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [activeTab]);
+  }, [activeTab, sessionsVersion]);
 
   const handleRevokeSession = async (sessionId) => {
     setRevokingSessionId(sessionId);
@@ -392,7 +388,7 @@ export default function ProfilePage() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Avatar / summary card + tab navigation */}
-        <div className="w-full lg:w-64 border border-[var(--color-border)] rounded-lg p-4 bg-[var(--color-bg-elev)] h-fit">
+        <div className="w-full lg:w-64 border border-[var(--color-border)] rounded-lg p-2 sm:p-4 bg-[var(--color-bg-elev)] h-fit">
           <div className="flex flex-col items-center">
             <div className="h-20 w-20 rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)] flex items-center justify-center text-3xl font-bold mb-3">
               {initials}
@@ -426,7 +422,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-elev)] p-6">
+        <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-elev)] p-2 sm:p-4">
           {activeTab === 'informations' && (
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <h2 className="text-sm font-medium text-[var(--color-text)]">
@@ -689,60 +685,62 @@ export default function ProfilePage() {
                   {translate('sessionsNone') || 'No active sessions found.'}
                 </div>
               ) : (
-                <ScrollShadow>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[var(--color-border)]">
-                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 pr-3">
-                          {translate('sessionsDevice') || 'Device'}
-                        </th>
-                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3 whitespace-nowrap">
-                          {translate('sessionsLocation') || 'Location'}
-                        </th>
-                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3 whitespace-nowrap">
-                          {translate('sessionsLastActive') || 'Last active'}
-                        </th>
-                        <th className="py-2 px-3 whitespace-nowrap"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sessions.map((session) => (
-                        <tr key={session.id} className="border-b border-[var(--color-border)] last:border-0">
-                          <td className="py-3 pr-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[var(--color-text)] whitespace-pre-line">{describeSessionLines(session.userAgent)}</span>
-                              {session.isCurrent && (
-                                <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-success)]/10 text-[var(--color-success)] whitespace-nowrap">
-                                  {translate('sessionsCurrentDevice') || 'This device'}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-3 text-[var(--color-text-muted)] whitespace-nowrap">
-                            {session.location || translate('sessionsLocationUnknown') || 'Unknown location'}
-                          </td>
-                          <td className="py-3 px-3 text-[var(--color-text-muted)] whitespace-nowrap">
-                            {formatRelativeTime(session.lastUsedAt, translate)}
-                          </td>
-                          <td className="py-3 px-3 text-right whitespace-nowrap">
-                            {!session.isCurrent && (
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                loading={revokingSessionId === session.id}
-                                className="!text-[var(--color-error)] hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)]"
-                                onClick={() => handleRevokeSession(session.id)}
-                              >
-                                {translate('sessionsRevoke') || 'Revoke'}
-                              </Button>
-                            )}
-                          </td>
+                <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden">
+                  <ScrollShadow>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-xs text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
+                          <th className="font-normal px-4 py-2">
+                            {translate('sessionsDevice') || 'Device'}
+                          </th>
+                          <th className="font-normal px-4 py-2 whitespace-nowrap">
+                            {translate('sessionsLocation') || 'Location'}
+                          </th>
+                          <th className="font-normal px-4 py-2 whitespace-nowrap">
+                            {translate('sessionsLastActive') || 'Last active'}
+                          </th>
+                          <th className="font-normal px-4 py-2 whitespace-nowrap"></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </ScrollShadow>
+                      </thead>
+                      <tbody>
+                        {sessions.map((session) => (
+                          <tr key={session.id} className="border-b border-[var(--color-border)] last:border-0">
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[var(--color-text)] whitespace-pre-line">{describeSessionLines(session.userAgent)}</span>
+                                {session.isCurrent && (
+                                  <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-success)]/10 text-[var(--color-success)] whitespace-nowrap">
+                                    {translate('sessionsCurrentDevice') || 'This device'}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">
+                              {session.location || translate('sessionsLocationUnknown') || 'Unknown location'}
+                            </td>
+                            <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">
+                              {formatRelativeTime(session.lastUsedAt, translate)}
+                            </td>
+                            <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                              {!session.isCurrent && (
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  loading={revokingSessionId === session.id}
+                                  className="!text-[var(--color-error)] hover:!bg-[var(--red-hoverlay)] hover:!text-[var(--color-error)]"
+                                  onClick={() => handleRevokeSession(session.id)}
+                                >
+                                  {translate('sessionsRevoke') || 'Revoke'}
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </ScrollShadow>
+                </div>
               )}
 
               <SignOutButton />

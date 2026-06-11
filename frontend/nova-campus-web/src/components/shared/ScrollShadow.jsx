@@ -39,16 +39,18 @@ export default function ScrollShadow({ children, className = '' }) {
         {children}
       </div>
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 w-[15px] transition-opacity duration-250"
+        className="pointer-events-none absolute inset-y-0 left-0 w-[15px] transition-all duration-100"
         style={{
           background: 'linear-gradient(to right, var(--color-border), transparent)',
+          width: showLeft ? '15px' : '0px',
           opacity: showLeft ? 1 : 0,
         }}
       />
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-[15px] transition-opacity duration-250"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[15px] transition-all duration-100"
         style={{
           background: 'linear-gradient(to left, var(--color-border), transparent)',
+          width: showRight ? '15px' : '0px',
           opacity: showRight ? 1 : 0,
         }}
       />

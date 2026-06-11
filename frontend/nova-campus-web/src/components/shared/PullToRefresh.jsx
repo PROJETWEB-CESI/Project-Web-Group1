@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 
-const PULL_THRESHOLD = 70;
-const MAX_PULL = 110;
-const INDICATOR_SIZE = 40;
+const PULL_THRESHOLD = 40; // how far the user needs to pull down before releasing triggers a refresh
+const MAX_PULL = 50; // maximum pull distance that affects the indicator (beyond this it just stays put and doesn't stretch further)
+const INDICATOR_SIZE = 40; // diameter of the circular refresh indicator
 
 // Wraps scrollable dashboard content and lets touch users pull down from the
 // top of the scroll area to reload the page (mobile "swipe down to refresh").
@@ -68,25 +68,31 @@ export default function PullToRefresh({ children, className = '' }) {
     };
   }, [pullDistance, refreshing]);
 
-  const indicatorOffset = Math.min(pullDistance, MAX_PULL) - INDICATOR_SIZE;
+  // When idle, push the indicator (including its shadow) fully above the
+  // viewport so no trace of it is visible in normal use.
+  const HIDDEN_OFFSET = -INDICATOR_SIZE * 0.5;
+  const indicatorOffset = (HIDDEN_OFFSET + Math.min(pullDistance, MAX_PULL)) * 2.5;
+
+  // opacity of 0 as default, 1 as soon as user starts pulling
+  const opacity = pullDistance > 0 ? 1 : 0;
 
   return (
     <div ref={containerRef} className={`relative overflow-auto ${className}`}>
       <div
-        className="absolute left-0 right-0 top-0 flex justify-center pointer-events-none"
-        style={{ transform: `translateY(${indicatorOffset}px)`, transition: refreshing ? 'none' : 'transform 0.2s' }}
+        className="fixed left-1/2 top-0 z-40 flex justify-center pointer-events-none"
+        style={{ transform: `translate(-50%, ${indicatorOffset}px)`, transition: refreshing ? 'none' : 'transform 0.2s' }}
       >
         <div
-          className="flex items-center justify-center rounded-full bg-[var(--color-surface)] shadow-md text-[var(--color-primary)]"
-          style={{ width: INDICATOR_SIZE, height: INDICATOR_SIZE }}
+          className="flex items-center justify-center rounded-full text-[var(--color-surface-hover)] shadow-md bg-[var(--color-text)]"
+          style={{ width: INDICATOR_SIZE, height: INDICATOR_SIZE, opacity: opacity, transition: refreshing ? 'none' : 'opacity 0.2s' }}
         >
-          <RefreshCw
-            className={refreshing ? 'w-5 h-5 animate-spin' : 'w-5 h-5'}
-            style={refreshing ? undefined : { transform: `rotate(${(pullDistance / PULL_THRESHOLD) * 180}deg)` }}
+          <RotateCw
+            className={refreshing ? 'w-6 h-6 animate-spin' : 'w-6 h-6'}
+            style={refreshing ? undefined : { transform: `rotate(${Math.pow(pullDistance / PULL_THRESHOLD, 2) * 180}deg)` }}
           />
         </div>
       </div>
-      <div style={{ transform: `translateY(${pullDistance}px)`, transition: refreshing ? 'none' : 'transform 0.2s' }}>
+      <div style={{ transform: `translateY(${pullDistance}px)`, transition: refreshing ? 'none' : 'transform 0.5s' }}>
         {children}
       </div>
     </div>

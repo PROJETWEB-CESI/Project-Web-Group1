@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import Header from "@/components/shared/Header";
+import PullToRefreshShell from "@/components/shared/PullToRefreshShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +41,7 @@ export default function RootLayout({ children }) {
 
                 {/* Main content area — flex-1 fills remaining viewport height (after in-flow header when applicable) */}
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                  {children}
+                  <PullToRefreshShell>{children}</PullToRefreshShell>
                 </div>
               </NotificationProvider>
             </AuthProvider>

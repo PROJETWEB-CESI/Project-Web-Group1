@@ -9,6 +9,7 @@ router.put('/me', authenticate, AuthController.updateMe);
 router.put('/me/password', authenticate, AuthController.changePassword);
 router.get('/sessions', authenticate, AuthController.listSessions);
 router.delete('/sessions/:id', authenticate, AuthController.revokeSession);
+router.get('/events', authenticate, AuthController.streamEvents);
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 router.post('/refresh', AuthController.refresh);
