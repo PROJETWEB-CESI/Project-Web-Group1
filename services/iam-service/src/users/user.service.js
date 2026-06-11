@@ -2,6 +2,16 @@ const User = require('../models/User');
 const { hashPassword } = require('../common/utils/bcrypt.util');
 const { Op } = require('sequelize');
 
+const PASSWORD_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+
+function generateTempPassword(length = 12) {
+  let pwd = '';
+  for (let i = 0; i < length; i++) {
+    pwd += PASSWORD_CHARS[Math.floor(Math.random() * PASSWORD_CHARS.length)];
+  }
+  return pwd;
+}
+
 async function listUsers(filters = {}) {
   const where = {};
   if (filters.role) where.role = filters.role;
@@ -22,7 +32,7 @@ async function getUserById(id) {
 }
 
 async function createUser(data) {
-  const { email, password, role, campusId, firstName, lastName } = data;
+  const { email, password, role, campusId, firstName, lastName, studentId } = data;
   if (!email || !password) {
     throw new Error('email and password are required');
   }
@@ -40,6 +50,7 @@ async function createUser(data) {
     campusId: campusId || null,
     firstName: firstName || null,
     lastName: lastName || null,
+    studentId: studentId || null,
   });
 
   const { passwordHash: _ph, ...safe } = user.toJSON();
@@ -67,10 +78,22 @@ async function deleteUser(id) {
   return true;
 }
 
+async function resetPasswordByStudentId(studentId) {
+  const user = await User.findOne({ where: { studentId } });
+  if (!user) return null;
+
+  const password = generateTempPassword();
+  user.passwordHash = await hashPassword(password);
+  await user.save();
+
+  return { email: user.email, password };
+}
+
 module.exports = {
   listUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
+  resetPasswordByStudentId,
 };

@@ -14,6 +14,7 @@ router.use(authenticate);
 
 router.get('/', requireAdmin, UserController.list);
 router.post('/', requireAdmin, UserController.create);
+router.post('/reset-password/:studentId', requireAdmin, UserController.resetPassword);
 router.get('/:id', requireAdmin, UserController.getOne);
 router.put('/:id', requireAdmin, UserController.update);
 router.delete('/:id', requireAdmin, UserController.remove);

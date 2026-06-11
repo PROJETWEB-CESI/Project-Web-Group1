@@ -10,6 +10,7 @@ export default function AdminStudentsPage() {
   const { user } = useAuth();
   const { apiFetch } = useApi();
   const [students, setStudents] = useState([]);
+  const [programs, setPrograms] = useState([]);
 
   useEffect(() => {
     const campusId = user?.campusId;
@@ -19,7 +20,23 @@ export default function AdminStudentsPage() {
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setStudents(Array.isArray(data) ? data : []))
       .catch(() => setStudents([]));
+
+    apiFetch(`/api/students/programs?campusId=${campusId}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setPrograms(Array.isArray(data) ? data : []))
+      .catch(() => setPrograms([]));
   }, [user]);
 
-  return <StudentsTab students={students} />;
+  const handleStudentCreated = (student) => {
+    setStudents((prev) => [...prev, student]);
+  };
+
+  return (
+    <StudentsTab
+      students={students}
+      campusId={user?.campusId}
+      allPrograms={programs}
+      onStudentCreated={handleStudentCreated}
+    />
+  );
 }

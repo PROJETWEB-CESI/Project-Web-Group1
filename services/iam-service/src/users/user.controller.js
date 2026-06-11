@@ -48,4 +48,14 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { list, getOne, create, update, remove };
+async function resetPassword(req, res) {
+  try {
+    const result = await UserService.resetPasswordByStudentId(req.params.studentId);
+    if (!result) return res.status(404).json({ error: 'User not found' });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+module.exports = { list, getOne, create, update, remove, resetPassword };

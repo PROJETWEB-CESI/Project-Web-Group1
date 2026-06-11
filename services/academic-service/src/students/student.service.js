@@ -40,9 +40,67 @@ const getStudents = async (campusId, { programId, status, search } = {}) => {
     });
 };
 
-// Crée un nouveau dossier étudiant
+// Génère le prochain identifiant étudiant disponible (format STUxxx)
+const generateNextStudentId = async () => {
+    const students = await Student.findAll({ attributes: ['studentId'], raw: true });
+    let max = 0;
+    for (const s of students) {
+        const match = /^STU(\d+)$/.exec(s.studentId || '');
+        if (match) max = Math.max(max, parseInt(match[1], 10));
+    }
+    return `STU${String(max + 1).padStart(3, '0')}`;
+};
+
+// Normalise un nom pour l'utiliser dans une adresse email (minuscules, sans accents/espaces)
+const normalizeForEmail = (str) =>
+    (str || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z]/g, '');
+
+// Génère une adresse email <prenom>.<nom>@novacampus.fr, en ajoutant un numéro en cas de doublon
+const generateEmail = async (firstName, lastName) => {
+    const base = `${normalizeForEmail(firstName)}.${normalizeForEmail(lastName)}`;
+    let suffix = 1;
+    let email = `${base}@novacampus.fr`;
+    while (await Student.findOne({ where: { email } })) {
+        suffix += 1;
+        email = `${base}${suffix}@novacampus.fr`;
+    }
+    return email;
+};
+
+// Crée un nouveau dossier étudiant (le studentId et l'email sont générés automatiquement)
 const createStudent = async (data) => {
-    return Student.create(data);
+    const studentId = await generateNextStudentId();
+    const email = await generateEmail(data.firstName, data.lastName);
+    return Student.create({
+        studentId,
+        campusId: data.campusId,
+        programId: data.programId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email,
+        enrollmentYear: data.enrollmentYear,
+        status: data.status || 'Active',
+        paymentStatus: data.paymentStatus || 'Up to date',
+    });
+};
+
+// Supprime un dossier étudiant (utilisé pour annuler une création en cas d'échec)
+const deleteStudent = async (id, campusId) => {
+    if (!id || !campusId) throw new Error('id et campusId sont obligatoires');
+    const student = await Student.findOne({ where: { studentId: id, campusId } });
+    if (!student) return null;
+    await student.destroy();
+    return true;
+};
+
+// Returns all programs of a campus (for forms)
+const getPrograms = async (campusId) => {
+    if (!campusId) throw new Error('campusId est obligatoire');
+    return Program.findAll({ where: { campusId }, order: [['programName', 'ASC']] });
 };
 
 // Met à jour le profil d'un étudiant
@@ -148,10 +206,12 @@ module.exports = {
     getStudentById,
     getStudents,
     createStudent,
+    deleteStudent,
     updateStudent,
     getEnrollmentsByStudent,
     createEnrollment,
     updateEnrollment,
     getCampusById,
     getCampusStats,
+    getPrograms,
 };
