@@ -96,12 +96,27 @@ const getCourseGradeStats = async (courseId, campusId) => {
     return { studentsCount, average: +avg.toFixed(2), median: +median.toFixed(2), stdDev, passRate };
 };
 
+const unpublishGrades = async (courseId, campusId, evaluationName) => {
+    if (!courseId || !campusId) throw new Error('courseId et campusId sont obligatoires');
+    const where = { courseId, campusId, publishedAt: { [Op.not]: null } };
+    if (evaluationName) where.evaluationName = evaluationName;
+    const [count] = await Grade.update({ publishedAt: null }, { where });
+    return count;
+};
+
+const deleteEvaluationGrades = async (courseId, campusId, evaluationName) => {
+    if (!courseId || !campusId || !evaluationName) throw new Error('courseId, campusId et evaluationName sont obligatoires');
+    return Grade.destroy({ where: { courseId, campusId, evaluationName } });
+};
+
 module.exports = {
     getGradesByStudent,
     getGradesByCourse,
     createGrade,
     updateGrade,
     publishGrades,
+    unpublishGrades,
+    deleteEvaluationGrades,
     deleteGrade,
     getStudentGradeStats,
     getCourseGradeStats,
