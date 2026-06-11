@@ -4,7 +4,12 @@ import { Building2, Table2, LineChart } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import ScrollShadow from '@/components/shared/ScrollShadow';
 
-const BORDER_COLORS = ['border-blue-500/40', 'border-violet-500/40', 'border-emerald-500/40', 'border-amber-500/40'];
+const BORDER_COLORS = [
+  'border-[color-mix(in_oklch,var(--color-course-6)_40%,transparent)]',
+  'border-[color-mix(in_oklch,var(--color-course-7)_40%,transparent)]',
+  'border-[color-mix(in_oklch,var(--color-success)_40%,transparent)]',
+  'border-[color-mix(in_oklch,var(--color-course-2)_40%,transparent)]',
+];
 
 function Dash() {
   return <span className="opacity-30">—</span>;

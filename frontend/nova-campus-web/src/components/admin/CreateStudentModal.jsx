@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X, RefreshCw } from 'lucide-react';
+import { X, RefreshCw, Copy, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useApi } from '@/lib/api';
+import useBackdropClose from '@/hooks/useBackdropClose';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
 
@@ -30,6 +31,17 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
   const [enrollmentYear, setEnrollmentYear] = useState(currentYear);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard access denied — silently ignore.
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,8 +88,10 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
     }
   };
 
+  const backdropProps = useBackdropClose(onClose);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" {...backdropProps}>
       <div className="w-full max-w-lg rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">{translate('newEnrollment') || 'New enrollment'}</h2>
@@ -121,7 +135,22 @@ export default function CreateStudentModal({ campusId, programs, onClose, onCrea
             </label>
             <div className="flex gap-2">
               <Input value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1" />
-              <Button type="button" variant="secondary" onClick={() => setPassword(generatePassword())} aria-label={translate('regeneratePassword') || 'Generate a new password'}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleCopyPassword}
+                aria-label={translate('copyPassword') || 'Copy password'}
+                title={translate('copyPassword') || 'Copy password'}
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setPassword(generatePassword())}
+                aria-label={translate('regeneratePassword') || 'Generate a new password'}
+                title={translate('regeneratePassword') || 'Generate a new password'}
+              >
                 <RefreshCw className="w-4 h-4" />
               </Button>
             </div>

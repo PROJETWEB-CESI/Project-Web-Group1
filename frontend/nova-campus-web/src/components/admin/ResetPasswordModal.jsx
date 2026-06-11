@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useApi } from '@/lib/api';
+import useBackdropClose from '@/hooks/useBackdropClose';
 import Button from '@/components/shared/Button';
 
 export default function ResetPasswordModal({ student, onClose }) {
@@ -34,8 +35,10 @@ export default function ResetPasswordModal({ student, onClose }) {
     }
   };
 
+  const backdropProps = useBackdropClose(onClose);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" {...backdropProps}>
       <div className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">

@@ -28,27 +28,27 @@ export default function ExecutiveDashboardTab({ kpis, campusPerformance, alerts,
           label={translate('kpiTotalStudents')}
           value={kpis.totalStudents}
           icon={Users}
-          accent="text-blue-600 bg-blue-500/10"
+          accent="text-[var(--color-course-6)] bg-[var(--color-course-6-soft)]"
         />
         <KpiCard
           label={translate('kpiTotalRevenue')}
           value={formatEuro(kpis.totalRevenue)}
           icon={Euro}
-          accent="text-violet-600 bg-violet-500/10"
+          accent="text-[var(--color-course-7)] bg-[var(--color-course-7-soft)]"
         />
         <KpiCard
           label={translate('kpiAvgSuccessRate')}
           value={kpis.avgSuccessRate !== null ? `${kpis.avgSuccessRate}%` : null}
           icon={TrendingUp}
-          accent="text-emerald-600 bg-emerald-500/10"
-          valueClassName="text-emerald-600"
+          accent="text-[var(--color-success)] bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)]"
+          valueClassName="text-[var(--color-success)]"
         />
         <KpiCard
           label={translate('kpiDropoutRate')}
           value={kpis.avgDropoutRate !== null ? `${kpis.avgDropoutRate}%` : null}
           icon={TrendingDown}
-          accent={kpis.avgDropoutRate > 10 ? 'text-red-500 bg-red-500/10' : 'text-amber-600 bg-amber-500/10'}
-          valueClassName={kpis.avgDropoutRate > 10 ? 'text-red-500' : ''}
+          accent={kpis.avgDropoutRate > 10 ? 'text-[var(--color-error)] bg-[color-mix(in_oklch,var(--color-error)_10%,transparent)]' : 'text-[var(--color-course-2)] bg-[var(--color-course-2-soft)]'}
+          valueClassName={kpis.avgDropoutRate > 10 ? 'text-[var(--color-error)]' : ''}
         />
       </div>
 

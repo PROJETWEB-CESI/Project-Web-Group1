@@ -5,6 +5,7 @@ import { Building2, BookOpen, AlertCircle, FileWarning, Download, Eye, FilePieCh
 import { useLanguage } from '@/context/LanguageContext';
 import Button from '@/components/shared/Button';
 import ScrollShadow from '@/components/shared/ScrollShadow';
+import useBackdropClose from '@/hooks/useBackdropClose';
 import KpiCard from './KpiCard';
 
 const REPORT_ICONS = {
@@ -15,10 +16,10 @@ const REPORT_ICONS = {
 };
 
 const REPORT_ACCENTS = {
-  campusComparison: 'text-blue-600 bg-blue-500/10',
-  programIndicators: 'text-violet-600 bg-violet-500/10',
-  retention: 'text-amber-600 bg-amber-500/10',
-  overduePayments: 'text-red-500 bg-red-500/10',
+  campusComparison: 'text-[var(--color-course-6)] bg-[var(--color-course-6-soft)]',
+  programIndicators: 'text-[var(--color-course-7)] bg-[var(--color-course-7-soft)]',
+  retention: 'text-[var(--color-course-2)] bg-[var(--color-course-2-soft)]',
+  overduePayments: 'text-[var(--color-error)] bg-[color-mix(in_oklch,var(--color-error)_10%,transparent)]',
 };
 
 function formatEuro(value) {
@@ -35,6 +36,8 @@ export default function StrategicReportsTab({ kpis, reports }) {
     setPreview({ title: translate(report.titleKey), columns, rows });
   };
 
+  const backdropProps = useBackdropClose(() => setPreview(null));
+
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('reportsTitle')}</h1>
@@ -45,26 +48,26 @@ export default function StrategicReportsTab({ kpis, reports }) {
           label={translate('kpiCampusCount')}
           value={kpis.campusCount}
           icon={Building2}
-          accent="text-blue-600 bg-blue-500/10"
+          accent="text-[var(--color-course-6)] bg-[var(--color-course-6-soft)]"
         />
         <KpiCard
           label={translate('kpiProgramCount')}
           value={kpis.programCount}
           icon={BookOpen}
-          accent="text-violet-600 bg-violet-500/10"
+          accent="text-[var(--color-course-7)] bg-[var(--color-course-7-soft)]"
         />
         <KpiCard
           label={translate('kpiOverdueAmount')}
           value={formatEuro(kpis.overdueAmount)}
           icon={AlertCircle}
-          accent="text-red-500 bg-red-500/10"
+          accent="text-[var(--color-error)] bg-[color-mix(in_oklch,var(--color-error)_10%,transparent)]"
           valueClassName="text-[var(--color-error)]"
         />
         <KpiCard
           label={translate('kpiOverdueInvoices')}
           value={kpis.overdueCount}
           icon={FileWarning}
-          accent="text-amber-600 bg-amber-500/10"
+          accent="text-[var(--color-course-2)] bg-[var(--color-course-2-soft)]"
         />
       </div>
 
@@ -102,8 +105,8 @@ export default function StrategicReportsTab({ kpis, reports }) {
       </div>
 
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-3xl max-h-[80vh] flex flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" {...backdropProps}>
+          <div className="w-fit max-w-[95vw] min-w-[min(28rem,95vw)] max-h-[80vh] flex flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden">
             <div className="flex items-center justify-between gap-2 px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
               <span className="text-sm font-semibold text-[var(--color-text)]">{preview.title}</span>
               <button

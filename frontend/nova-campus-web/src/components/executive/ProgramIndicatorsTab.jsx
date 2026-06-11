@@ -22,19 +22,19 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
           label={translate('kpiTotalPrograms')}
           value={kpis.totalPrograms}
           icon={BookOpen}
-          accent="text-blue-600 bg-blue-500/10"
+          accent="text-[var(--color-course-6)] bg-[var(--color-course-6-soft)]"
         />
         <KpiCard
           label={translate('kpiProgramStudents')}
           value={kpis.totalStudents}
           icon={Users}
-          accent="text-violet-600 bg-violet-500/10"
+          accent="text-[var(--color-course-7)] bg-[var(--color-course-7-soft)]"
         />
         <KpiCard
           label={translate('kpiAvgFillRate')}
           value={kpis.avgFillRate !== null ? `${kpis.avgFillRate}%` : null}
           icon={Gauge}
-          accent="text-emerald-600 bg-emerald-500/10"
+          accent="text-[var(--color-success)] bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)]"
         />
       </div>
 
@@ -78,7 +78,7 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-            <TrendingUp size={16} className="text-emerald-600" />
+            <TrendingUp size={16} className="text-[var(--color-success)]" />
             <span className="text-sm font-semibold text-[var(--color-text)]">{translate('topFilledProgramsTitle')}</span>
           </div>
           <div className="p-4">
@@ -90,10 +90,10 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
                   <div key={`${p.campusId}-${p.programId}-${i}`} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex items-center justify-between text-sm mb-1.5">
                       <span className="font-medium text-[var(--color-text)] truncate pr-2">{p.programName} <span className="text-[var(--color-text-muted)] font-normal">· {p.campusName}</span></span>
-                      <span className="text-emerald-600 font-medium flex-shrink-0">{p.fillRate}%</span>
+                      <span className="text-[var(--color-success)] font-medium flex-shrink-0">{p.fillRate}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
-                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(100, p.fillRate)}%` }} />
+                      <div className="h-full rounded-full bg-[var(--color-success)]" style={{ width: `${Math.min(100, p.fillRate)}%` }} />
                     </div>
                   </div>
                 ))}

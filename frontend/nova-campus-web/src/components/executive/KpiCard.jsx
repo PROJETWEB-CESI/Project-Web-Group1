@@ -1,6 +1,6 @@
 'use client';
 
-export default function KpiCard({ label, value, icon: Icon, accent = 'text-blue-600 bg-blue-500/10', valueClassName = '' }) {
+export default function KpiCard({ label, value, icon: Icon, accent = 'text-[var(--color-course-6)] bg-[var(--color-course-6-soft)]', valueClassName = '' }) {
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
