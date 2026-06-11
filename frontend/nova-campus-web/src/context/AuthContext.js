@@ -1,15 +1,21 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getCsrfToken } from '@/lib/api';
 
 const AuthContext = createContext(null);
 
 const API_BASE = '/api/auth'; // Proxied through nginx in full stack
 
+// Delay before retrying the SSE connection after it drops.
+const EVENTS_RETRY_DELAY_MS = 2000;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionsVersion, setSessionsVersion] = useState(0);
+  const router = useRouter();
 
   // Helper to refresh access token using httpOnly refresh cookie
   const refreshAccessToken = async () => {
@@ -57,6 +63,61 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
+  // Subscribe to the server's session event stream so that revoking this
+  // session from another device signs the user out immediately, and so the
+  // sessions list updates in real time without polling.
+  useEffect(() => {
+    if (loading || !user) return;
+
+    let cancelled = false;
+    let source;
+    let retryTimeout;
+
+    const forceLogout = () => {
+      setUser(null);
+      localStorage.removeItem('authToken');
+      router.replace('/login');
+    };
+
+    const connect = () => {
+      if (cancelled) return;
+
+      source = new EventSource(`${API_BASE}/events`, { withCredentials: true });
+
+      source.addEventListener('session-revoked', () => {
+        source.close();
+        forceLogout();
+      });
+
+      source.addEventListener('sessions-changed', () => {
+        setSessionsVersion((v) => v + 1);
+      });
+
+      source.onerror = async () => {
+        source.close();
+        if (cancelled) return;
+
+        // The connection may have dropped because the access token expired.
+        // Try to refresh it before reconnecting; if that also fails the
+        // session is gone, so sign out.
+        try {
+          await refreshAccessToken();
+          retryTimeout = setTimeout(connect, EVENTS_RETRY_DELAY_MS);
+        } catch (err) {
+          forceLogout();
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      source?.close();
+      clearTimeout(retryTimeout);
+    };
+  }, [loading, user, router]);
+
   const login = async (email, password) => {
     const res = await fetch(`${API_BASE}/login`, {
       method: 'POST',
@@ -99,6 +160,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     isAuthenticated: !!user,
+    sessionsVersion,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

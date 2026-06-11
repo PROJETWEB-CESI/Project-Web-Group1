@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import DashboardSidebar from '@/components/shared/DashboardSidebar';
 import AriaChatWidget from '@/components/shared/AriaChatWidget';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 
 export default function DashboardLayout({ children }) {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -64,8 +65,10 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main content area (role pages render here). Guard above ensures only matching role content stays. */}
-      <main className="flex-1 overflow-auto bg-[var(--color-bg)] p-2 sm:p-6">
-        {children}
+      <main className="flex-1 overflow-hidden bg-[var(--color-bg)]">
+        <PullToRefresh className={`h-full p-2 sm:p-6 ${pathname === '/dashboard/assistant' ? '' : 'pb-24 sm:pb-24'}`}>
+          {children}
+        </PullToRefresh>
       </main>
 
       {/* Floating Aria chat widget — visible on all dashboard pages except /dashboard/assistant */}

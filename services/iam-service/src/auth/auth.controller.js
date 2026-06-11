@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const AuthService = require('./auth.service');
+const sseHub = require('../events/sseHub');
 
 // Parse duration strings like "15m", "2d", "7d" to milliseconds
 function parseDuration(duration) {
@@ -192,6 +193,35 @@ async function revokeSession(req, res) {
   }
 }
 
+// Streams session-related events (forced logout, sessions list changes) to
+// the client over Server-Sent Events so the UI updates without polling.
+function streamEvents(req, res) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.flushHeaders();
+  res.write(': connected\n\n');
+
+  const { id: userId, sid } = req.user;
+  sseHub.addClient(userId, sid, res);
+
+  const heartbeat = setInterval(() => {
+    res.write(': ping\n\n');
+  }, 25000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    sseHub.removeClient(userId, sid, res);
+  });
+}
+
 module.exports = {
   register,
   login,
@@ -203,4 +233,5 @@ module.exports = {
   changePassword,
   listSessions,
   revokeSession,
+  streamEvents,
 };

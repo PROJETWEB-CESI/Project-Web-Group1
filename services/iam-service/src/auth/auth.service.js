@@ -5,6 +5,7 @@ const { generateAccessToken, generateRefreshToken, verifyToken } = require('../c
 const User = require('../models/User');
 const { NOTIFICATION_CATEGORIES } = require('../models/User');
 const Session = require('../models/Session');
+const sseHub = require('../events/sseHub');
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
@@ -57,23 +58,28 @@ async function login(email, password, meta = {}) {
     throw new Error('Invalid email or password');
   }
 
+  const session = await Session.create({
+    userId: user.id,
+    refreshTokenHash: '',
+    userAgent: meta.userAgent || null,
+    ipAddress: meta.ip || null,
+  });
+
   const payload = {
     id: user.id,
     email: user.email,
     role: user.role,
     campusId: user.campusId,
+    sid: session.id,
     instructorId: user.instructorId || null,
   };
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  await Session.create({
-    userId: user.id,
-    refreshTokenHash: hashToken(refreshToken),
-    userAgent: meta.userAgent || null,
-    ipAddress: meta.ip || null,
-  });
+  await session.update({ refreshTokenHash: hashToken(refreshToken) });
+
+  sseHub.broadcastToUser(user.id, 'sessions-changed');
 
   const { passwordHash: _ph, ...safeUser } = user.toJSON();
   return { accessToken, refreshToken, user: safeUser };
@@ -90,7 +96,7 @@ async function refreshTokens(refreshToken, meta = {}) {
   }
 
   const session = await Session.findOne({
-    where: { userId: decoded.id, refreshTokenHash: hashToken(refreshToken) },
+    where: { id: decoded.sid, userId: decoded.id, refreshTokenHash: hashToken(refreshToken) },
   });
   if (!session) {
     throw new Error('Session has been revoked');
@@ -101,6 +107,7 @@ async function refreshTokens(refreshToken, meta = {}) {
     email: decoded.email,
     role: decoded.role,
     campusId: decoded.campusId,
+    sid: session.id,
     instructorId: decoded.instructorId || null,
   };
 
@@ -119,7 +126,11 @@ async function refreshTokens(refreshToken, meta = {}) {
 
 async function revokeSessionByRefreshToken(refreshToken) {
   if (!refreshToken) return;
-  await Session.destroy({ where: { refreshTokenHash: hashToken(refreshToken) } });
+  const hash = hashToken(refreshToken);
+  const session = await Session.findOne({ where: { refreshTokenHash: hash } });
+  if (!session) return;
+  await session.destroy();
+  sseHub.broadcastToUser(session.userId, 'sessions-changed');
 }
 
 async function listSessions(userId, currentRefreshToken) {
@@ -146,6 +157,8 @@ async function revokeSession(userId, sessionId) {
     throw new Error('Session not found');
   }
   await session.destroy();
+  sseHub.notifySessionRevoked(sessionId);
+  sseHub.broadcastToUser(userId, 'sessions-changed');
   return true;
 }
 
