@@ -129,6 +129,37 @@ async function me(req, res) {
   }
 }
 
+async function updateMe(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const user = await AuthService.updateProfile(req.user.id, req.body);
+    res.json({ user });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+async function changePassword(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters long' });
+    }
+    await AuthService.changePassword(req.user.id, currentPassword, newPassword);
+    res.json({ message: 'Password updated' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -136,4 +167,6 @@ module.exports = {
   logout,
   validate,
   me,
+  updateMe,
+  changePassword,
 };

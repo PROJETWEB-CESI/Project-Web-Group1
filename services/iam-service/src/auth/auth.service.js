@@ -93,4 +93,45 @@ async function getMe(payload) {
   return user.toJSON();
 }
 
-module.exports = { register, login, refreshTokens, getMe };
+async function updateProfile(userId, data) {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const { firstName, lastName, email } = data;
+
+  if (email && email !== user.email) {
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      throw new Error('Email already in use');
+    }
+  }
+
+  await user.update({
+    firstName: firstName !== undefined ? firstName : user.firstName,
+    lastName: lastName !== undefined ? lastName : user.lastName,
+    email: email !== undefined ? email : user.email,
+  });
+
+  const { passwordHash: _ph, ...safe } = user.toJSON();
+  return safe;
+}
+
+async function changePassword(userId, currentPassword, newPassword) {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isMatch = await comparePassword(currentPassword, user.passwordHash);
+  if (!isMatch) {
+    throw new Error('Current password is incorrect');
+  }
+
+  user.passwordHash = await hashPassword(newPassword);
+  await user.save();
+  return true;
+}
+
+module.exports = { register, login, refreshTokens, getMe, updateProfile, changePassword };
