@@ -29,6 +29,30 @@ router.post('/course/:courseId/publish', authorize(['teacher', 'admin']), async 
     }
 });
 
+// Prof : dépublier les notes d'un cours (ou d'une évaluation spécifique)
+router.post('/course/:courseId/unpublish', authorize(['teacher', 'admin']), async (req, res) => {
+    const { campusId, evaluationName } = req.body;
+    if (!campusId) return res.status(400).json({ error: 'campusId est obligatoire' });
+    try {
+        const count = await service.unpublishGrades(req.params.courseId, campusId, evaluationName || null);
+        res.json({ unpublished: count });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Prof : supprimer toutes les notes d'une évaluation dans un cours
+router.delete('/course/:courseId/evaluation', authorize(['teacher', 'admin']), async (req, res) => {
+    const { campusId, evaluationName } = req.query;
+    if (!campusId || !evaluationName) return res.status(400).json({ error: 'campusId et evaluationName sont obligatoires' });
+    try {
+        const count = await service.deleteEvaluationGrades(req.params.courseId, campusId, evaluationName);
+        res.json({ deleted: count });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Prof : distribution des notes d'un cours (médiane, écart-type, taux de réussite)
 router.get('/course/:courseId/stats', authorize(['teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
