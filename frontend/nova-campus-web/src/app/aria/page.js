@@ -110,7 +110,7 @@ export default function AriaPage() {
   // ALL hooks first — no early returns before this block
   const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
-  const { translate } = useLanguage();
+  const { translate, language } = useLanguage();
 
   const [convs, setConvs] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -193,7 +193,7 @@ export default function AriaPage() {
       const r = await apiFetch(`${AI}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, conversation_id: convId, history }),
+        body: JSON.stringify({ message: msg, conversation_id: convId, history, ui_language: language }),
       });
 
       if (!r.ok || !r.body) {
