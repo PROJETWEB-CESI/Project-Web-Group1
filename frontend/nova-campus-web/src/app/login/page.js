@@ -105,7 +105,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@etu.novacampus.fr"
+              placeholder="your.name@novacampus.fr"
               autoComplete="email"
               required
             />
