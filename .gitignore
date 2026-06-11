@@ -143,7 +143,8 @@ docs/*.md
 # Turbo / Nx (if you ever use monorepo tools later)
 .turbo/
 .nx/
+
 # Project agent instructions (local only)
 AGENT.md
+CLAUDE.md
 todo.md
-

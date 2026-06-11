@@ -1,35 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { getCourseColor, EXAM_COLOR } from '@/lib/courseColors';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const DAY_MAP = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
-
-const PALETTE = [
-  { bg: 'bg-blue-50',   border: 'border-l-blue-400',   text: 'text-blue-700'   },
-  { bg: 'bg-green-50',  border: 'border-l-green-400',  text: 'text-green-700'  },
-  { bg: 'bg-amber-50',  border: 'border-l-amber-400',  text: 'text-amber-700'  },
-  { bg: 'bg-purple-50', border: 'border-l-purple-400', text: 'text-purple-700' },
-  { bg: 'bg-pink-50',   border: 'border-l-pink-400',   text: 'text-pink-700'   },
-  { bg: 'bg-teal-50',   border: 'border-l-teal-400',   text: 'text-teal-700'   },
-  { bg: 'bg-orange-50', border: 'border-l-orange-400', text: 'text-orange-700' },
-  { bg: 'bg-cyan-50',   border: 'border-l-cyan-400',   text: 'text-cyan-700'   },
-  { bg: 'bg-rose-50',   border: 'border-l-rose-400',   text: 'text-rose-700'   },
-  { bg: 'bg-indigo-50', border: 'border-l-indigo-400', text: 'text-indigo-700' },
-];
-const EXAM_VARIANT = { bg: 'bg-red-50', border: 'border-l-red-400', text: 'text-red-700' };
-
-function buildColorMap(timetables) {
-  const map = new Map();
-  let i = 0;
-  for (const t of timetables) {
-    if (!map.has(t.course_id)) {
-      map.set(t.course_id, PALETTE[i % PALETTE.length]);
-      i++;
-    }
-  }
-  return map;
-}
 
 function getWeekDays() {
   const now = new Date();
@@ -58,8 +34,6 @@ export default function WeekSchedule({ timetables }) {
   const weekDays = getWeekDays();
   const today = new Date();
 
-  const colorMap = buildColorMap(timetables);
-
   const byDay = Array.from({ length: 5 }, () => []);
   for (const t of timetables) {
     const idx = DAY_MAP[t.day_of_week];
@@ -80,7 +54,8 @@ export default function WeekSchedule({ timetables }) {
           Voir tout →
         </Link>
       </div>
-      <div className="grid grid-cols-5 divide-x divide-[var(--color-border)]">
+      <ScrollShadow>
+      <div className="grid grid-cols-5 min-w-[600px] divide-x divide-[var(--color-border)]">
         {weekDays.map((date, i) => {
           const isToday = date.toDateString() === today.toDateString();
           const courses = byDay[i];
@@ -97,7 +72,7 @@ export default function WeekSchedule({ timetables }) {
                   <span className="text-xs text-[var(--color-text-muted)] opacity-30">—</span>
                 ) : courses.map((t, j) => {
                   const isExam = t.status === 'Exam' || t.course?.course_type === 'Exam';
-                  const v = isExam ? EXAM_VARIANT : (colorMap.get(t.course_id) || PALETTE[0]);
+                  const v = isExam ? EXAM_COLOR : getCourseColor(t.course_id);
                   return (
                     <div key={j} className={`${v.bg} border-l-4 ${v.border} rounded-r-md px-2 py-1.5`}>
                       <div className="flex items-center gap-1 mb-0.5">
@@ -115,6 +90,7 @@ export default function WeekSchedule({ timetables }) {
           );
         })}
       </div>
+      </ScrollShadow>
     </div>
   );
 }

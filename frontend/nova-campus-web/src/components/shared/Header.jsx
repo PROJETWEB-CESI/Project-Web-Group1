@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import LogoLink from './LogoLink';
 import LanguageToggle from './LanguageToggle';
@@ -21,7 +22,9 @@ export default function Header() {
                 <div className="flex items-center sm:gap-4 gap-2">
                     <LanguageToggle />
                     <ThemeToggle />
-                    <ProfileMenu />
+                    <Suspense fallback={null}>
+                        <ProfileMenu />
+                    </Suspense>
                 </div>
             </div>
         );
@@ -34,7 +37,9 @@ export default function Header() {
             <div className="flex items-center gap-3">
                 <LanguageToggle />
                 <ThemeToggle />
-                <ProfileMenu />
+                <Suspense fallback={null}>
+                    <ProfileMenu />
+                </Suspense>
             </div>
         </div>
     );

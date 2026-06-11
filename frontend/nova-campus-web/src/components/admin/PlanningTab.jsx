@@ -1,29 +1,10 @@
 'use client';
 
 import { useLanguage } from '@/context/LanguageContext';
+import { getCourseColor } from '@/lib/courseColors';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const DAY_MAP = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
-
-// Course color palette built from theme tokens so it follows light/dark/high-contrast themes
-const PALETTE = [
-  { bg: 'bg-[var(--color-primary)]/10',      border: 'border-l-[var(--color-primary)]',      text: 'text-[var(--color-primary)]'      },
-  { bg: 'bg-[var(--color-accent)]/10',       border: 'border-l-[var(--color-accent)]',       text: 'text-[var(--color-accent)]'       },
-  { bg: 'bg-[var(--color-success)]/10',      border: 'border-l-[var(--color-success)]',      text: 'text-[var(--color-success)]'      },
-  { bg: 'bg-[var(--color-primary-soft)]/20', border: 'border-l-[var(--color-primary-soft)]', text: 'text-[var(--color-primary)]'      },
-  { bg: 'bg-[var(--color-accent-soft)]/20',  border: 'border-l-[var(--color-accent-soft)]',  text: 'text-[var(--color-accent)]'       },
-];
-
-function buildColorMap(timetables) {
-  const map = new Map();
-  let i = 0;
-  for (const t of timetables) {
-    if (!map.has(t.course_id)) {
-      map.set(t.course_id, PALETTE[i % PALETTE.length]);
-      i++;
-    }
-  }
-  return map;
-}
 
 function formatHour(timeStr) {
   return (timeStr || '').slice(0, 5);
@@ -38,7 +19,6 @@ const ROOM_STATUS_STYLES = {
 export default function PlanningTab({ rooms, timetables, conflicts }) {
   const { translate } = useLanguage();
   const DAY_LABELS = [translate('dayMon'), translate('dayTue'), translate('dayWed'), translate('dayThu'), translate('dayFri')];
-  const colorMap = buildColorMap(timetables);
   const conflictedIds = new Set(conflicts.flatMap((c) => [c.a.schedule_id, c.b.schedule_id]));
 
   const byDay = Array.from({ length: 5 }, () => []);
@@ -54,7 +34,7 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
     <div>
       <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('adminPlanningTitle')}</h1>
       <p className="text-[var(--color-text-muted)] mb-6">
-        {timetables.length} {translate('scheduledCourses')} · {conflicts.length} {translate('conflictsDetected')}
+        {timetables.length} {translate('scheduledCourses')} · {conflicts.length} {translate(conflicts.length > 1 ? 'conflictsDetected' : 'conflictDetected')}
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
@@ -108,7 +88,8 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
           {timetables.length === 0 ? (
             <p className="text-sm text-[var(--color-text-muted)] py-8 text-center">{translate('noCoursesPlanned')}</p>
           ) : (
-            <div className="grid grid-cols-5 divide-x divide-[var(--color-border)]">
+            <ScrollShadow>
+            <div className="grid grid-cols-5 min-w-[700px] divide-x divide-[var(--color-border)]">
               {DAY_LABELS.map((label, i) => (
                 <div key={label} className="p-2 sm:p-3 min-h-[200px]">
                   <div className="text-xs font-semibold tracking-wide mb-2 text-[var(--color-text-muted)]">{label}</div>
@@ -116,7 +97,7 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
                     {byDay[i].length === 0 ? (
                       <span className="text-xs text-[var(--color-text-muted)] opacity-30">—</span>
                     ) : byDay[i].map((t) => {
-                      const v = colorMap.get(t.course_id) || PALETTE[0];
+                      const v = getCourseColor(t.course_id);
                       const inConflict = conflictedIds.has(t.schedule_id);
                       return (
                         <div
@@ -141,6 +122,7 @@ export default function PlanningTab({ rooms, timetables, conflicts }) {
                 </div>
               ))}
             </div>
+            </ScrollShadow>
           )}
         </div>
       </div>

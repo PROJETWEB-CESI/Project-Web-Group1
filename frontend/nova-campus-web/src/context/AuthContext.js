@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { getCsrfToken } from '@/lib/api';
 
 const AuthContext = createContext(null);
 
@@ -12,9 +13,11 @@ export function AuthProvider({ children }) {
 
   // Helper to refresh access token using httpOnly refresh cookie
   const refreshAccessToken = async () => {
+    const csrfToken = getCsrfToken();
     const res = await fetch(`${API_BASE}/refresh`, {
       method: 'POST',
       credentials: 'include',
+      headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
     });
     if (!res.ok) {
       throw new Error('Failed to refresh session');
@@ -75,9 +78,11 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
+      const csrfToken = getCsrfToken();
       await fetch(`${API_BASE}/logout`, {
         method: 'POST',
         credentials: 'include',
+        headers: csrfToken ? { 'x-csrf-token': csrfToken } : undefined,
       });
     } catch (e) {
       // ignore network errors on logout

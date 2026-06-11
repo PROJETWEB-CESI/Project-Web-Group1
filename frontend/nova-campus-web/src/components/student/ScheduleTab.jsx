@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { getCourseColor } from '@/lib/courseColors';
+import ScrollShadow from '@/components/shared/ScrollShadow';
 
 const HOUR_HEIGHT = 64;
 const START_HOUR = 8;
@@ -8,14 +10,6 @@ const END_HOUR = 19;
 const SCH_HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 const SCH_DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const SCH_DAY_KEYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const SCH_PALETTE = [
-  { bg: 'bg-blue-50',   border: 'border-l-blue-500',   text: 'text-blue-800'   },
-  { bg: 'bg-green-50',  border: 'border-l-green-500',  text: 'text-green-800'  },
-  { bg: 'bg-amber-50',  border: 'border-l-amber-500',  text: 'text-amber-800'  },
-  { bg: 'bg-purple-50', border: 'border-l-purple-500', text: 'text-purple-800' },
-  { bg: 'bg-pink-50',   border: 'border-l-pink-500',   text: 'text-pink-800'   },
-  { bg: 'bg-teal-50',   border: 'border-l-teal-500',   text: 'text-teal-800'   },
-];
 
 const schToMin = (ts) => {
   const p = (ts || `${START_HOUR}:00`).split(':').map(Number);
@@ -24,15 +18,6 @@ const schToMin = (ts) => {
 
 export default function ScheduleTab({ timetables }) {
   const [weekOffset, setWeekOffset] = useState(0);
-
-  const schColorMap = {};
-  let schColorIdx = 0;
-  for (const t of timetables) {
-    if (!schColorMap[t.course_id]) {
-      schColorMap[t.course_id] = SCH_PALETTE[schColorIdx % SCH_PALETTE.length];
-      schColorIdx++;
-    }
-  }
 
   const schByDay = {};
   for (const k of SCH_DAY_KEYS) schByDay[k] = [];
@@ -84,7 +69,8 @@ export default function ScheduleTab({ timetables }) {
       </div>
 
       <div className="border border-[var(--color-border)] rounded-lg overflow-hidden bg-[var(--color-bg-elev)]">
-        <div className="grid" style={{ gridTemplateColumns: '56px repeat(5, 1fr)' }}>
+        <ScrollShadow>
+        <div className="grid" style={{ gridTemplateColumns: '56px repeat(5, minmax(140px, 1fr))', minWidth: '756px' }}>
 
           <div className="border-b border-r border-[var(--color-border)] bg-[var(--color-surface)]" />
           {SCH_DAY_KEYS.map((dayKey, i) => {
@@ -92,11 +78,11 @@ export default function ScheduleTab({ timetables }) {
             const isToday = weekOffset === 0 && date.toDateString() === schNow.toDateString();
             return (
               <div key={`hdr-${dayKey}`}
-                className={`text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-blue-50' : 'bg-[var(--color-surface)]'}`}>
-                <div className={`text-xs font-semibold tracking-widest ${isToday ? 'text-blue-600' : 'text-[var(--color-text-muted)]'}`}>
+                className={`text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-[var(--color-primary)]/10' : 'bg-[var(--color-surface)]'}`}>
+                <div className={`text-xs font-semibold tracking-widest ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
                   {SCH_DAY_LABELS[i]}
                 </div>
-                <div className={`text-2xl font-light mt-0.5 ${isToday ? 'text-blue-600' : 'text-[var(--color-text)]'}`}>
+                <div className={`text-2xl font-light mt-0.5 ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)]'}`}>
                   {date.getDate()}
                 </div>
               </div>
@@ -118,7 +104,7 @@ export default function ScheduleTab({ timetables }) {
             const isToday = weekOffset === 0 && schWeekDays[i].toDateString() === schNow.toDateString();
             return (
               <div key={dayKey}
-                className={`border-l border-[var(--color-border)] relative ${isToday ? 'bg-blue-50/30' : ''}`}
+                className={`border-l border-[var(--color-border)] relative ${isToday ? 'bg-[var(--color-primary)]/5' : ''}`}
                 style={{ height: `${SCH_HOURS.length * HOUR_HEIGHT}px` }}>
 
                 {SCH_HOURS.map(h => (
@@ -134,7 +120,7 @@ export default function ScheduleTab({ timetables }) {
                   if (startMin < 0 || startMin >= (END_HOUR - START_HOUR) * 60) return null;
                   const topPx    = (startMin / 60) * HOUR_HEIGHT + 2;
                   const heightPx = Math.max(((endMin - startMin) / 60) * HOUR_HEIGHT - 4, 26);
-                  const v        = schColorMap[t.course_id] || SCH_PALETTE[0];
+                  const v        = getCourseColor(t.course_id);
                   return (
                     <div key={j}
                       className={`absolute left-1 right-1 overflow-hidden rounded-r-md border-l-4 px-2 py-1.5 ${v.bg} ${v.border}`}
@@ -154,7 +140,7 @@ export default function ScheduleTab({ timetables }) {
                       )}
                       {heightPx > 76 && t.room && (
                         <div className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5 leading-none">
-                          <span className="text-red-400 text-[10px]">●</span>
+                          <span className="text-[var(--color-error)] text-[10px]">●</span>
                           {t.room.room_name}
                         </div>
                       )}
@@ -166,6 +152,7 @@ export default function ScheduleTab({ timetables }) {
           })}
 
         </div>
+        </ScrollShadow>
       </div>
     </div>
   );
