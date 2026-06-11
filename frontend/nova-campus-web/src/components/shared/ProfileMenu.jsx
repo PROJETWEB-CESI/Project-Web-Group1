@@ -137,7 +137,7 @@ export default function ProfileMenu() {
 
     if (role === 'student') {
       items.push(
-        { label: translate('timetable') || 'Timetable', href: '/dashboard/student/schedule', icon: <Calendar className={iconClass} /> },
+        { label: translate('schedule') || 'Schedule', href: '/dashboard/student/schedule', icon: <Calendar className={iconClass} /> },
         { label: translate('grades') || 'Grades & Evaluations', href: '/dashboard/student/grades', icon: <BookOpen className={iconClass} /> },
         { label: translate('absences') || 'Absences', href: '/dashboard/student/absences', icon: <AlertCircle className={iconClass} /> },
         { label: translate('academicHistory') || 'Academic History', href: '/dashboard/student/history', icon: <FolderOpen className={iconClass} /> },
@@ -146,6 +146,7 @@ export default function ProfileMenu() {
       );
     } else if (role === 'teacher') {
       items.push(
+        { label: translate('schedule') || 'Schedule', href: '/dashboard/teacher/schedule', icon: <Calendar className={iconClass} /> },
         { label: translate('myCourses') || 'My Courses', href: '/dashboard/teacher/courses', icon: <BookOpen className={iconClass} /> },
         { label: translate('gradeEntry') || 'Grade Entry', href: '/dashboard/teacher/grades', icon: <FileText className={iconClass} /> },
         { label: translate('attendance') || 'Attendance & Absences', href: '/dashboard/teacher/attendance', icon: <Users className={iconClass} /> },
@@ -162,8 +163,7 @@ export default function ProfileMenu() {
       items.push(
         { label: translate('campusIndicators') || 'Campus Indicators', href: '/dashboard/executive/indicators', icon: <BarChart3 className={iconClass} /> },
         { label: translate('programIndicators') || 'Program Indicators', href: '/dashboard/executive/programs', icon: <BarChart3 className={iconClass} /> },
-        { label: translate('strategicReports') || 'Strategic Reports', href: '/dashboard/executive/reports', icon: <FileText className={iconClass} /> },
-        { label: translate('campusComparison') || 'Campus Comparison', href: '/dashboard/executive/comparison', icon: <BarChart3 className={iconClass} /> }
+        { label: translate('strategicReports') || 'Strategic Reports', href: '/dashboard/executive/reports', icon: <FileText className={iconClass} /> }
       );
     }
 
