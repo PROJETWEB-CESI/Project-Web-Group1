@@ -7,177 +7,220 @@ import { useApi } from '@/lib/api';
 const DAY_FR = { Monday: 'Lun', Tuesday: 'Mar', Wednesday: 'Mer', Thursday: 'Jeu', Friday: 'Ven' };
 const DAY_ORDER = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4 };
 
+const AVATAR_PALETTES = [
+  'bg-blue-500/15 text-blue-700',
+  'bg-violet-500/15 text-violet-700',
+  'bg-emerald-500/15 text-emerald-700',
+  'bg-amber-500/15 text-amber-700',
+  'bg-rose-500/15 text-rose-700',
+  'bg-cyan-500/15 text-cyan-700',
+  'bg-orange-500/15 text-orange-700',
+  'bg-teal-500/15 text-teal-700',
+];
+
+function paletteFor(str) {
+  const hash = (str || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return AVATAR_PALETTES[hash % AVATAR_PALETTES.length];
+}
+
+function initials(first, last) {
+  return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase() || '?';
+}
+
 function CourseAvatar({ name, id }) {
   const words = (name || id || '?').split(' ').filter(Boolean);
-  const initials = words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : (name || id || '?').slice(0, 2).toUpperCase();
+  const ini = words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : (name || id || '?').slice(0, 2).toUpperCase();
   return (
     <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-sm font-bold text-[var(--color-primary)] select-none">
-      {initials}
+      {ini}
     </div>
   );
 }
 
 function StudentAvatar({ firstName, lastName }) {
-  const initials = ((firstName?.[0] || '') + (lastName?.[0] || '')).toUpperCase() || '?';
+  const palette = paletteFor((firstName || '') + (lastName || ''));
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center text-xs font-semibold text-[var(--color-text-muted)] select-none">
-      {initials}
+    <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold select-none ${palette}`}>
+      {initials(firstName, lastName)}
     </div>
   );
 }
 
-function StatCell({ label, value, color = '' }) {
+function AttBadge({ rate }) {
+  if (rate == null) return <span className="text-[var(--color-text-muted)] text-sm">—</span>;
+  const cls = rate >= 80
+    ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+    : rate >= 60
+    ? 'bg-amber-500/10 text-amber-700 border-amber-500/20'
+    : 'bg-red-500/10 text-red-600 border-red-500/20';
+  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cls}`}>{rate}%</span>;
+}
+
+function AvgBadge({ average }) {
+  if (average == null) return <span className="text-[var(--color-text-muted)] text-sm">—</span>;
+  const cls = average >= 14
+    ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+    : average >= 10
+    ? 'bg-blue-500/10 text-blue-700 border-blue-500/20'
+    : 'bg-red-500/10 text-red-600 border-red-500/20';
+  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cls}`}>{average}/20</span>;
+}
+
+
+function MiniStat({ icon, label, value, colorClass = 'text-[var(--color-text)]' }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-[var(--color-text-muted)]">{label}</span>
-      <span className={`text-base font-bold text-[var(--color-text)] ${color}`}>{value ?? '—'}</span>
+    <div className="flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex-1">
+      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[var(--color-bg-elev)] flex items-center justify-center">
+        {icon}
+      </div>
+      <div>
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{label}</div>
+        <div className={`text-sm font-bold mt-0.5 ${colorClass}`}>{value ?? '—'}</div>
+      </div>
     </div>
   );
-}
-
-function AttendanceDot({ rate }) {
-  if (rate == null) return <span className="text-[var(--color-text-muted)]">—</span>;
-  const color = rate >= 80 ? 'text-emerald-600' : rate >= 60 ? 'text-amber-600' : 'text-red-500';
-  return <span className={`font-semibold ${color}`}>{rate}%</span>;
-}
-
-function GradeCell({ average }) {
-  if (average == null) return <span className="text-[var(--color-text-muted)]">—</span>;
-  const color = average >= 14 ? 'text-emerald-600' : average >= 10 ? 'text-blue-600' : 'text-red-500';
-  return <span className={`font-semibold ${color}`}>{average}/20</span>;
 }
 
 function StudentRow({ student, onExpand, expanded }) {
   return (
-    <>
-      <tr
-        className="hover:bg-[var(--color-surface)] cursor-pointer transition-colors"
+    <div>
+      {/* Main clickable row */}
+      <div
+        className="flex items-center gap-2 px-4 py-3 hover:bg-[var(--color-surface)] cursor-pointer transition-colors"
         onClick={() => onExpand(student.studentId)}
       >
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-3">
-            <StudentAvatar firstName={student.firstName} lastName={student.lastName} />
-            <div>
-              <div className="text-sm font-medium text-[var(--color-text)]">
-                {student.firstName} {student.lastName}
-              </div>
-              <div className="text-xs text-[var(--color-text-muted)]">{student.studentId}</div>
+        {/* Avatar + name + program */}
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <StudentAvatar firstName={student.firstName} lastName={student.lastName} />
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-[var(--color-text)] truncate">
+              {student.firstName} {student.lastName}
+            </div>
+            <div className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
+              {student.program
+                ? <>{student.program}{student.enrollmentYear ? <span className="opacity-60"> · {student.enrollmentYear}</span> : null}</>
+                : student.studentId}
             </div>
           </div>
-        </td>
-        <td className="px-4 py-3 text-xs text-[var(--color-text-muted)]">
-          {student.program || '—'}
-          {student.enrollmentYear && <span className="ml-1 opacity-60">· {student.enrollmentYear}</span>}
-        </td>
-        <td className="px-4 py-3 text-center">
-          <AttendanceDot rate={student.attendanceRate} />
-        </td>
-        <td className="px-4 py-3 text-center">
-          <GradeCell average={student.average} />
-        </td>
-        <td className="px-4 py-3 text-center text-xs text-[var(--color-text-muted)]">
-          {student.grades.length > 0 ? `${student.grades.length} éval.` : '—'}
-        </td>
-        <td className="px-4 py-3 text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-            strokeWidth={2} stroke="currentColor"
-            className={`w-4 h-4 mx-auto text-[var(--color-text-muted)] transition-transform ${expanded ? 'rotate-180' : ''}`}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-          </svg>
-        </td>
-      </tr>
+        </div>
+
+        {/* Stats */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <AttBadge rate={student.attendanceRate} />
+          <AvgBadge average={student.average} />
+          {student.grades.length > 0 && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] whitespace-nowrap">
+              {student.grades.length} éval.
+            </span>
+          )}
+        </div>
+
+        {/* Chevron */}
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
+          className={`w-4 h-4 flex-shrink-0 text-[var(--color-text-muted)] transition-transform ${expanded ? 'rotate-180' : ''}`}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </div>
 
       {/* Expanded grades */}
       {expanded && student.grades.length > 0 && (
-        <tr>
-          <td colSpan={6} className="px-4 pb-3 pt-0 bg-[var(--color-surface)]">
-            <div className="rounded-lg border border-[var(--color-border)] overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-[var(--color-border)]">
-                    <th className="text-left px-3 py-2 text-[var(--color-text-muted)] font-medium">Évaluation</th>
-                    <th className="text-center px-3 py-2 text-[var(--color-text-muted)] font-medium">Note</th>
-                    <th className="text-center px-3 py-2 text-[var(--color-text-muted)] font-medium">Coeff.</th>
-                    <th className="text-center px-3 py-2 text-[var(--color-text-muted)] font-medium">Date</th>
-                    <th className="text-center px-3 py-2 text-[var(--color-text-muted)] font-medium">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--color-border)]">
-                  {student.grades.map((g, i) => (
-                    <tr key={i} className="bg-[var(--color-bg-elev)]">
-                      <td className="px-3 py-2 text-[var(--color-text)]">{g.evaluationName}</td>
-                      <td className="px-3 py-2 text-center font-semibold text-[var(--color-text)]">
-                        {g.score != null ? `${g.score}/${g.scoreMax}` : '—'}
-                      </td>
-                      <td className="px-3 py-2 text-center text-[var(--color-text-muted)]">{g.coefficient}</td>
-                      <td className="px-3 py-2 text-center text-[var(--color-text-muted)]">
-                        {g.evaluationDate ? new Date(g.evaluationDate).toLocaleDateString('fr-FR') : '—'}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {g.publishedAt
-                          ? <span className="text-emerald-600 font-medium">Publiée</span>
-                          : <span className="text-amber-600 font-medium">En attente</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </td>
-        </tr>
+        <div className="px-3 pb-3 pt-1 bg-[var(--color-surface)]">
+          <div className="rounded-xl border border-[var(--color-border)] overflow-hidden divide-y divide-[var(--color-border)]">
+            {student.grades.map((g, i) => {
+              const scoreVal = g.score != null ? parseFloat(g.score) : null;
+              const maxVal   = g.scoreMax != null ? parseFloat(g.scoreMax) : 20;
+              const pct      = scoreVal != null ? Math.round((scoreVal / maxVal) * 100) : 0;
+              const scoreColor = scoreVal == null ? 'text-[var(--color-text-muted)]'
+                : scoreVal >= (maxVal * 0.7) ? 'text-emerald-600'
+                : scoreVal >= (maxVal * 0.5) ? 'text-blue-600'
+                : 'text-red-500';
+              const barColor = scoreVal == null ? 'bg-[var(--color-border)]'
+                : scoreVal >= (maxVal * 0.7) ? 'bg-emerald-500'
+                : scoreVal >= (maxVal * 0.5) ? 'bg-blue-500'
+                : 'bg-red-400';
+              const dateStr = g.evaluationDate
+                ? new Date(g.evaluationDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                : null;
+
+              return (
+                <div key={i} className={`flex items-center gap-3 px-3 py-3 ${i % 2 === 0 ? 'bg-[var(--color-surface)]' : 'bg-black/[0.03] dark:bg-white/[0.03]'}`}>
+                  {/* Name + meta */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-[var(--color-text)] truncate">{g.evaluationName}</div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                      {dateStr && <span className="text-xs text-[var(--color-text-muted)]">{dateStr}</span>}
+                      <span className="text-xs text-[var(--color-text-muted)]">coeff. ×{g.coefficient}</span>
+                    </div>
+                  </div>
+
+                  {/* Score + bar */}
+                  <div className="flex flex-col items-end gap-1 w-20 flex-shrink-0">
+                    <div className={`text-base font-extrabold tracking-tight ${scoreColor}`}>
+                      {scoreVal != null
+                        ? <>{scoreVal}<span className="text-xs font-medium text-[var(--color-text-muted)]">/{Math.round(maxVal)}</span></>
+                        : '—'}
+                    </div>
+                    {scoreVal != null && (
+                      <div className="w-full h-1.5 rounded-full bg-[var(--color-border)]">
+                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Status icon */}
+                  <div className="flex-shrink-0">
+                    {g.publishedAt
+                      ? <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" /></svg>
+                          Publiée
+                        </span>
+                      : <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3"><path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" /></svg>
+                          En attente
+                        </span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
 function CourseStudents({ students, loading }) {
   const [expanded, setExpanded] = useState({});
+  const toggle = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const toggleExpand = (studentId) =>
-    setExpanded(prev => ({ ...prev, [studentId]: !prev[studentId] }));
+  if (loading) return (
+    <div className="flex items-center justify-center gap-2 py-8 text-sm text-[var(--color-text-muted)]">
+      <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+      </svg>
+      Chargement des étudiants…
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <div className="px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">
-        Chargement…
-      </div>
-    );
-  }
-
-  if (!students?.length) {
-    return (
-      <div className="px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">
-        Aucun étudiant inscrit.
-      </div>
-    );
-  }
+  if (!students?.length) return (
+    <div className="py-8 text-center text-sm text-[var(--color-text-muted)]">Aucun étudiant inscrit.</div>
+  );
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm min-w-[640px]">
-        <thead>
-          <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-            <th className="text-left px-4 py-2.5 text-xs font-medium text-[var(--color-text-muted)]">Étudiant</th>
-            <th className="text-left px-4 py-2.5 text-xs font-medium text-[var(--color-text-muted)]">Promotion</th>
-            <th className="text-center px-4 py-2.5 text-xs font-medium text-[var(--color-text-muted)]">Présence</th>
-            <th className="text-center px-4 py-2.5 text-xs font-medium text-[var(--color-text-muted)]">Moyenne</th>
-            <th className="text-center px-4 py-2.5 text-xs font-medium text-[var(--color-text-muted)]">Évals.</th>
-            <th className="w-8" />
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[var(--color-border)]">
-          {students.map(s => (
-            <StudentRow
-              key={s.studentId}
-              student={s}
-              expanded={!!expanded[s.studentId]}
-              onExpand={toggleExpand}
-            />
-          ))}
-        </tbody>
-      </table>
+    <div>
+      {/* Header row */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
+        <div className="flex-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Étudiant</div>
+        <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Présence</div>
+        <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Moyenne</div>
+        <div className="w-6" />
+      </div>
+      <div className="divide-y divide-[var(--color-border)]">
+        {students.map(s => (
+          <StudentRow key={s.studentId} student={s} expanded={!!expanded[s.studentId]} onExpand={toggle} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -312,83 +355,146 @@ export default function TeacherCoursesPage() {
         <p className="text-[var(--color-text-muted)] mt-1">{courses.length} cours · semestre en cours</p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         {courses.map((c) => {
-          const avgColor  = c.average  == null ? '' : c.average  >= 14 ? 'text-emerald-600' : c.average  >= 10 ? 'text-blue-600' : 'text-red-500';
-          const passColor = c.passRate == null ? '' : c.passRate >= 75 ? 'text-emerald-600' : c.passRate >= 50 ? 'text-amber-600' : 'text-red-500';
-          const attColor  = c.attendanceRate == null ? '' : c.attendanceRate >= 80 ? 'text-emerald-600' : 'text-red-500';
-          const isOpen    = openCourse === c.courseId;
+          const avgColorClass  = c.average  == null ? 'text-[var(--color-text)]' : c.average  >= 14 ? 'text-emerald-600' : c.average  >= 10 ? 'text-blue-600' : 'text-red-500';
+          const passColorClass = c.passRate == null ? 'text-[var(--color-text)]' : c.passRate >= 75 ? 'text-emerald-600' : c.passRate >= 50 ? 'text-amber-600' : 'text-red-500';
+          const attColorClass  = c.attendanceRate == null ? 'text-[var(--color-text)]' : c.attendanceRate >= 80 ? 'text-emerald-600' : c.attendanceRate >= 60 ? 'text-amber-600' : 'text-red-500';
+          const isOpen = openCourse === c.courseId;
 
           return (
-            <div key={c.courseId} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden">
+            <div key={c.courseId} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden shadow-sm">
+
               {/* Header */}
-              <div className="flex items-center gap-4 px-5 py-4 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-                <CourseAvatar name={c.courseName} id={c.courseId} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-[var(--color-text)] text-base">{c.courseName}</span>
-                    <span className="text-xs text-[var(--color-text-muted)]">({c.courseId})</span>
-                    {c.courseType && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
-                        {c.courseType}
-                      </span>
-                    )}
-                    {c.credits && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
-                        {c.credits} ECTS
-                      </span>
-                    )}
-                    {c.pendingCount > 0 && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
-                        {c.pendingCount} note{c.pendingCount > 1 ? 's' : ''} à publier
-                      </span>
-                    )}
+              <div className="flex flex-col gap-3 px-4 sm:px-5 py-4 sm:py-5 bg-[var(--color-surface)]">
+                {/* Top row: avatar + title + actions (actions hidden on mobile) */}
+                <div className="flex items-start gap-3">
+                  <CourseAvatar name={c.courseName} id={c.courseId} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-[var(--color-text)] text-base leading-tight">{c.courseName}</span>
+                      <span className="hidden sm:inline text-xs text-[var(--color-text-muted)] font-mono opacity-60">{c.courseId}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {c.courseType && (
+                        <span className="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
+                          {c.courseType}
+                        </span>
+                      )}
+                      {c.credits && (
+                        <span className="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-[var(--color-bg-elev)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                          {c.credits} ECTS
+                        </span>
+                      )}
+                      {c.pendingCount > 0 && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                            <path fillRule="evenodd" d="M8 1a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0v-5.5A.75.75 0 0 1 8 1ZM8 12a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" clipRule="evenodd" />
+                          </svg>
+                          {c.pendingCount} note{c.pendingCount > 1 ? 's' : ''} à publier
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {c.slots.map((s, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-xs bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-full px-2.5 py-0.5 text-[var(--color-text-muted)]">
-                        <span className="font-medium text-[var(--color-text)]">{DAY_FR[s.day] || s.day}</span>
-                        {s.start && <>{s.start.slice(0, 5)}–{s.end.slice(0, 5)}</>}
-                        {s.room && <span className="opacity-60">· {s.room}</span>}
-                      </span>
-                    ))}
+                  {/* Actions: icon-only on mobile, icon+text on desktop */}
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <a href={`/dashboard/teacher/grades?course=${c.courseId}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 hover:bg-[var(--color-primary)]/20 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 flex-shrink-0">
+                        <path fillRule="evenodd" d="M5 4a3 3 0 0 1 6 0v1h.5A1.5 1.5 0 0 1 13 6.5v6A1.5 1.5 0 0 1 11.5 14h-7A1.5 1.5 0 0 1 3 12.5v-6A1.5 1.5 0 0 1 4.5 5H5V4Zm1.5 0a1.5 1.5 0 0 1 3 0v1h-3V4ZM8 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 0 0-2.236 1.382.75.75 0 0 0 .672 1.118h3.128a.75.75 0 0 0 .672-1.118A2.5 2.5 0 0 0 8 10.5Z" clipRule="evenodd" />
+                      </svg>
+                      <span className="hidden sm:inline">Notes</span>
+                    </a>
+                    <a href={`/dashboard/teacher/attendance?course=${c.courseId}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:bg-[var(--color-bg-elev)] transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 flex-shrink-0">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+                      </svg>
+                      <span className="hidden sm:inline">Présences</span>
+                    </a>
                   </div>
+                </div>
+                {/* Slots */}
+                <div className="flex flex-wrap gap-1.5">
+                  {c.slots.map((s, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 text-xs bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-full px-2.5 py-1 text-[var(--color-text-muted)]">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 opacity-50">
+                        <path fillRule="evenodd" d="M4 1.75a.75.75 0 0 1 1.5 0V3h5V1.75a.75.75 0 0 1 1.5 0V3A2 2 0 0 1 14 5v7.5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2V1.75Z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-semibold text-[var(--color-text)]">{DAY_FR[s.day] || s.day}</span>
+                      {s.start && <span>{s.start.slice(0, 5)}–{s.end.slice(0, 5)}</span>}
+                      {s.room && <span className="hidden sm:inline opacity-60">· {s.room}</span>}
+                    </span>
+                  ))}
                 </div>
               </div>
 
-              {/* Stats + actions */}
-              <div className="flex items-center justify-between gap-4 px-5 py-4 flex-wrap border-b border-[var(--color-border)]">
-                <div className="flex gap-6 flex-wrap">
-                  <StatCell label="Étudiants" value={c.studentsCount ?? '—'} />
-                  <StatCell label="Présence moy." value={c.attendanceRate != null ? `${c.attendanceRate}%` : '—'} color={attColor} />
-                  <StatCell label="Moyenne" value={c.average != null ? `${c.average}/20` : '—'} color={avgColor} />
-                  <StatCell label="Taux de réussite" value={c.passRate != null ? `${c.passRate}%` : '—'} color={passColor} />
-                </div>
-                <div className="flex gap-2">
-                  <a href={`/dashboard/teacher/grades?course=${c.courseId}`}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-bg-elev)] text-[var(--color-text)] transition-colors">
-                    Notes
-                  </a>
-                  <a href={`/dashboard/teacher/attendance?course=${c.courseId}`}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-bg-elev)] text-[var(--color-text)] transition-colors">
-                    Présences
-                  </a>
-                </div>
+              {/* Stats mini-cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4 border-t border-[var(--color-border)]">
+                <MiniStat
+                  label="Étudiants"
+                  value={c.studentsCount ?? '—'}
+                  colorClass="text-[var(--color-text)]"
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-blue-500">
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+                    </svg>
+                  }
+                />
+                <MiniStat
+                  label="Présence moy."
+                  value={c.attendanceRate != null ? `${c.attendanceRate}%` : '—'}
+                  colorClass={attColorClass}
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-emerald-500">
+                      <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+                    </svg>
+                  }
+                />
+                <MiniStat
+                  label="Moyenne"
+                  value={c.average != null ? `${c.average}/20` : '—'}
+                  colorClass={avgColorClass}
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-amber-500">
+                      <path fillRule="evenodd" d="M8 1.75a.75.75 0 0 1 .692.462l1.41 3.393 3.664.293a.75.75 0 0 1 .428 1.317l-2.791 2.39.853 3.595a.75.75 0 0 1-1.12.814L8 11.989l-3.136 1.825a.75.75 0 0 1-1.12-.814l.853-3.595L1.806 7.215a.75.75 0 0 1 .428-1.317l3.664-.293L7.308 2.212A.75.75 0 0 1 8 1.75Z" clipRule="evenodd" />
+                    </svg>
+                  }
+                />
+                <MiniStat
+                  label="Taux de réussite"
+                  value={c.passRate != null ? `${c.passRate}%` : '—'}
+                  colorClass={passColorClass}
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-violet-500">
+                      <path fillRule="evenodd" d="M5.25 1A2.25 2.25 0 0 0 3 3.25v9.5A2.25 2.25 0 0 0 5.25 15h5.5A2.25 2.25 0 0 0 13 12.75v-9.5A2.25 2.25 0 0 0 10.75 1h-5.5ZM8 10a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 10Zm2.28-5.22a.75.75 0 0 1 0 1.06l-2 2a.75.75 0 0 1-1.06 0l-1-1a.75.75 0 0 1 1.06-1.06l.47.47 1.47-1.47a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+                    </svg>
+                  }
+                />
               </div>
 
               {/* Toggle students */}
-              <button
-                onClick={() => toggleCourse(c.courseId)}
-                className="w-full flex items-center justify-between px-5 py-3 text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] transition-colors"
-              >
-                <span className="font-medium">
-                  {isOpen ? 'Masquer les étudiants' : `Voir les étudiants${c.studentsCount ? ` (${c.studentsCount})` : ''}`}
-                </span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
-                  className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              </button>
+              <div className="px-3 sm:px-5 pb-3 sm:pb-4">
+                <button
+                  onClick={() => toggleCourse(c.courseId)}
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors border ${
+                    isOpen
+                      ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)]/20 hover:bg-[var(--color-primary)]/15'
+                      : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-bg-elev)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+                  </svg>
+                  {isOpen
+                    ? 'Masquer les étudiants'
+                    : `Voir les étudiants${c.studentsCount ? ` (${c.studentsCount})` : ''}`}
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
+                    className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </button>
+              </div>
 
               {/* Students table (lazy, cached) */}
               {isOpen && (
