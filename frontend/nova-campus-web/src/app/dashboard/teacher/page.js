@@ -108,10 +108,24 @@ export default function TeacherDashboard() {
         <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">
           {user?.firstName ? `${translate('hello', { name: user.firstName })} 👋` : null}
         </h1>
-        {user?.specialty && (
-          <p className="text-[var(--color-text-muted)] mt-1">
-            Prof. {user.specialty}{user?.department ? ` · ${user.department}` : ''}
-          </p>
+        {(user?.specialty || campusName) && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {user?.specialty && (
+              <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
+                Prof. {user.specialty}
+              </span>
+            )}
+            {user?.department && (
+              <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                {user.department}
+              </span>
+            )}
+            {campusName && (
+              <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                {campusName}
+              </span>
+            )}
+          </div>
         )}
       </div>
 
