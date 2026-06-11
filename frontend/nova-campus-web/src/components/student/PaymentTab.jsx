@@ -1,5 +1,7 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 const LABELS = [
   "Acompte d'inscription",
   'Frais T1',
@@ -41,41 +43,42 @@ function isDelay(status) {
 }
 
 export default function PaymentTab({ payments, billingSummary, payEcheance }) {
+  const { translate } = useLanguage();
   const paidCount = payments.filter(p => isPaid(p.status)).length;
   const nextUnpaid = payments.find(p => !isPaid(p.status));
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Paiements &amp; Scolarité</h2>
+      <h2 className="text-xl font-semibold mb-4">{translate('paymentsScolarite')}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] p-4">
-          <div className="text-xs font-semibold tracking-widest opacity-80">SOLDE RESTANT</div>
+          <div className="text-xs font-semibold tracking-widest opacity-80">{translate('outstandingBalance')}</div>
           <div className="text-3xl font-semibold mt-1">
             {billingSummary ? formatEuro(billingSummary.outstanding) : '—'}
           </div>
           {nextUnpaid?.dueDate && (
             <div className="text-xs mt-1 opacity-75">
-              Prochaine échéance · {formatDate(nextUnpaid.dueDate)}
+              {translate('nextInstalment')} · {formatDate(nextUnpaid.dueDate)}
             </div>
           )}
         </div>
 
         <div className="rounded-xl border border-[var(--color-border)] p-4 bg-[var(--color-bg-elev)]">
           <div className="text-xs font-semibold tracking-widest text-[var(--color-text-muted)]">
-            PAYÉ {billingSummary?.academicYear ?? ''}
+            {translate('paidYear', { year: billingSummary?.academicYear ?? '' })}
           </div>
           <div className="text-3xl font-semibold mt-1">
             {billingSummary ? formatEuro(billingSummary.totalPaid) : '—'}
           </div>
           <div className="text-xs text-[var(--color-text-muted)] mt-1">
-            {paidCount} échéance{paidCount > 1 ? 's' : ''} honorée{paidCount > 1 ? 's' : ''}
+            {translate('instalmentHonored', { n: paidCount })}
           </div>
         </div>
 
         <div className="rounded-xl border border-[var(--color-border)] p-4 bg-[var(--color-bg-elev)]">
           <div className="text-xs font-semibold tracking-widest text-[var(--color-text-muted)]">
-            EN RETARD
+            {translate('overdueLabel')}
           </div>
           <div
             className="text-3xl font-semibold mt-1"
@@ -86,10 +89,15 @@ export default function PaymentTab({ payments, billingSummary, payEcheance }) {
         </div>
       </div>
 
-      <h3 className="font-semibold mb-3">Échéancier</h3>
+      <h3 className="font-semibold mb-3">{translate('echeancierLabel')}</h3>
       <div className="border border-[var(--color-border)] rounded-xl overflow-hidden">
         <div className="grid grid-cols-[140px_1fr_110px_160px] px-4 py-2.5 bg-[var(--color-bg-sunken)] border-b border-[var(--color-border)]">
-          {['ÉCHÉANCE', 'DESCRIPTION', 'MONTANT', 'STATUT'].map(h => (
+          {[
+            translate('colDueDate').toUpperCase(),
+            translate('colDescription'),
+            translate('colAmount').toUpperCase(),
+            translate('colStatus').toUpperCase(),
+          ].map(h => (
             <div key={h} className="text-xs font-semibold tracking-wider text-[var(--color-text-muted)]">
               {h}
             </div>
@@ -98,7 +106,7 @@ export default function PaymentTab({ payments, billingSummary, payEcheance }) {
 
         {payments.length === 0 ? (
           <div className="px-4 py-6 text-sm text-center text-[var(--color-text-muted)] bg-[var(--color-bg-elev)]">
-            Aucune échéance disponible.
+            {translate('noPaymentsAvailable')}
           </div>
         ) : payments.map((p, idx) => {
           const paid    = isPaid(p.status);
@@ -132,18 +140,18 @@ export default function PaymentTab({ payments, billingSummary, payEcheance }) {
               <div className="flex items-center gap-2">
                 {paid ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-success)]/10 text-[var(--color-success)]">
-                    ✓ Payé
+                    {translate('paymentStatusPaid')}
                   </span>
                 ) : delayed ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-error)]/10 text-[var(--color-error)]">
-                    En retard
+                    {translate('paymentStatusDelay')}
                   </span>
                 ) : (
                   <span
                     className="text-sm font-medium"
                     style={{ color: 'var(--color-course-1)' }}
                   >
-                    À payer{days !== null ? ` · dans ${days} j` : ''}
+                    {translate('paymentStatusToPay')}{days !== null ? ` · ${translate('inXDays', { n: days })}` : ''}
                   </span>
                 )}
               </div>

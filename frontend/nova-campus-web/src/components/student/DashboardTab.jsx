@@ -2,6 +2,7 @@
 
 import GradeEvolutionChart from './GradeEvolutionChart';
 import WeekSchedule from './WeekSchedule';
+import { useLanguage } from '@/context/LanguageContext';
 
 const DAY_MAP = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
 
@@ -28,21 +29,22 @@ function getNextCourse(timetables) {
   return best;
 }
 
-function formatTimeUntil(minutesAway) {
-  if (minutesAway < 60) return `dans ${minutesAway} min`;
-  if (minutesAway < 24 * 60) return `dans ${Math.floor(minutesAway / 60)} h`;
-  if (minutesAway < 2 * 24 * 60) return 'demain';
-  return `dans ${Math.floor(minutesAway / (24 * 60))} jours`;
-}
-
 export default function DashboardTab({ studentProfile, kpis, timetables, semesterAverages }) {
+  const { translate } = useLanguage();
   const nextCourse = getNextCourse(timetables);
   const roomChanged = nextCourse?.status && nextCourse.status !== 'Active';
+
+  const formatTimeUntil = (minutesAway) => {
+    if (minutesAway < 60) return translate('inMin', { n: minutesAway });
+    if (minutesAway < 24 * 60) return translate('inH', { n: Math.floor(minutesAway / 60) });
+    if (minutesAway < 2 * 24 * 60) return translate('tomorrow');
+    return translate('inDays', { n: Math.floor(minutesAway / (24 * 60)) });
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight mb-1">
-        {studentProfile ? `Bonjour ${studentProfile.firstName} 👋` : null}
+        {studentProfile ? `${translate('hello', { name: studentProfile.firstName })} 👋` : null}
       </h1>
       {studentProfile?.program?.programName && studentProfile?.campus?.campusName && (
         <p className="text-[var(--color-text-muted)] mb-6">
@@ -52,26 +54,26 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">MOYENNE {kpis.currentSemesterLabel || '—'}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiAverage')} {kpis.currentSemesterLabel || '—'}</div>
           <div className="text-3xl font-semibold mt-1">
             {kpis.average !== null ? kpis.average.toFixed(1).replace('.', ',') : '—'}
             {kpis.average !== null && <span className="text-base align-super">/20</span>}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">TAUX DE PRÉSENCE</div>
+          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiAttendanceRate')}</div>
           <div className={`text-3xl font-semibold mt-1 ${kpis.attendanceRate !== null ? (kpis.attendanceRate >= 80 ? 'text-green-600' : 'text-[var(--color-error)]') : ''}`}>
             {kpis.attendanceRate !== null ? `${kpis.attendanceRate}%` : '—'}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">FRAIS DE SCOLARITÉ</div>
+          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiTuitionFees')}</div>
           <div className="text-3xl font-semibold mt-1">
             {kpis.tuition !== null ? `${kpis.tuition.toLocaleString('fr-FR')} €` : '—'}
           </div>
         </div>
         <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">CRÉDITS {kpis.currentSemesterLabel || '—'}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiCredits')} {kpis.currentSemesterLabel || '—'}</div>
           <div className="text-3xl font-semibold mt-1">
             {kpis.credits !== null ? kpis.credits : '—'}
             {kpis.totalCredits > 0 && <span className="text-base align-super">/{kpis.totalCredits}</span>}
@@ -83,11 +85,11 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] mb-6 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
             <span className="text-sm text-[var(--color-text-muted)]">
-              Prochain cours · <span className="font-medium text-[var(--color-text)]">{formatTimeUntil(nextCourse.minutesAway)}</span>
+              {translate('nextCourse')} · <span className="font-medium text-[var(--color-text)]">{formatTimeUntil(nextCourse.minutesAway)}</span>
             </span>
             {roomChanged && (
               <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 flex items-center gap-1">
-                ⚠ Salle changée
+                ⚠ {translate('roomChanged')}
               </span>
             )}
           </div>
@@ -101,7 +103,7 @@ export default function DashboardTab({ studentProfile, kpis, timetables, semeste
                 <span className="ml-2 text-sm font-normal text-[var(--color-text-muted)]">({nextCourse.course_id})</span>
               </div>
               <div className="text-sm text-[var(--color-text-muted)] mt-0.5">
-                {nextCourse.instructor && `Prof. ${nextCourse.instructor.first_name} ${nextCourse.instructor.last_name} · `}
+                {nextCourse.instructor && `${translate('profAbbrev')} ${nextCourse.instructor.first_name} ${nextCourse.instructor.last_name} · `}
                 {nextCourse.course?.course_type || 'CM'}
                 {' · '}
                 <span className={roomChanged ? 'text-amber-600 font-medium' : ''}>
