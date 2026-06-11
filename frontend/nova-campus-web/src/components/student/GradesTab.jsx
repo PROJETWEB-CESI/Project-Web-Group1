@@ -54,7 +54,7 @@ export default function GradesTab({
   programName,
 }) {
   const { apiFetch } = useApi();
-  const { translate } = useLanguage();
+  const { translate, isFrench } = useLanguage();
   const [expanded, setExpanded]             = useState({});
   const [courseClassAvg, setCourseClassAvg] = useState({});
   const [loadingAvg, setLoadingAvg]         = useState({});
@@ -289,7 +289,7 @@ export default function GradesTab({
                                 })
                               : '—'}
                           </td>
-                          <td className="px-6 py-3">{ev.evaluationName}</td>
+                          <td className="px-6 py-3">{(!isFrench && ev.evaluationNameEn) ? ev.evaluationNameEn : ev.evaluationName}</td>
                           <td className="px-6 py-3 text-[var(--color-text-muted)]">×{ev.coefficient ?? 1}</td>
                           <td className="px-6 py-3 text-right">
                             <span className="font-bold">

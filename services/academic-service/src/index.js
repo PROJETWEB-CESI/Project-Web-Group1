@@ -38,6 +38,9 @@ async function startServer() {
         await sequelize.sync();
         console.log('Database synced');
 
+        // Add evaluation_name_en column without touching existing columns
+        await sequelize.query(`ALTER TABLE grades ADD COLUMN IF NOT EXISTS evaluation_name_en VARCHAR(100);`);
+
         // Seed demo data for test users when ENABLE_TEST_CREDENTIALS (for real data in student pages etc.)
         // This makes /dashboard/student show actual seeded records (grades, attendance, enrollments, etc.)
         // instead of frontend mocks. Idempotent-ish for demo.
@@ -98,38 +101,41 @@ async function startServer() {
           const now = new Date();
           const gradesData = [
             // S1 2023-2024 — CRS001
-            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Quiz 1', score: 15, scoreMax: 20, coefficient: 1, evaluationDate: '2023-10-12', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Partiel intermédiaire', score: 13, scoreMax: 20, coefficient: 2, evaluationDate: '2023-11-06', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Cas d\'entreprise', score: 16, scoreMax: 20, coefficient: 1, evaluationDate: '2023-11-22', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Présentation orale', score: 13, scoreMax: 20, coefficient: 2, evaluationDate: '2023-11-28', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Quiz 1', evaluationNameEn: 'Quiz 1', score: 15, scoreMax: 20, coefficient: 1, evaluationDate: '2023-10-12', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Partiel intermédiaire', evaluationNameEn: 'Midterm exam', score: 13, scoreMax: 20, coefficient: 2, evaluationDate: '2023-11-06', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Cas d\'entreprise', evaluationNameEn: 'Business case', score: 16, scoreMax: 20, coefficient: 1, evaluationDate: '2023-11-22', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS001', campusId: demoCampus, evaluationName: 'Présentation orale', evaluationNameEn: 'Oral presentation', score: 13, scoreMax: 20, coefficient: 2, evaluationDate: '2023-11-28', publishedAt: now },
             // S1 2023-2024 — CRS003
-            { studentId: demoStudentId, courseId: 'CRS003', campusId: demoCampus, evaluationName: 'TP Python 1', score: 14, scoreMax: 20, coefficient: 1, evaluationDate: '2023-10-20', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS003', campusId: demoCampus, evaluationName: 'Projet final', score: 11, scoreMax: 20, coefficient: 2, evaluationDate: '2023-12-01', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS003', campusId: demoCampus, evaluationName: 'TP Python 1', evaluationNameEn: 'Python Lab 1', score: 14, scoreMax: 20, coefficient: 1, evaluationDate: '2023-10-20', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS003', campusId: demoCampus, evaluationName: 'Projet final', evaluationNameEn: 'Final project', score: 11, scoreMax: 20, coefficient: 2, evaluationDate: '2023-12-01', publishedAt: now },
             // S2 2023-2024 — CRS004
-            { studentId: demoStudentId, courseId: 'CRS004', campusId: demoCampus, evaluationName: 'Partiel S2', score: 12, scoreMax: 20, coefficient: 2, evaluationDate: '2024-03-15', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS004', campusId: demoCampus, evaluationName: 'Projet marketing', score: 13.5, scoreMax: 20, coefficient: 2, evaluationDate: '2024-05-20', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS004', campusId: demoCampus, evaluationName: 'Partiel S2', evaluationNameEn: 'S2 midterm', score: 12, scoreMax: 20, coefficient: 2, evaluationDate: '2024-03-15', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS004', campusId: demoCampus, evaluationName: 'Projet marketing', evaluationNameEn: 'Marketing project', score: 13.5, scoreMax: 20, coefficient: 2, evaluationDate: '2024-05-20', publishedAt: now },
             // S2 2023-2024 — CRS008
-            { studentId: demoStudentId, courseId: 'CRS008', campusId: demoCampus, evaluationName: 'Examen Éco Int.', score: 14, scoreMax: 20, coefficient: 2, evaluationDate: '2024-05-10', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS008', campusId: demoCampus, evaluationName: 'Examen Éco Int.', evaluationNameEn: 'Int. Economics exam', score: 14, scoreMax: 20, coefficient: 2, evaluationDate: '2024-05-10', publishedAt: now },
             // S1 2024-2025 — CRS005
-            { studentId: demoStudentId, courseId: 'CRS005', campusId: demoCampus, evaluationName: 'QCM IA', score: 11, scoreMax: 20, coefficient: 1, evaluationDate: '2024-10-10', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS005', campusId: demoCampus, evaluationName: 'Projet IA', score: 14, scoreMax: 20, coefficient: 3, evaluationDate: '2024-11-25', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS005', campusId: demoCampus, evaluationName: 'QCM IA', evaluationNameEn: 'AI quiz', score: 11, scoreMax: 20, coefficient: 1, evaluationDate: '2024-10-10', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS005', campusId: demoCampus, evaluationName: 'Projet IA', evaluationNameEn: 'AI project', score: 14, scoreMax: 20, coefficient: 3, evaluationDate: '2024-11-25', publishedAt: now },
             // S1 2024-2025 — CRS009
-            { studentId: demoStudentId, courseId: 'CRS009', campusId: demoCampus, evaluationName: 'Examen droit', score: 14.5, scoreMax: 20, coefficient: 2, evaluationDate: '2024-12-10', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS009', campusId: demoCampus, evaluationName: 'Examen droit', evaluationNameEn: 'Law exam', score: 14.5, scoreMax: 20, coefficient: 2, evaluationDate: '2024-12-10', publishedAt: now },
             // S2 2024-2025 — CRS007
-            { studentId: demoStudentId, courseId: 'CRS007', campusId: demoCampus, evaluationName: 'Analyse exploratoire', score: 13.5, scoreMax: 20, coefficient: 2, evaluationDate: '2025-03-12', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS007', campusId: demoCampus, evaluationName: 'Rapport final data', score: 15, scoreMax: 20, coefficient: 2, evaluationDate: '2025-05-20', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS007', campusId: demoCampus, evaluationName: 'Analyse exploratoire', evaluationNameEn: 'Exploratory analysis', score: 13.5, scoreMax: 20, coefficient: 2, evaluationDate: '2025-03-12', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS007', campusId: demoCampus, evaluationName: 'Rapport final data', evaluationNameEn: 'Final data report', score: 15, scoreMax: 20, coefficient: 2, evaluationDate: '2025-05-20', publishedAt: now },
             // S2 2024-2025 — CRS010
-            { studentId: demoStudentId, courseId: 'CRS010', campusId: demoCampus, evaluationName: 'Projet web', score: 13, scoreMax: 20, coefficient: 2, evaluationDate: '2025-05-15', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS010', campusId: demoCampus, evaluationName: 'Projet web', evaluationNameEn: 'Web project', score: 13, scoreMax: 20, coefficient: 2, evaluationDate: '2025-05-15', publishedAt: now },
             // S1 2025-2026 — CRS002 (en cours, publiées)
-            { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, evaluationName: 'TD noté maths', score: 14, scoreMax: 20, coefficient: 1, evaluationDate: '2025-10-15', publishedAt: now },
-            { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, evaluationName: 'Partiel mi-semestre', score: 15.5, scoreMax: 20, coefficient: 2, evaluationDate: '2025-11-05', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, evaluationName: 'TD noté maths', evaluationNameEn: 'Graded maths session', score: 14, scoreMax: 20, coefficient: 1, evaluationDate: '2025-10-15', publishedAt: now },
+            { studentId: demoStudentId, courseId: 'CRS002', campusId: demoCampus, evaluationName: 'Partiel mi-semestre', evaluationNameEn: 'Mid-semester exam', score: 15.5, scoreMax: 20, coefficient: 2, evaluationDate: '2025-11-05', publishedAt: now },
           ];
           for (const g of gradesData) {
             try {
-              await Grade.findOrCreate({
+              const [instance, created] = await Grade.findOrCreate({
                 where: { studentId: g.studentId, courseId: g.courseId, evaluationName: g.evaluationName },
                 defaults: g,
               });
+              if (!created && g.evaluationNameEn) {
+                await instance.update({ evaluationNameEn: g.evaluationNameEn });
+              }
             } catch (err) {
               // ignore conflicts
             }
