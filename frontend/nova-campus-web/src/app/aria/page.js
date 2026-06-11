@@ -4,17 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useApi } from '@/lib/api';
+import { useLanguage } from '@/context/LanguageContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const AI = '/api/ai';
-
-const SUGGESTED = [
-  'Quand est mon prochain cours ?',
-  'Quelle est ma moyenne en économie internationale ?',
-  'Liste mes absences non justifiées',
-];
-
 
 // ── helpers ────────────────────────────────────────────────────────────────
 function uid() {
@@ -56,7 +50,7 @@ function Avatar({ initials, size = 9 }) {
   return <div className={cls} style={{ fontSize: size < 10 ? 11 : 14 }}>{initials}</div>;
 }
 
-function ConvItem({ conv, active, onLoad, onDelete }) {
+function ConvItem({ conv, active, onLoad, onDelete, deleteLabel }) {
   return (
     <button
       onClick={() => onLoad(conv)}
@@ -73,7 +67,7 @@ function ConvItem({ conv, active, onLoad, onDelete }) {
         onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onDelete(conv.id); } }}
         className="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-error)] px-0.5 transition-opacity"
-        title="Supprimer"
+        title={deleteLabel}
       >✕</span>
     </button>
   );
@@ -116,6 +110,7 @@ export default function AriaPage() {
   // ALL hooks first — no early returns before this block
   const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const { translate, language } = useLanguage();
 
   const [convs, setConvs] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -132,7 +127,6 @@ export default function AriaPage() {
       logout();
       router.replace('/login');
     } else if (!authLoading && isAuthenticated) {
-      // Redirect authenticated users to dashboard/assistant
       router.replace('/dashboard/assistant');
     }
   }, [authLoading, isAuthenticated, router, logout]);
@@ -193,22 +187,19 @@ export default function AriaPage() {
 
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, { role: 'user', content: msg, sources: [] }]);
-
-    // Add placeholder assistant message that will be filled by streaming
-    const assistantIdx = (prev) => prev.length; // index after push
     setMessages((prev) => [...prev, { role: 'assistant', content: '', sources: [], streaming: true }]);
 
     try {
       const r = await apiFetch(`${AI}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, conversation_id: convId, history }),
+        body: JSON.stringify({ message: msg, conversation_id: convId, history, ui_language: language }),
       });
 
       if (!r.ok || !r.body) {
         setMessages((prev) => {
           const next = [...prev];
-          next[next.length - 1] = { role: 'assistant', content: "Une erreur est survenue. Veuillez réessayer.", sources: [], streaming: false };
+          next[next.length - 1] = { role: 'assistant', content: translate('ariaErrorRetry'), sources: [], streaming: false };
           return next;
         });
         return;
@@ -223,7 +214,7 @@ export default function AriaPage() {
         if (done) break;
         buf += decoder.decode(value, { stream: true });
         const lines = buf.split('\n');
-        buf = lines.pop(); // keep incomplete line
+        buf = lines.pop();
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
@@ -256,7 +247,7 @@ export default function AriaPage() {
           } else if (evt.type === 'error') {
             setMessages((prev) => {
               const next = [...prev];
-              next[next.length - 1] = { role: 'assistant', content: "Une erreur est survenue. Veuillez réessayer.", sources: [], streaming: false };
+              next[next.length - 1] = { role: 'assistant', content: translate('ariaErrorRetry'), sources: [], streaming: false };
               return next;
             });
           }
@@ -265,7 +256,7 @@ export default function AriaPage() {
     } catch {
       setMessages((prev) => {
         const next = [...prev];
-        next[next.length - 1] = { role: 'assistant', content: "Impossible de contacter Aria.", sources: [], streaming: false };
+        next[next.length - 1] = { role: 'assistant', content: translate('ariaErrorContact'), sources: [], streaming: false };
         return next;
       });
     } finally {
@@ -286,6 +277,16 @@ export default function AriaPage() {
   if (authLoading || !isAuthenticated) return null;
 
   const groups = groupConvs(convs);
+  const suggested = [
+    translate('ariaSuggested1'),
+    translate('ariaSuggested2'),
+    translate('ariaSuggested3'),
+  ];
+  const convGroups = [
+    { label: translate('ariaToday'),    items: groups.today },
+    { label: translate('ariaThisWeek'), items: groups.week  },
+    { label: translate('ariaOlder'),    items: groups.older },
+  ];
 
   return (
     <div className="flex-1 flex h-full overflow-hidden">
@@ -293,21 +294,19 @@ export default function AriaPage() {
       {/* ── Sidebar gauche ── */}
       <aside className="w-60 flex-shrink-0 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-surface)]">
         <div className="p-3 border-b border-[var(--color-border)]">
-          <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 px-1">Conversations</p>
+          <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 px-1">
+            {translate('ariaConversations')}
+          </p>
           <button
             onClick={newConv}
             className="w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center gap-1.5"
           >
-            <span className="text-sm leading-none">+</span> Nouvelle conversation
+            {translate('ariaNewConv')}
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto py-1">
-          {[
-            { label: "Aujourd'hui", items: groups.today },
-            { label: 'Cette semaine', items: groups.week },
-            { label: 'Plus ancien', items: groups.older },
-          ].map(({ label, items }) =>
+          {convGroups.map(({ label, items }) =>
             items.length > 0 && (
               <div key={label}>
                 <p className="text-[10px] font-semibold text-[var(--color-text-muted)] px-4 pt-3 pb-1 uppercase tracking-wider">{label}</p>
@@ -318,13 +317,16 @@ export default function AriaPage() {
                     active={activeId === c.id}
                     onLoad={loadConv}
                     onDelete={deleteConv}
+                    deleteLabel={translate('ariaDelete')}
                   />
                 ))}
               </div>
             )
           )}
           {convs.length === 0 && (
-            <p className="text-xs text-[var(--color-text-muted)] text-center px-4 py-8">Aucune conversation</p>
+            <p className="text-xs text-[var(--color-text-muted)] text-center px-4 py-8">
+              {translate('ariaNoConv')}
+            </p>
           )}
         </div>
       </aside>
@@ -337,7 +339,7 @@ export default function AriaPage() {
           <Avatar initials="Ar" size={9} />
           <div>
             <p className="font-semibold text-sm text-[var(--color-text)] leading-tight">Assistant IA · Aria</p>
-            <p className="text-[11px] text-[var(--color-text-muted)]">NovaCampus Alliance · {user?.role ?? 'étudiant'}</p>
+            <p className="text-[11px] text-[var(--color-text-muted)]">NovaCampus Alliance · {user?.role ?? translate('ariaFallbackRole')}</p>
           </div>
         </div>
 
@@ -347,13 +349,13 @@ export default function AriaPage() {
             <div className="h-full flex flex-col items-center justify-center gap-5 text-center">
               <Avatar initials="Ar" size={16} />
               <div>
-                <h2 className="text-lg font-semibold text-[var(--color-text)]">Bonjour, je suis Aria</h2>
+                <h2 className="text-lg font-semibold text-[var(--color-text)]">{translate('ariaWelcomeTitle')}</h2>
                 <p className="text-sm text-[var(--color-text-muted)] mt-1 max-w-sm">
-                  Votre assistante IA NovaCampus. Posez-moi une question sur votre emploi du temps, vos notes, vos absences ou vos démarches.
+                  {translate('ariaWelcomeSubtitle')}
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 max-w-md">
-                {SUGGESTED.map((q) => (
+                {suggested.map((q) => (
                   <button
                     key={q}
                     onClick={() => send(q)}
@@ -411,7 +413,7 @@ export default function AriaPage() {
               onInput={onInput}
               disabled={sending}
               rows={1}
-              placeholder="Demander à Aria… (ex : générer un mail de relance pour la classe L2-INFO-A)"
+              placeholder={translate('ariaPlaceholder')}
               className="flex-1 resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors disabled:opacity-60"
               style={{ maxHeight: 120 }}
             />
@@ -420,15 +422,14 @@ export default function AriaPage() {
               disabled={!input.trim() || sending}
               className="h-10 px-5 flex-shrink-0 rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] text-sm font-medium hover:bg-[var(--color-primary-hover)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              Envoyer
+              {translate('ariaSend')}
             </button>
           </div>
           <p className="text-[10px] text-[var(--color-text-muted)] mt-1.5 text-center">
-            Entrée pour envoyer · Maj+Entrée pour sauter une ligne
+            {translate('ariaEnterHint')}
           </p>
         </div>
       </main>
-
 
     </div>
   );

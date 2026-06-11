@@ -11,6 +11,7 @@ class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
     history: Optional[List[ChatMessage]] = []
+    ui_language: Optional[str] = None  # 'en' | 'fr' — sent by the frontend UI toggle
 
 
 class ChatResponse(BaseModel):
