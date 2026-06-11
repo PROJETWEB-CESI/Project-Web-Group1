@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import DashboardSidebar from '@/components/shared/DashboardSidebar';
+import AriaChatWidget from '@/components/shared/AriaChatWidget';
 
 export default function DashboardLayout({ children }) {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -66,6 +67,9 @@ export default function DashboardLayout({ children }) {
       <main className="flex-1 overflow-auto bg-[var(--color-bg)] p-2 sm:p-6">
         {children}
       </main>
+
+      {/* Floating Aria chat widget — visible on all dashboard pages except /dashboard/assistant */}
+      <AriaChatWidget />
     </div>
   );
 }
