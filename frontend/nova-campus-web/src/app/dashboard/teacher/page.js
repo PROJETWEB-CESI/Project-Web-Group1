@@ -141,7 +141,7 @@ export default function TeacherDashboard() {
 
       <TeacherNextCourse timetables={timetables} />
 
-      <WeekSchedule timetables={timetables} viewAllHref={null} />
+      <WeekSchedule timetables={timetables} viewAllHref="/dashboard/teacher/schedule" />
 
       {!loading && (
         <>
