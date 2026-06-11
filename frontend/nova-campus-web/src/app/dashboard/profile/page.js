@@ -8,6 +8,9 @@ import { useTheme } from '@/context/ThemeContext';
 import { useApi } from '@/lib/api';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
+import ScrollShadow from '@/components/shared/ScrollShadow';
+
+const SESSIONS_POLL_INTERVAL_MS = 10000;
 
 const NOTIFICATION_CATEGORIES = ['schedule', 'grades', 'payments', 'messages', 'announcements'];
 const NOTIFICATION_CHANNELS = ['email', 'inApp', 'push'];
@@ -44,6 +47,12 @@ function describeSession(userAgent) {
   else if (/Linux/.test(userAgent)) os = 'Linux';
 
   return `${browser} · ${os}`;
+}
+
+// Splits "Chrome · Android" into "Chrome\nAndroid" so the device column can
+// wrap onto two lines instead of breaking mid-word.
+function describeSessionLines(userAgent) {
+  return describeSession(userAgent).replace(' · ', '\n');
 }
 
 function formatRelativeTime(value, translate) {
@@ -347,6 +356,8 @@ export default function ProfilePage() {
   useEffect(() => {
     if (activeTab !== 'sessions') return;
     loadSessions();
+    const interval = setInterval(loadSessions, SESSIONS_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, [activeTab]);
 
   const handleRevokeSession = async (sessionId) => {
@@ -569,13 +580,13 @@ export default function ProfilePage() {
                 {translate('notificationsPreferencesTitle') || 'Notification preferences'}
               </h2>
 
-              <div className="overflow-x-auto">
+              <ScrollShadow>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[var(--color-border)]">
-                      <th className="text-left font-normal text-[var(--color-text-muted)] py-2"></th>
+                      <th className="text-left font-normal text-[var(--color-text-muted)] py-2 whitespace-nowrap"></th>
                       {NOTIFICATION_CHANNELS.map((channel) => (
-                        <th key={channel} className="text-center font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3">
+                        <th key={channel} className="text-center font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3 whitespace-nowrap">
                           {translate(`channel_${channel}`) || channel}
                         </th>
                       ))}
@@ -584,11 +595,11 @@ export default function ProfilePage() {
                   <tbody>
                     {NOTIFICATION_CATEGORIES.map((category) => (
                       <tr key={category} className="border-b border-[var(--color-border)] last:border-0">
-                        <td className="py-3 pr-3 text-[var(--color-text)]">
+                        <td className="py-3 pr-3 text-[var(--color-text)] whitespace-nowrap">
                           {translate(`notifCategory_${category}`) || category}
                         </td>
                         {NOTIFICATION_CHANNELS.map((channel) => (
-                          <td key={channel} className="py-3 px-3 text-center">
+                          <td key={channel} className="py-3 px-3 text-center whitespace-nowrap">
                             <ToggleSwitch
                               checked={!!notifPrefs[category]?.[channel]}
                               onChange={() => handleNotifToggle(category, channel)}
@@ -599,7 +610,7 @@ export default function ProfilePage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollShadow>
 
               <div className="flex items-center gap-3 pt-2">
                 <Button type="submit" loading={savingNotifPrefs}>
@@ -678,20 +689,20 @@ export default function ProfilePage() {
                   {translate('sessionsNone') || 'No active sessions found.'}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <ScrollShadow>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[var(--color-border)]">
                         <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 pr-3">
                           {translate('sessionsDevice') || 'Device'}
                         </th>
-                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3">
+                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3 whitespace-nowrap">
                           {translate('sessionsLocation') || 'Location'}
                         </th>
-                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3">
+                        <th className="text-left font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3 whitespace-nowrap">
                           {translate('sessionsLastActive') || 'Last active'}
                         </th>
-                        <th className="py-2 px-3"></th>
+                        <th className="py-2 px-3 whitespace-nowrap"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -699,21 +710,21 @@ export default function ProfilePage() {
                         <tr key={session.id} className="border-b border-[var(--color-border)] last:border-0">
                           <td className="py-3 pr-3">
                             <div className="flex items-center gap-2">
-                              <span className="text-[var(--color-text)]">{describeSession(session.userAgent)}</span>
+                              <span className="text-[var(--color-text)] whitespace-pre-line">{describeSessionLines(session.userAgent)}</span>
                               {session.isCurrent && (
-                                <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-success)]/10 text-[var(--color-success)]">
+                                <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-success)]/10 text-[var(--color-success)] whitespace-nowrap">
                                   {translate('sessionsCurrentDevice') || 'This device'}
                                 </span>
                               )}
                             </div>
                           </td>
-                          <td className="py-3 px-3 text-[var(--color-text-muted)]">
+                          <td className="py-3 px-3 text-[var(--color-text-muted)] whitespace-nowrap">
                             {session.location || translate('sessionsLocationUnknown') || 'Unknown location'}
                           </td>
-                          <td className="py-3 px-3 text-[var(--color-text-muted)]">
+                          <td className="py-3 px-3 text-[var(--color-text-muted)] whitespace-nowrap">
                             {formatRelativeTime(session.lastUsedAt, translate)}
                           </td>
-                          <td className="py-3 px-3 text-right">
+                          <td className="py-3 px-3 text-right whitespace-nowrap">
                             {!session.isCurrent && (
                               <Button
                                 type="button"
@@ -731,7 +742,7 @@ export default function ProfilePage() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </ScrollShadow>
               )}
 
               <SignOutButton />

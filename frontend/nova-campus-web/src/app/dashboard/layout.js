@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }) {
 
       {/* Main content area (role pages render here). Guard above ensures only matching role content stays. */}
       <main className="flex-1 overflow-hidden bg-[var(--color-bg)]">
-        <PullToRefresh className="h-full p-2 sm:p-6">
+        <PullToRefresh className={`h-full p-2 sm:p-6 ${pathname === '/dashboard/assistant' ? '' : 'pb-24 sm:pb-24'}`}>
           {children}
         </PullToRefresh>
       </main>
