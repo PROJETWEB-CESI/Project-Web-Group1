@@ -5,6 +5,7 @@ const sequelize = require('./config/database.config');
 const gradeRoutes = require('./grades/grade.route');
 const attendanceRoutes = require('./attendance/attendance.route');
 const studentRoutes = require('./students/student.route');
+const teacherRoutes = require('./teacher/teacher.route');
 const { authenticate } = require('./middleware/auth.middleware');
 const { csrfProtection } = require('./middleware/csrf.middleware');
 require('./config/associations');
@@ -29,6 +30,7 @@ app.get('/api/health', (req, res) => {
 app.use('/grades', authenticate, gradeRoutes);
 app.use('/attendance', authenticate, attendanceRoutes);
 app.use('/students', authenticate, studentRoutes);
+app.use('/teacher', authenticate, teacherRoutes);
 
 async function startServer() {
     try {
@@ -45,10 +47,16 @@ async function startServer() {
         // This makes /dashboard/student show actual seeded records (grades, attendance, enrollments, etc.)
         // instead of frontend mocks. Idempotent-ish for demo.
         if (process.env.ENABLE_TEST_CREDENTIALS === 'true' || process.env.ENABLE_TEST_CREDENTIALS === '1') {
+          const Campus = require('./students/campus.model');
           const Student = require('./students/student.model');
           const Enrollment = require('./students/enrollment.model');
           const Grade = require('./grades/grade.model');
           const Attendance = require('./attendance/attendance.model');
+
+          await Campus.findOrCreate({
+            where: { campusId: 'CAMP001' },
+            defaults: { campusId: 'CAMP001', campusName: 'Paris' },
+          });
 
           // Demo student for test student@test.com (Léa Moreau)
           const demoStudentId = 'STU001';

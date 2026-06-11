@@ -35,6 +35,21 @@ async function startServer() {
     if (process.env.ENABLE_TEST_CREDENTIALS === 'true' || process.env.ENABLE_TEST_CREDENTIALS === '1') {
       const Timetable = require('./timetables/timetable.model');
       const Room = require('./rooms/room.model');
+      const Instructor = require('./timetables/instructor.model');
+
+      // Demo instructors
+      const instructors = [
+        { instructor_id: 'INST001', first_name: 'Jean',    last_name: 'Dupont' },
+        { instructor_id: 'INST002', first_name: 'Marie',   last_name: 'Lambert' },
+        { instructor_id: 'INST003', first_name: 'Pierre',  last_name: 'Martin' },
+        { instructor_id: 'INST004', first_name: 'Sophie',  last_name: 'Bernard' },
+        { instructor_id: 'INST005', first_name: 'Thomas',  last_name: 'Robert' },
+        { instructor_id: 'INST006', first_name: 'Claire',  last_name: 'Petit' },
+        { instructor_id: 'INST007', first_name: 'Nicolas', last_name: 'Moreau' },
+      ];
+      for (const inst of instructors) {
+        await Instructor.findOrCreate({ where: { instructor_id: inst.instructor_id }, defaults: inst });
+      }
 
       // Demo rooms
       const rooms = [

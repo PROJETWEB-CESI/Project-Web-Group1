@@ -26,8 +26,8 @@ router.get('/', authorize(['admin']), query('search').optional().isString(), asy
     }
 });
 
-// Admin : campus information
-router.get('/campuses/:campusId', authorize(['admin', 'executive']), async (req, res) => {
+// Admin/Teacher : campus information
+router.get('/campuses/:campusId', authorize(['admin', 'executive', 'teacher']), async (req, res) => {
     try {
         const campus = await service.getCampusById(req.params.campusId);
         if (!campus) return res.status(404).json({ error: 'Campus introuvable' });
