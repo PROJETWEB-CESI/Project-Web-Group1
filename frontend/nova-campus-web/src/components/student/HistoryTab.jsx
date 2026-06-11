@@ -124,7 +124,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
             </p>
             <div className="mt-3 h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#0f172a] rounded-full transition-all"
+                className="h-full bg-[#0f172a] rounded-full transition-all duration-1000"
                 style={{ width: totalSemesters > 0 ? `${(validatedCount / totalSemesters) * 100}%` : '0%' }}
               />
             </div>

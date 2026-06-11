@@ -53,7 +53,7 @@ export default function WeekSchedule({ timetables }) {
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] mb-6 overflow-hidden">
       <div className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-3 border-b border-[var(--color-border)]">
         <span className="text-sm font-semibold text-[var(--color-text)]">{translate('thisWeek')}</span>
-        <Link href="?tab=schedule" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+        <Link href="/dashboard/student/schedule" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
           {translate('viewAll')} →
         </Link>
       </div>
