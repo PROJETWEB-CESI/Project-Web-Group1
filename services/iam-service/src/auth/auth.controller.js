@@ -155,7 +155,7 @@ async function changePassword(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) {
+    if (typeof currentPassword !== 'string' || typeof newPassword !== 'string' || !currentPassword || !newPassword) {
       return res.status(400).json({ error: 'currentPassword and newPassword are required' });
     }
     if (newPassword.length < 8) {
@@ -181,10 +181,15 @@ async function listSessions(req, res) {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function revokeSession(req, res) {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
+    }
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid session id' });
     }
     await AuthService.revokeSession(req.user.id, req.params.id);
     res.json({ message: 'Session revoked' });

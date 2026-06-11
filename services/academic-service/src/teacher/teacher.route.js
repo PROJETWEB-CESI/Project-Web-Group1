@@ -79,7 +79,7 @@ router.get('/courses/:courseId/students', authorize(['teacher', 'admin']), async
 // Teacher/Admin: aggregate stats (student count + avg attendance) across a list of courses
 router.get('/courses/stats', authorize(['teacher', 'admin']), async (req, res) => {
   const { courseIds, campusId } = req.query;
-  if (!courseIds || !campusId) {
+  if (!courseIds || typeof courseIds !== 'string' || !campusId) {
     return res.status(400).json({ error: 'courseIds and campusId are required' });
   }
 
@@ -113,7 +113,7 @@ router.get('/courses/stats', authorize(['teacher', 'admin']), async (req, res) =
 // Teacher/Admin: list courses that have unpublished grades
 router.get('/courses/pending-grades', authorize(['teacher', 'admin']), async (req, res) => {
   const { courseIds, campusId } = req.query;
-  if (!courseIds || !campusId) {
+  if (!courseIds || typeof courseIds !== 'string' || !campusId) {
     return res.status(400).json({ error: 'courseIds and campusId are required' });
   }
 
@@ -155,7 +155,7 @@ router.get('/courses/pending-grades', authorize(['teacher', 'admin']), async (re
 // Teacher/Admin: grade score distribution per course
 router.get('/courses/distribution', authorize(['teacher', 'admin']), async (req, res) => {
   const { courseIds, campusId } = req.query;
-  if (!courseIds || !campusId) {
+  if (!courseIds || typeof courseIds !== 'string' || !campusId) {
     return res.status(400).json({ error: 'courseIds and campusId are required' });
   }
 
@@ -202,7 +202,7 @@ router.get('/courses/distribution', authorize(['teacher', 'admin']), async (req,
 // Teacher/Admin: grade performance stats per course (average, passRate, count)
 router.get('/courses/performance', authorize(['teacher', 'admin']), async (req, res) => {
   const { courseIds, campusId } = req.query;
-  if (!courseIds || !campusId) {
+  if (!courseIds || typeof courseIds !== 'string' || !campusId) {
     return res.status(400).json({ error: 'courseIds and campusId are required' });
   }
 
