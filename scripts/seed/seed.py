@@ -473,7 +473,7 @@ def seed_redis(sheets):
         ("executive", "DIR001",  None),
     ]
     for role, uid, campus in demo:
-        token = "sess_" + hashlib.sha1(f"{role}:{uid}".encode()).hexdigest()[:24]
+        token = "sess_" + hashlib.sha256(f"{role}:{uid}".encode()).hexdigest()[:24]
         r.hset(f"session:{token}", mapping={
             "user_id": uid, "role": role, "campus_id": campus or "ALL"})
         r.expire(f"session:{token}", 1800)
@@ -490,7 +490,7 @@ def _local_embed(text, dim=128):
     (e.g. nomic-embed via Ollama) in production."""
     vec = [0.0] * dim
     for tok in text.lower().split():
-        h = int(hashlib.md5(tok.encode()).hexdigest(), 16)
+        h = int(hashlib.sha256(tok.encode()).hexdigest(), 16)
         vec[h % dim] += 1.0
     norm = sum(x * x for x in vec) ** 0.5 or 1.0
     return [x / norm for x in vec]

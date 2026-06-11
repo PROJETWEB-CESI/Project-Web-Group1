@@ -6,8 +6,11 @@ const authRoutes = require('./auth/auth.route');
 const userRoutes = require('./users/user.route');
 const notificationRoutes = require('./notifications/notification.route');
 require('./notifications/notification.model'); // register model for sequelize.sync
+const { csrfProtection } = require('./middleware/csrf.middleware');
+const { isTestCredentialsEnabled, seedTestUsersIfEnabled } = require('./seed/seedTestUsers');
 
 const app = express();
+app.disable('x-powered-by');
 const port = process.env.API_PORT || 3000;
 
 // Trust reverse proxy headers (X-Forwarded-Proto, etc.) - needed when behind nginx
@@ -16,22 +19,11 @@ app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(csrfProtection);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP' });
 });
-
-// Helper: test credentials default to OFF (false) if the env var is not found, empty, or any non-truthy value.
-// Only "true", "1", "yes" (case-insensitive) enable seeding of dev accounts.
-// This ensures no test data is seeded in production or when .env omits the key.
-function isTestCredentialsEnabled() {
-  const val = process.env.ENABLE_TEST_CREDENTIALS;
-  if (val == null || val === '') {
-    return false; // not found or empty in .env → default false, no seeding
-  }
-  const s = String(val).trim().toLowerCase();
-  return s === 'true' || s === '1' || s === 'yes';
-}
 
 const rawTestCreds = process.env.ENABLE_TEST_CREDENTIALS;
 const testCredsOn = isTestCredentialsEnabled();

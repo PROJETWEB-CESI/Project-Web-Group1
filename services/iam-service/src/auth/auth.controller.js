@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const AuthService = require('./auth.service');
 
 // Parse duration strings like "15m", "2d", "7d" to milliseconds
@@ -22,6 +23,18 @@ function getCookieOptions(req) {
   };
 }
 
+// Set the double-submit CSRF cookie. Readable by JS so the frontend can echo
+// it back in the X-CSRF-Token header on state-changing requests.
+function setCsrfCookie(req, res, maxAge) {
+  res.cookie('XSRF-TOKEN', crypto.randomBytes(32).toString('hex'), {
+    httpOnly: false,
+    secure: req?.secure === true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge,
+  });
+}
+
 async function register(req, res) {
   try {
     const { email, password, campusId, firstName, lastName } = req.body;
@@ -38,15 +51,21 @@ async function login(req, res) {
     const result = await AuthService.login(email, password);
 
     // Set httpOnly cookies (best practice - not exposed to JS)
-    const cookieOpts = getCookieOptions(req);
     res.cookie('accessToken', result.accessToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: accessTokenMaxAge,
     });
     res.cookie('refreshToken', result.refreshToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: refreshTokenMaxAge,
     });
+    setCsrfCookie(req, res, refreshTokenMaxAge);
 
     // Do not return tokens in body
     res.status(200).json({ user: result.user });
@@ -61,15 +80,21 @@ async function refresh(req, res) {
     const result = await AuthService.refreshTokens(refreshToken);
 
     // Set new cookies (rotating refresh token)
-    const cookieOpts = getCookieOptions(req);
     res.cookie('accessToken', result.accessToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: accessTokenMaxAge,
     });
     res.cookie('refreshToken', result.refreshToken, {
-      ...cookieOpts,
+      httpOnly: true,
+      secure: req?.secure === true,
+      sameSite: 'lax',
+      path: '/',
       maxAge: refreshTokenMaxAge,
     });
+    setCsrfCookie(req, res, refreshTokenMaxAge);
 
     res.status(200).json({ message: 'Tokens refreshed' });
   } catch (error) {
@@ -81,6 +106,7 @@ async function logout(req, res) {
   const cookieOpts = getCookieOptions(req);
   res.clearCookie('accessToken', cookieOpts);
   res.clearCookie('refreshToken', cookieOpts);
+  res.clearCookie('XSRF-TOKEN', { ...cookieOpts, httpOnly: false });
   res.status(200).json({ message: 'Logged out' });
 }
 
