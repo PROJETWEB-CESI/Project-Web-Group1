@@ -162,8 +162,8 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
                     <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{s.studentId}</td>
                     <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{s.program?.programName || s.programId}</td>
                     <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">{s.enrollmentYear || '—'}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${PAYMENT_STYLES[s.paymentStatus] || 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
+                    <td className="px-4 py-2.5 whitespace-nowrap">
+                      <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 whitespace-nowrap ${PAYMENT_STYLES[s.paymentStatus] || 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
                         {PAYMENT_LABELS[s.paymentStatus] ? translate(PAYMENT_LABELS[s.paymentStatus]) : (s.paymentStatus || '—')}
                       </span>
                     </td>
