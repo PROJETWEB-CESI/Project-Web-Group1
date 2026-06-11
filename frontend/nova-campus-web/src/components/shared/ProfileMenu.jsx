@@ -16,6 +16,7 @@ import {
   CreditCard,
   Building,
   BarChart3,
+  GraduationCap,
   FileText,
   Settings,
   LogOut,
@@ -162,7 +163,7 @@ export default function ProfileMenu() {
     } else if (role === 'executive') {
       items.push(
         { label: translate('campusIndicators') || 'Campus Indicators', href: '/dashboard/executive/indicators', icon: <BarChart3 className={iconClass} /> },
-        { label: translate('programIndicators') || 'Program Indicators', href: '/dashboard/executive/programs', icon: <BarChart3 className={iconClass} /> },
+        { label: translate('programIndicators') || 'Programs Indicators', href: '/dashboard/executive/programs', icon: <GraduationCap className={iconClass} /> },
         { label: translate('strategicReports') || 'Strategic Reports', href: '/dashboard/executive/reports', icon: <FileText className={iconClass} /> }
       );
     }

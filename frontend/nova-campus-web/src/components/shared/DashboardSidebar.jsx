@@ -22,6 +22,7 @@ import {
   Users,
   FileText,
   BarChart3,
+  GraduationCap,
   Building,
 } from 'lucide-react';
 
@@ -175,7 +176,7 @@ export default function DashboardSidebar() {
       mainItems = [
         { label: translate('myDashboard') || 'My Dashboard', href: dashboardHref, icon: Home },
         { label: translate('campusIndicators') || 'Campus Indicators', href: '/dashboard/executive/indicators', icon: BarChart3 },
-        { label: translate('programIndicators') || 'Program Indicators', href: '/dashboard/executive/programs', icon: BarChart3 },
+        { label: translate('programIndicators') || 'Programs Indicators', href: '/dashboard/executive/programs', icon: GraduationCap },
         { label: translate('strategicReports') || 'Strategic Reports', href: '/dashboard/executive/reports', icon: FileText },
       ];
       toolsItems = [
