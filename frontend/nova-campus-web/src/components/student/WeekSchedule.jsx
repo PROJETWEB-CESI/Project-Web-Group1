@@ -29,7 +29,7 @@ function shortName(name, id) {
   return s.length > 16 ? s.slice(0, 15) + '…' : s;
 }
 
-export default function WeekSchedule({ timetables }) {
+export default function WeekSchedule({ timetables, viewAllHref = '/dashboard/student/schedule' }) {
   const { translate } = useLanguage();
 
   if (!timetables || timetables.length === 0) return null;
@@ -53,9 +53,11 @@ export default function WeekSchedule({ timetables }) {
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] mb-6 overflow-hidden">
       <div className="flex items-center justify-between px-2 py-1.5 sm:px-4 sm:py-3 border-b border-[var(--color-border)]">
         <span className="text-sm font-semibold text-[var(--color-text)]">{translate('thisWeek')}</span>
-        <Link href="/dashboard/student/schedule" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
-          {translate('viewAll')} →
-        </Link>
+        {viewAllHref && (
+          <Link href={viewAllHref} className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+            {translate('viewAll')} →
+          </Link>
+        )}
       </div>
       <ScrollShadow>
       <div className="grid grid-cols-5 min-w-[600px] divide-x divide-[var(--color-border)]">

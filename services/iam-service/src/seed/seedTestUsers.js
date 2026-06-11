@@ -16,8 +16,11 @@ const TEST_USERS = [
     password: 'teacher123',
     role: 'teacher',
     campusId: 'CAMP001',
-    firstName: 'Test',
-    lastName: 'Teacher',
+    firstName: 'Jean',
+    lastName: 'Dupont',
+    instructorId: 'INST001',
+    specialty: 'Commerce international',
+    department: 'Business',
   },
   {
     email: 'admin@test.com',
@@ -69,9 +72,13 @@ async function seedTestUsersIfEnabled() {
   for (const tu of TEST_USERS) {
     const existing = await User.findOne({ where: { email: tu.email } });
     if (existing) {
-      // Update fields that may have changed (e.g. studentId added after initial seed)
       const updates = {};
       if (tu.studentId && existing.studentId !== tu.studentId) updates.studentId = tu.studentId;
+      if (tu.instructorId && existing.instructorId !== tu.instructorId) updates.instructorId = tu.instructorId;
+      if (tu.specialty && existing.specialty !== tu.specialty) updates.specialty = tu.specialty;
+      if (tu.department && existing.department !== tu.department) updates.department = tu.department;
+      if (tu.firstName && existing.firstName !== tu.firstName) updates.firstName = tu.firstName;
+      if (tu.lastName && existing.lastName !== tu.lastName) updates.lastName = tu.lastName;
       if (Object.keys(updates).length) {
         await existing.update(updates);
         console.log(`[DEV] Updated test user: ${tu.email} (${JSON.stringify(updates)})`);
@@ -88,6 +95,9 @@ async function seedTestUsersIfEnabled() {
       firstName: tu.firstName,
       lastName: tu.lastName,
       studentId: tu.studentId || null,
+      instructorId: tu.instructorId || null,
+      specialty: tu.specialty || null,
+      department: tu.department || null,
     });
     console.log(`[DEV] Seeded test user: ${tu.email} / ${tu.password} (role: ${tu.role})`);
   }
