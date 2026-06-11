@@ -1,8 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import ScrollShadow from '@/components/shared/ScrollShadow';
+import Button from '@/components/shared/Button';
+import CreateStudentModal from '@/components/admin/CreateStudentModal';
 
 const STATUS_STYLES = {
   Active:    'bg-[var(--color-success)]/10 text-[var(--color-success)]',
@@ -32,11 +35,12 @@ function initials(firstName, lastName) {
   return `${(firstName || '?')[0]}${(lastName || '?')[0]}`.toUpperCase();
 }
 
-export default function StudentsTab({ students }) {
+export default function StudentsTab({ students, campusId, allPrograms = [], onStudentCreated }) {
   const { translate } = useLanguage();
   const [search, setSearch] = useState('');
   const [programFilter, setProgramFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const programs = useMemo(() => {
     const map = new Map();
@@ -61,10 +65,28 @@ export default function StudentsTab({ students }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('adminStudentsTitle')}</h1>
+      <div className="flex items-start justify-between gap-4 mb-1">
+        <h1 className="text-2xl font-semibold tracking-tight">{translate('adminStudentsTitle')}</h1>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          {translate('newEnrollment') || 'New enrollment'}
+        </Button>
+      </div>
       <p className="text-[var(--color-text-muted)] mb-6">
         {filtered.length} {translate('studentsOutOf')} {students.length}
       </p>
+
+      {showCreateModal && (
+        <CreateStudentModal
+          campusId={campusId}
+          programs={allPrograms}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={(student) => {
+            setShowCreateModal(false);
+            onStudentCreated?.(student);
+          }}
+        />
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input

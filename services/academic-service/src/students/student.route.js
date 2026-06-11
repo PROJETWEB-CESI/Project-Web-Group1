@@ -47,6 +47,19 @@ router.get('/campus/:campusId/stats', authorize(['admin', 'executive']), async (
     }
 });
 
+// Admin : liste des programmes d'un campus (pour les formulaires)
+router.get('/programs', authorize(['admin', 'executive']), async (req, res) => {
+    if (!req.query.campusId) {
+        return res.status(400).json({ error: 'campusId est obligatoire' });
+    }
+    try {
+        const programs = await service.getPrograms(req.query.campusId);
+        res.json(programs);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Student/Teacher/Admin : profil d'un étudiant (students can view their own, teachers/admins can view any)
 router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
@@ -61,11 +74,11 @@ router.get('/:id', authorize(['student', 'teacher', 'admin']), async (req, res) 
     }
 });
 
-// Admin : créer un dossier étudiant
+// Admin : créer un dossier étudiant (le studentId est généré côté serveur)
 router.post('/', authorize(['admin']), async (req, res) => {
-    const { userId, campusId, studentNumber, firstName, lastName, email, programmeId, entryYear } = req.body;
-    if (!userId || !campusId || !studentNumber || !firstName || !lastName || !email || !programmeId || !entryYear) {
-        return res.status(400).json({ error: 'Champs obligatoires manquants : userId, campusId, studentNumber, firstName, lastName, email, programmeId, entryYear' });
+    const { campusId, programId, firstName, lastName, email, enrollmentYear } = req.body;
+    if (!campusId || !programId || !firstName || !lastName || !email || !enrollmentYear) {
+        return res.status(400).json({ error: 'Champs obligatoires manquants : campusId, programId, firstName, lastName, email, enrollmentYear' });
     }
     try {
         const student = await service.createStudent(req.body);

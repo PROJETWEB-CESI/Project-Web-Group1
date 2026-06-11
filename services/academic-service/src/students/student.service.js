@@ -40,9 +40,37 @@ const getStudents = async (campusId, { programId, status, search } = {}) => {
     });
 };
 
-// Crée un nouveau dossier étudiant
+// Génère le prochain identifiant étudiant disponible (format STUxxx)
+const generateNextStudentId = async () => {
+    const students = await Student.findAll({ attributes: ['studentId'], raw: true });
+    let max = 0;
+    for (const s of students) {
+        const match = /^STU(\d+)$/.exec(s.studentId || '');
+        if (match) max = Math.max(max, parseInt(match[1], 10));
+    }
+    return `STU${String(max + 1).padStart(3, '0')}`;
+};
+
+// Crée un nouveau dossier étudiant (le studentId est généré automatiquement)
 const createStudent = async (data) => {
-    return Student.create(data);
+    const studentId = await generateNextStudentId();
+    return Student.create({
+        studentId,
+        campusId: data.campusId,
+        programId: data.programId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        enrollmentYear: data.enrollmentYear,
+        status: data.status || 'Active',
+        paymentStatus: data.paymentStatus || 'Up to date',
+    });
+};
+
+// Returns all programs of a campus (for forms)
+const getPrograms = async (campusId) => {
+    if (!campusId) throw new Error('campusId est obligatoire');
+    return Program.findAll({ where: { campusId }, order: [['programName', 'ASC']] });
 };
 
 // Met à jour le profil d'un étudiant
@@ -154,4 +182,5 @@ module.exports = {
     updateEnrollment,
     getCampusById,
     getCampusStats,
+    getPrograms,
 };

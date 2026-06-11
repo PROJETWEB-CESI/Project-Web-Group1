@@ -22,7 +22,7 @@ async function getUserById(id) {
 }
 
 async function createUser(data) {
-  const { email, password, role, campusId, firstName, lastName } = data;
+  const { email, password, role, campusId, firstName, lastName, studentId } = data;
   if (!email || !password) {
     throw new Error('email and password are required');
   }
@@ -40,6 +40,7 @@ async function createUser(data) {
     campusId: campusId || null,
     firstName: firstName || null,
     lastName: lastName || null,
+    studentId: studentId || null,
   });
 
   const { passwordHash: _ph, ...safe } = user.toJSON();
