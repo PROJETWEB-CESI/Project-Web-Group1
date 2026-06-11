@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const sequelize = require('./config/database.config');
 const authRoutes = require('./auth/auth.route');
 const userRoutes = require('./users/user.route');
+const { csrfProtection } = require('./middleware/csrf.middleware');
 
 const app = express();
 app.disable('x-powered-by');
@@ -15,6 +16,7 @@ app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(csrfProtection);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP' });

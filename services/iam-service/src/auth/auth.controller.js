@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const AuthService = require('./auth.service');
 
 // Parse duration strings like "15m", "2d", "7d" to milliseconds
@@ -20,6 +21,18 @@ function getCookieOptions(req) {
     sameSite: 'lax',
     path: '/',
   };
+}
+
+// Set the double-submit CSRF cookie. Readable by JS so the frontend can echo
+// it back in the X-CSRF-Token header on state-changing requests.
+function setCsrfCookie(req, res, maxAge) {
+  res.cookie('XSRF-TOKEN', crypto.randomBytes(32).toString('hex'), {
+    httpOnly: false,
+    secure: req?.secure === true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge,
+  });
 }
 
 async function register(req, res) {
@@ -52,6 +65,7 @@ async function login(req, res) {
       path: '/',
       maxAge: refreshTokenMaxAge,
     });
+    setCsrfCookie(req, res, refreshTokenMaxAge);
 
     // Do not return tokens in body
     res.status(200).json({ user: result.user });
@@ -80,6 +94,7 @@ async function refresh(req, res) {
       path: '/',
       maxAge: refreshTokenMaxAge,
     });
+    setCsrfCookie(req, res, refreshTokenMaxAge);
 
     res.status(200).json({ message: 'Tokens refreshed' });
   } catch (error) {
@@ -91,6 +106,7 @@ async function logout(req, res) {
   const cookieOpts = getCookieOptions(req);
   res.clearCookie('accessToken', cookieOpts);
   res.clearCookie('refreshToken', cookieOpts);
+  res.clearCookie('XSRF-TOKEN', { ...cookieOpts, httpOnly: false });
   res.status(200).json({ message: 'Logged out' });
 }
 

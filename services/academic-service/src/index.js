@@ -6,6 +6,7 @@ const gradeRoutes = require('./grades/grade.route');
 const attendanceRoutes = require('./attendance/attendance.route');
 const studentRoutes = require('./students/student.route');
 const { authenticate } = require('./middleware/auth.middleware');
+const { csrfProtection } = require('./middleware/csrf.middleware');
 require('./config/associations');
 
 const app = express();
@@ -18,6 +19,7 @@ app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(csrfProtection);
 
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP' });

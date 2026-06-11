@@ -3,6 +3,32 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
+// Read the CSRF double-submit cookie set by the IAM service on login/refresh
+// so it can be echoed back in the X-CSRF-Token header on mutating requests.
+export function getCsrfToken() {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+function withCsrfHeader(options) {
+  const method = (options.method || 'GET').toUpperCase();
+  if (SAFE_METHODS.has(method)) return options;
+
+  const token = getCsrfToken();
+  if (!token) return options;
+
+  return {
+    ...options,
+    headers: {
+      ...options.headers,
+      'x-csrf-token': token,
+    },
+  };
+}
+
 /**
  * Custom fetch wrapper that handles authentication errors globally.
  * If a 401 or 403 response is received, the user is redirected to login.
@@ -17,10 +43,10 @@ export function useApi() {
 
   const apiFetch = async (url, options = {}) => {
     // Ensure credentials are included for cookies
-    const defaultOptions = {
+    const defaultOptions = withCsrfHeader({
       credentials: 'include',
       ...options,
-    };
+    });
 
     const response = await fetch(url, defaultOptions);
 
@@ -44,10 +70,10 @@ export function useApi() {
  * (e.g., server components, utility functions)
  */
 export async function apiFetchStandalone(url, options = {}) {
-  const defaultOptions = {
+  const defaultOptions = withCsrfHeader({
     credentials: 'include',
     ...options,
-  };
+  });
 
   const response = await fetch(url, defaultOptions);
 
