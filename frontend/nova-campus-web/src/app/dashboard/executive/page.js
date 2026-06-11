@@ -1,37 +1,93 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useApi } from '@/lib/api';
 import { useLanguage } from '@/context/LanguageContext';
+import { fetchCampusOverview, average, sum } from '@/lib/executiveData';
+
+import ExecutiveDashboardTab from '@/components/executive/ExecutiveDashboardTab';
 
 export default function ExecutiveDashboard() {
+  const { apiFetch } = useApi();
   const { translate } = useLanguage();
 
+  const [kpis, setKpis] = useState({
+    totalStudents: null, totalRevenue: null, avgSuccessRate: null, avgDropoutRate: null,
+  });
+  const [campusPerformance, setCampusPerformance] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [programMix, setProgramMix] = useState([]);
+
+  useEffect(() => {
+    fetchCampusOverview(apiFetch).then((campuses) => {
+      if (!campuses || campuses.length === 0) return;
+
+      setCampusPerformance(
+        campuses.map((c) => ({
+          campusId: c.campusId,
+          campusName: c.campusName,
+          totalStudents: c.totalStudents,
+          successRate: c.successRate,
+          revenue: c.billing?.totalCollected ?? null,
+        }))
+      );
+
+      setKpis({
+        totalStudents: sum(campuses.map((c) => c.totalStudents)),
+        totalRevenue: sum(campuses.map((c) => c.billing?.totalCollected)),
+        avgSuccessRate: average(campuses.map((c) => c.successRate)),
+        avgDropoutRate: average(campuses.map((c) => c.dropoutRate)),
+      });
+
+      // Strategic alerts: campuses underperforming vs the group average
+      const groupSuccess = average(campuses.map((c) => c.successRate));
+      const groupDropout = average(campuses.map((c) => c.dropoutRate));
+      const newAlerts = [];
+      campuses.forEach((c) => {
+        if (groupSuccess !== null && c.successRate !== null && c.successRate < groupSuccess - 5) {
+          newAlerts.push({
+            campusName: c.campusName,
+            message: `${(groupSuccess - c.successRate).toFixed(1)}% ${translate('alertLowSuccessRate')}`,
+          });
+        }
+        if (c.overdue?.overdueAmount > 0) {
+          newAlerts.push({
+            campusName: c.campusName,
+            message: `${Number(c.overdue.overdueAmount).toLocaleString('fr-FR', { maximumFractionDigits: 0 })} € ${translate('alertHighOverdue')}`,
+          });
+        }
+        if (groupDropout !== null && c.dropoutRate !== null && c.dropoutRate > groupDropout + 5) {
+          newAlerts.push({
+            campusName: c.campusName,
+            message: `${c.dropoutRate}% ${translate('alertHighDropout')}`,
+          });
+        }
+      });
+      setAlerts(newAlerts);
+
+      // Program mix: aggregate byProgram across all campuses
+      const programMap = new Map();
+      campuses.forEach((c) => {
+        (c.byProgram || []).forEach((p) => {
+          const existing = programMap.get(p.programName) || { programName: p.programName, studentCount: 0, maxStudents: 0 };
+          existing.studentCount += p.studentCount || 0;
+          existing.maxStudents += p.maxStudents || 0;
+          programMap.set(p.programName, existing);
+        });
+      });
+      const mix = [...programMap.values()]
+        .sort((a, b) => b.studentCount - a.studentCount)
+        .slice(0, 5);
+      setProgramMix(mix);
+    });
+  }, [apiFetch]);
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('myDashboard') || 'My Dashboard'}</h1>
-      <p className="text-[var(--color-text-muted)] mb-6">Tableau de bord exécutif — Direction générale</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">ÉTUDIANTS TOTAL</div>
-          <div className="text-3xl font-semibold mt-1">1 605</div>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">CA S1 2023-2024</div>
-          <div className="text-3xl font-semibold mt-1">7.13 M€</div>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">TAUX DE RÉUSSITE</div>
-          <div className="text-3xl font-semibold mt-1">87.6%</div>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">TAUX D'IMPAYÉS MOYEN</div>
-          <div className="text-3xl font-semibold mt-1">7.4%</div>
-        </div>
-      </div>
-
-      <div className="text-sm text-[var(--color-text-muted)]">
-        Executive consolidated dashboard base. Populate with campus performance bars, strategic alerts, and program mix to match executive_dashboard.png.
-      </div>
-    </div>
+    <ExecutiveDashboardTab
+      kpis={kpis}
+      campusPerformance={campusPerformance}
+      alerts={alerts}
+      programMix={programMix}
+    />
   );
 }

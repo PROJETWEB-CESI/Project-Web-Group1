@@ -5,6 +5,7 @@ const Course = require('../courses/course.model');
 const Campus = require('./campus.model');
 const Program = require('./program.model');
 const Grade = require('../grades/grade.model');
+const Attendance = require('../attendance/attendance.model');
 
 // Retourne le profil complet d'un étudiant avec ses inscriptions actives
 const getStudentById = async (id, campusId) => {
@@ -146,6 +147,11 @@ const getCampusById = async (campusId) => {
     return Campus.findByPk(campusId);
 };
 
+// Returns all campuses (for the executive cross-campus dashboards)
+const getAllCampuses = async () => {
+    return Campus.findAll({ order: [['campusName', 'ASC']], raw: true });
+};
+
 // Returns campus-wide stats for the admin dashboard (headcount, programs, success rate, average grade)
 const getCampusStats = async (campusId) => {
     if (!campusId) throw new Error('campusId est obligatoire');
@@ -199,7 +205,35 @@ const getCampusStats = async (campusId) => {
         successRate = +((passingGrades / totalGrades) * 100).toFixed(1);
     }
 
-    return { campusId, totalStudents, byProgram, successRate, averageGrade };
+    // Attendance rate: share of recorded sessions marked "present"
+    const totalAttendance = await Attendance.count({ where: { campusId } });
+    const presentAttendance = totalAttendance > 0
+        ? await Attendance.count({ where: { campusId, status: 'present' } })
+        : 0;
+    const attendanceRate = totalAttendance > 0 ? +((presentAttendance / totalAttendance) * 100).toFixed(1) : null;
+
+    // Dropout rate: share of students (any enrollment year) no longer "Active"
+    const totalStudentsAll = await Student.count({ where: { campusId } });
+    const dropoutRate = totalStudentsAll > 0
+        ? +(((totalStudentsAll - totalStudents) / totalStudentsAll) * 100).toFixed(1)
+        : null;
+
+    return { campusId, totalStudents, totalStudentsAll, byProgram, successRate, averageGrade, attendanceRate, dropoutRate };
+};
+
+// Returns the active student headcount per entry year for a campus (enrollment trend chart)
+const getEnrollmentTrend = async (campusId) => {
+    if (!campusId) throw new Error('campusId est obligatoire');
+
+    const rows = await Student.findAll({
+        attributes: ['enrollmentYear', [fn('COUNT', col('student_id')), 'count']],
+        where: { campusId, status: 'Active' },
+        group: ['enrollmentYear'],
+        order: [['enrollmentYear', 'ASC']],
+        raw: true,
+    });
+
+    return rows.map(r => ({ entryYear: r.enrollmentYear, count: parseInt(r.count, 10) }));
 };
 
 module.exports = {
@@ -212,6 +246,8 @@ module.exports = {
     createEnrollment,
     updateEnrollment,
     getCampusById,
+    getAllCampuses,
     getCampusStats,
+    getEnrollmentTrend,
     getPrograms,
 };
