@@ -296,6 +296,8 @@ const translations = {
     ariaSend: 'Send',
     ariaEnterHint: 'Enter to send · Shift+Enter for new line',
     ariaFallbackRole: 'student',
+    ariaAskAria: 'Ask Aria',
+    ariaOpenFull: 'Open full chat',
   },
   fr: {
     // Login page
@@ -614,6 +616,8 @@ const translations = {
     ariaSend: 'Envoyer',
     ariaEnterHint: 'Entrée pour envoyer · Maj+Entrée pour sauter une ligne',
     ariaFallbackRole: 'étudiant',
+    ariaAskAria: 'Demander à Aria',
+    ariaOpenFull: 'Ouvrir le chat complet',
   },
 };
 

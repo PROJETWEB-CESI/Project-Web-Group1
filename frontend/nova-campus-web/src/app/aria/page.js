@@ -385,15 +385,6 @@ export default function AriaPage() {
                         <TypingDots />
                       ) : null}
                     </div>
-                    {m.sources?.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {m.sources.map((s, j) => (
-                          <span key={j} title={s} className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/20">
-                            📎 {s.length > 35 ? s.slice(0, 35) + '…' : s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -413,7 +404,7 @@ export default function AriaPage() {
               onInput={onInput}
               disabled={sending}
               rows={1}
-              placeholder={translate('ariaPlaceholder')}
+              placeholder={translate('ariaAskAria')}
               className="flex-1 resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors disabled:opacity-60"
               style={{ maxHeight: 120 }}
             />
