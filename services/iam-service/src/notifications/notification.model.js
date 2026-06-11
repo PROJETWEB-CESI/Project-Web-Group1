@@ -20,9 +20,19 @@ const Notification = sequelize.define('Notification', {
     type: DataTypes.STRING(250),
     allowNull: false,
   },
+  titleEn: {
+    type: DataTypes.STRING(250),
+    allowNull: true,
+    field: 'title_en',
+  },
   body: {
     type: DataTypes.TEXT,
     allowNull: true,
+  },
+  bodyEn: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'body_en',
   },
   source: {
     type: DataTypes.STRING(100),

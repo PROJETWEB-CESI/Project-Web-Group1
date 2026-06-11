@@ -2,11 +2,18 @@
 
 import { useLanguage } from '@/context/LanguageContext';
 
-const LABELS = [
+const LABELS_FR = [
   "Acompte d'inscription",
   'Frais T1',
   'Frais T2',
   'Frais T3 — solde de scolarité',
+];
+
+const LABELS_EN = [
+  'Registration deposit',
+  'Term 1 fees',
+  'Term 2 fees',
+  'Term 3 — tuition balance',
 ];
 
 function formatDate(dateStr) {
@@ -28,10 +35,15 @@ function daysUntil(dateStr) {
   return Math.ceil((due - now) / 86400000);
 }
 
-function getLabel(p, idx) {
+function getLabel(p, idx, isFrench) {
+  if (!isFrench) {
+    const notesEn = (p.notesEn || '').replace(/\[R[1-3]\]|\[PENDING\]/g, '').trim();
+    if (notesEn) return notesEn;
+    return LABELS_EN[idx] ?? `Term ${idx + 1} fees`;
+  }
   const notes = (p.notes || '').replace(/\[R[1-3]\]|\[PENDING\]/g, '').trim();
   if (notes) return notes;
-  return LABELS[idx] ?? `Frais T${idx + 1}`;
+  return LABELS_FR[idx] ?? `Frais T${idx + 1}`;
 }
 
 function isPaid(status) {
@@ -43,7 +55,7 @@ function isDelay(status) {
 }
 
 export default function PaymentTab({ payments, billingSummary, payEcheance }) {
-  const { translate } = useLanguage();
+  const { translate, isFrench } = useLanguage();
   const paidCount = payments.filter(p => isPaid(p.status)).length;
   const nextUnpaid = payments.find(p => !isPaid(p.status));
 
@@ -130,7 +142,7 @@ export default function PaymentTab({ payments, billingSummary, payEcheance }) {
               </div>
 
               <div className="text-sm text-[var(--color-text)]">
-                {getLabel(p, idx)}
+                {getLabel(p, idx, isFrench)}
               </div>
 
               <div className="text-sm font-semibold text-[var(--color-text)]">

@@ -36,7 +36,9 @@ const TYPE_ICONS = {
 // ── Composant ─────────────────────────────────────────────────────────────────
 
 export default function NotificationsTab({ notifs, markNotifRead, markAllRead }) {
-  const { translate } = useLanguage();
+  const { translate, isFrench } = useLanguage();
+  const pickTitle = (n) => (!isFrench && n.titleEn) ? n.titleEn : n.title;
+  const pickBody  = (n) => (!isFrench && n.bodyEn)  ? n.bodyEn  : n.body;
   const [activeFilter, setActiveFilter] = useState('all');
 
   const typeConfig = {
@@ -230,11 +232,11 @@ export default function NotificationsTab({ notifs, markNotifRead, markAllRead })
                       )}
                     </div>
                     <p className="text-sm font-semibold text-[var(--color-text)] leading-snug">
-                      {n.title}
+                      {pickTitle(n)}
                     </p>
                     {n.body && (
                       <p className="text-xs text-[var(--color-text-muted)] mt-0.5 line-clamp-2">
-                        {n.body}
+                        {pickBody(n)}
                       </p>
                     )}
                   </div>

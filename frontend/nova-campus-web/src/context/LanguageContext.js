@@ -269,6 +269,14 @@ const translations = {
     // Schedule
     weekLabel: 'Week {n}',
     todayButton: 'Today',
+    thisWeek: 'This week',
+    viewAll: 'View all',
+    gradeEvolutionTitle: 'Grade evolution',
+    lastFiveSemesters: 'Last 5 semesters',
+    notEnoughDataChart: 'Not enough data yet to display the evolution.',
+    currentAvgClass: 'current avg — class {n}',
+    myAverage: 'My average',
+    classAverageLabel: 'Class average',
   },
   fr: {
     // Login page
@@ -560,6 +568,14 @@ const translations = {
     // Schedule
     weekLabel: 'Semaine {n}',
     todayButton: "Aujourd'hui",
+    thisWeek: 'Cette semaine',
+    viewAll: 'Voir tout',
+    gradeEvolutionTitle: 'Évolution de la moyenne',
+    lastFiveSemesters: '5 derniers semestres',
+    notEnoughDataChart: "Pas encore assez de données pour afficher l'évolution.",
+    currentAvgClass: 'moyenne actuelle — classe {n}',
+    myAverage: 'Ma moyenne',
+    classAverageLabel: 'Moyenne classe',
   },
 };
 
