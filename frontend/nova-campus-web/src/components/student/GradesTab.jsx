@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useApi } from '@/lib/api';
+import { useLanguage } from '@/context/LanguageContext';
 
 const BADGE_COLORS = [
   { bg: 'bg-indigo-100', text: 'text-indigo-700' },
@@ -53,6 +54,7 @@ export default function GradesTab({
   programName,
 }) {
   const { apiFetch } = useApi();
+  const { translate } = useLanguage();
   const [expanded, setExpanded]             = useState({});
   const [courseClassAvg, setCourseClassAvg] = useState({});
   const [loadingAvg, setLoadingAvg]         = useState({});
@@ -146,7 +148,7 @@ export default function GradesTab({
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold">Notes &amp; évaluations</h2>
+          <h2 className="text-xl font-semibold">{translate('gradesTitle')}</h2>
           <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
             {kpis?.currentSemesterLabel}{programName ? ` · ${programName}` : ''}
           </p>
@@ -155,7 +157,7 @@ export default function GradesTab({
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
           </svg>
-          Bulletin PDF
+          {translate('reportCardPdf')}
         </button>
       </div>
 
@@ -166,7 +168,7 @@ export default function GradesTab({
           <CircularGauge value={average} max={20} size={72} />
           <div>
             <div className="text-[10px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-              Moyenne générale
+              {translate('overallAverage')}
             </div>
             <div className="text-2xl font-bold mt-0.5 leading-none">
               {fmtNum(average)}
@@ -178,7 +180,7 @@ export default function GradesTab({
         {/* Rank */}
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-5">
           <div className="text-[10px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-            Rang dans la promo
+            {translate('rankInClass')}
           </div>
           <div className="text-3xl font-bold mt-2 leading-none">
             {rank ?? '—'}
@@ -189,7 +191,7 @@ export default function GradesTab({
         {/* ECTS */}
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-5">
           <div className="text-[10px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-            ECTS du semestre
+            {translate('semesterEcts')}
           </div>
           <div className="text-3xl font-bold mt-2 leading-none">
             {credits ?? '—'}
@@ -201,12 +203,12 @@ export default function GradesTab({
       {/* ── Subject detail ── */}
       <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
         <div className="px-6 py-3.5 border-b border-[var(--color-border)] bg-[var(--color-bg-elev)]">
-          <span className="text-sm font-semibold">Détail par matière</span>
+          <span className="text-sm font-semibold">{translate('detailBySubject')}</span>
         </div>
 
         {orderedCourseIds.length === 0 && (
           <p className="px-6 py-10 text-sm text-center text-[var(--color-text-muted)]">
-            Aucune note disponible pour ce semestre.
+            {translate('noGradesAvailable')}
           </p>
         )}
 
@@ -243,13 +245,13 @@ export default function GradesTab({
 
                 {/* Your grade */}
                 <div className="text-right mr-8 shrink-0">
-                  <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Votre Note</div>
+                  <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">{translate('yourGrade')}</div>
                   <div className="text-xl font-bold leading-tight">{fmtNum(avg)}</div>
                 </div>
 
                 {/* Class average */}
                 <div className="text-right w-16 shrink-0 mr-4">
-                  <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Classe</div>
+                  <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">{translate('classAvgLabel')}</div>
                   <div className="text-xl font-bold leading-tight text-[var(--color-text-muted)]">
                     {loadingAvg[courseId] ? '…' : fmtNum(classAvg)}
                   </div>
@@ -271,10 +273,10 @@ export default function GradesTab({
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide border-b border-[var(--color-border)]">
-                        <th className="px-6 py-2.5 text-left font-medium w-24">Date</th>
-                        <th className="px-6 py-2.5 text-left font-medium">Évaluation</th>
-                        <th className="px-6 py-2.5 text-left font-medium w-32">Coefficient</th>
-                        <th className="px-6 py-2.5 text-right font-medium w-28">Note</th>
+                        <th className="px-6 py-2.5 text-left font-medium w-24">{translate('colDate')}</th>
+                        <th className="px-6 py-2.5 text-left font-medium">{translate('colEvaluation')}</th>
+                        <th className="px-6 py-2.5 text-left font-medium w-32">{translate('colCoefficient')}</th>
+                        <th className="px-6 py-2.5 text-right font-medium w-28">{translate('colGrade')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--color-border)]">

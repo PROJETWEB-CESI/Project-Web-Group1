@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 const PADDING = { top: 20, right: 16, bottom: 36, left: 36 };
 
@@ -39,6 +40,7 @@ function buildAreaPath(points, chartHeight) {
 }
 
 export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
+  const { translate } = useLanguage();
   const containerRef = useRef(null);
   const [width, setWidth] = useState(500);
   const [tooltip, setTooltip] = useState(null);
@@ -68,11 +70,11 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
     return (
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-[var(--color-text)]">Évolution de la moyenne</span>
-          <span className="text-xs text-[var(--color-text-muted)]">5 derniers semestres</span>
+          <span className="text-sm font-medium text-[var(--color-text)]">{translate('gradeEvolutionTitle')}</span>
+          <span className="text-xs text-[var(--color-text-muted)]">{translate('lastFiveSemesters')}</span>
         </div>
         <p className="text-sm text-[var(--color-text-muted)] py-6 text-center">
-          Pas encore assez de données pour afficher l'évolution.
+          {translate('notEnoughDataChart')}
         </p>
       </div>
     );
@@ -115,8 +117,8 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-[var(--color-text)]">Évolution de la moyenne</span>
-        <span className="text-xs text-[var(--color-text-muted)]">5 derniers semestres</span>
+        <span className="text-sm font-medium text-[var(--color-text)]">{translate('gradeEvolutionTitle')}</span>
+        <span className="text-xs text-[var(--color-text-muted)]">{translate('lastFiveSemesters')}</span>
       </div>
 
       <div className="flex items-baseline gap-2 mb-3">
@@ -124,7 +126,7 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
           {currentValue.toFixed(1).replace('.', ',')}
         </span>
         <span className="text-sm text-[var(--color-text-muted)]">
-          moyenne actuelle — classe {classAverage.toFixed(1).replace('.', ',')}
+          {translate('currentAvgClass', { n: classAverage.toFixed(1).replace('.', ',') })}
         </span>
       </div>
 
@@ -283,7 +285,7 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
         <div className="flex items-center gap-4 mt-1 text-xs text-[var(--color-text-muted)]">
           <span className="flex items-center gap-1.5">
             <span className="inline-block w-5 h-0.5 rounded bg-[var(--color-primary)]" />
-            Ma moyenne
+            {translate('myAverage')}
           </span>
           <span className="flex items-center gap-1.5">
             <span
@@ -293,7 +295,7 @@ export default function GradeEvolutionChart({ data, classAverage = 13.1 }) {
                 opacity: 0.6,
               }}
             />
-            Moyenne classe
+            {translate('classAverageLabel')}
           </span>
         </div>
       </div>

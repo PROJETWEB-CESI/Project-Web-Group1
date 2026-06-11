@@ -1,15 +1,7 @@
 'use client';
 
 import ScrollShadow from '@/components/shared/ScrollShadow';
-
-function semesterLabel(sem) {
-  if (sem.status === 'in_progress') return 'En cours';
-  if (sem.status === 'validated') {
-    const avg = sem.avg;
-    return avg != null ? `${avg}/20` : 'Validé';
-  }
-  return '—';
-}
+import { useLanguage } from '@/context/LanguageContext';
 
 function nextAcademicYear(year) {
   const [start, end] = year.split('-').map(Number);
@@ -47,11 +39,9 @@ function buildSemesterCards(enrollments, totalSemesters) {
     };
   });
 
-  // Fill future semesters up to totalSemesters
   while (cards.length < totalSemesters) {
     const prev = cards[cards.length - 1];
     const prevYear = prev?.academicYear ?? '2023-2024';
-    // S1 → S2 same year, S2 → S1 next year
     const prevSemInYear = prev ? ((cards.length % 2 === 0) ? 1 : 2) : 2;
     const projectedYear = prevSemInYear === 1 ? nextAcademicYear(prevYear) : prevYear;
     cards.push({ number: cards.length + 1, academicYear: projectedYear, status: 'future', avg: null });
@@ -60,17 +50,27 @@ function buildSemesterCards(enrollments, totalSemesters) {
   return cards.slice(0, totalSemesters);
 }
 
-const STATUS_BADGE = {
-  'Validated':  { label: 'Validé',    cls: 'bg-green-50 text-green-700 border border-green-200' },
-  'In Progress':{ label: 'En cours',  cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
-  'Enrolled':   { label: 'Inscrit',   cls: 'bg-gray-100 text-gray-600 border border-gray-200' },
-};
-
 export default function HistoryTab({ enrollments = [], studentProfile }) {
+  const { translate } = useLanguage();
+
+  const STATUS_BADGE = {
+    'Validated':  { label: translate('statusValidated'), cls: 'bg-green-50 text-green-700 border border-green-200' },
+    'In Progress':{ label: translate('statusInProgress'), cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
+    'Enrolled':   { label: translate('statusEnrolled'), cls: 'bg-gray-100 text-gray-600 border border-gray-200' },
+  };
+
+  const semesterCardLabel = (s) => {
+    if (s.status === 'in_progress') return translate('semInProgress');
+    if (s.status === 'validated') {
+      const avg = s.avg;
+      return avg != null ? `${avg}/20` : translate('semValidated');
+    }
+    return '—';
+  };
+
   const program = studentProfile?.program;
   const programName    = program?.programName ?? '—';
   const durationYears  = program?.durationYears ?? null;
-  const annualTuition  = program?.annualTuition ?? null;
   const totalSemesters = durationYears ? durationYears * 2 : 6;
 
   const semCards = buildSemesterCards(enrollments, totalSemesters);
@@ -88,30 +88,36 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
   const enrollmentYear = studentProfile?.enrollmentYear ?? null;
   const studentStatus  = studentProfile?.status ?? null;
 
+  const subtitleParts = [
+    programName !== '—' ? programName : null,
+    enrollmentYear ? translate('entryLabel', { year: enrollmentYear }) : null,
+    studentStatus,
+  ].filter(Boolean);
+
   return (
     <div className="space-y-6">
 
       {/* Page title + KPI cards */}
       <div>
-        <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-1">Historique académique</h1>
-        {(programName !== '—' || enrollmentYear || studentStatus) && (
+        <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-1">{translate('academicHistoryTitle')}</h1>
+        {subtitleParts.length > 0 && (
           <p className="text-sm text-[var(--color-text-muted)] mb-5">
-            {[programName !== '—' ? programName : null, enrollmentYear ? `entrée ${enrollmentYear}` : null, studentStatus].filter(Boolean).join(' · ')}
+            {subtitleParts.join(' · ')}
           </p>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Année d'entrée */}
+          {/* Entry year */}
           <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Année d'entrée</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('entryYear')}</p>
             <p className="text-4xl font-bold mt-2 text-[var(--color-text)]">{enrollmentYear ?? '—'}</p>
             {programName !== '—' && (
-              <p className="text-xs text-[var(--color-text-muted)] mt-1.5 truncate">Promo {programName}</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1.5 truncate">{translate('promoLabel')} {programName}</p>
             )}
           </div>
 
-          {/* Semestres validés */}
+          {/* Validated semesters */}
           <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Semestres validés</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('validatedSemesters')}</p>
             <p className="text-4xl font-bold mt-2 text-[var(--color-text)]">
               {validatedCount}
               <span className="text-xl font-normal text-[var(--color-text-muted)]">/{totalSemesters}</span>
@@ -124,12 +130,12 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
             </div>
           </div>
 
-          {/* Cours suivis */}
+          {/* Courses followed */}
           <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Cours suivis</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('coursesFollowed')}</p>
             <p className="text-4xl font-bold mt-2 text-[var(--color-text)]">{currentEnrollments.length}</p>
             {currentSem && (
-              <p className="text-xs text-[var(--color-text-muted)] mt-1.5">Semestre {currentSem.number} en cours</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1.5">{translate('semesterInProgress', { n: currentSem.number })}</p>
             )}
           </div>
         </div>
@@ -139,7 +145,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
       <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl p-6">
         <div className="mb-5">
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)] mb-1">
-            Parcours diplômant
+            {translate('degreePath')}
           </p>
           <h2 className="text-lg font-semibold text-[var(--color-text)]">{programName}</h2>
         </div>
@@ -158,13 +164,13 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                   }`}
               >
                 <p className={`text-[10px] font-semibold uppercase tracking-widest ${isActive ? 'text-blue-200' : 'text-[var(--color-text-muted)]'}`}>
-                  Semestre {s.number}
+                  {translate('semesterLabel', { n: s.number })}
                 </p>
                 <p className={`text-sm font-bold mt-0.5 ${isActive ? 'text-white' : 'text-[var(--color-text)]'}`}>
-                  {semesterLabel(s)}
+                  {semesterCardLabel(s)}
                 </p>
                 <p className={`text-[10px] mt-0.5 ${isActive ? 'text-blue-300' : 'text-[var(--color-text-muted)]'}`}>
-                  {s.status !== 'future' ? s.academicYear : s.academicYear}
+                  {s.academicYear}
                 </p>
               </div>
             );
@@ -175,9 +181,9 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
       {/* Enrollments table */}
       <div className="bg-[var(--color-bg-elev)] border border-[var(--color-border)] rounded-xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border)]">
-          <h3 className="font-semibold text-base text-[var(--color-text)]">Inscriptions semestrielles</h3>
+          <h3 className="font-semibold text-base text-[var(--color-text)]">{translate('semesterEnrollments')}</h3>
           {firstYear && (
-            <span className="text-sm text-[var(--color-text-muted)]">depuis {firstYear}</span>
+            <span className="text-sm text-[var(--color-text-muted)]">{translate('since')} {firstYear}</span>
           )}
         </div>
 
@@ -185,25 +191,25 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Cours</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Code</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Semestre</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Présence</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Note finale</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Statut</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colCourse')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colCode')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colSemester')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colAttendance')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colFinalGrade')}</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('colStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
               {currentEnrollments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-8 text-center text-[var(--color-text-muted)]">
-                    Aucune inscription en cours.
+                    {translate('noCurrentEnrollments')}
                   </td>
                 </tr>
               ) : currentEnrollments.map(e => {
                 const badge = STATUS_BADGE[e.status] ?? { label: e.status, cls: 'bg-gray-100 text-gray-600 border border-gray-200' };
                 const rate  = e.attendanceRate != null ? parseFloat(e.attendanceRate) : null;
-                const credits = e.course?.credits;
+                const crds  = e.course?.credits;
                 return (
                   <tr key={e.enrollmentId} className="hover:bg-[var(--color-surface-hover)] transition-colors">
                     <td className="px-5 py-4 font-medium text-[var(--color-text)]">
@@ -213,7 +219,7 @@ export default function HistoryTab({ enrollments = [], studentProfile }) {
                       {e.courseId}
                     </td>
                     <td className="px-5 py-4 text-[var(--color-text-muted)] whitespace-nowrap">
-                      S{e.semester}{credits ? ` · ${credits} crédits` : ''}
+                      S{e.semester}{crds ? ` · ${crds} ${translate('credits')}` : ''}
                     </td>
                     <td className="px-5 py-4">
                       {rate != null ? (

@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { getCourseColor } from '@/lib/courseColors';
 import ScrollShadow from '@/components/shared/ScrollShadow';
+import { useLanguage } from '@/context/LanguageContext';
 
 const HOUR_HEIGHT = 64;
 const START_HOUR = 8;
 const END_HOUR = 19;
 const SCH_HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
-const SCH_DAY_LABELS = ['LUN', 'MAR', 'MER', 'JEU', 'VEN'];
 const SCH_DAY_KEYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const SCH_DAY_TRANS_KEYS = ['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri'];
 
 const schToMin = (ts) => {
   const p = (ts || `${START_HOUR}:00`).split(':').map(Number);
@@ -17,6 +18,7 @@ const schToMin = (ts) => {
 };
 
 export default function ScheduleTab({ timetables }) {
+  const { translate } = useLanguage();
   const [weekOffset, setWeekOffset] = useState(0);
 
   const schByDay = {};
@@ -54,7 +56,7 @@ export default function ScheduleTab({ timetables }) {
           onClick={() => setWeekOffset(v => v - 1)}
           className="w-7 h-7 flex items-center justify-center rounded hover:bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-lg leading-none"
         >‹</button>
-        <span className="font-medium italic text-[var(--color-text)] min-w-[80px]">Semaine {schWeekNum}</span>
+        <span className="font-medium italic text-[var(--color-text)] min-w-[80px]">{translate('weekLabel', { n: schWeekNum })}</span>
         <span className="text-[var(--color-text-muted)]">{schDateRange}</span>
         <button
           onClick={() => setWeekOffset(v => v + 1)}
@@ -64,7 +66,7 @@ export default function ScheduleTab({ timetables }) {
           <button
             onClick={() => setWeekOffset(0)}
             className="ml-3 px-3 py-1 border border-[var(--color-border)] rounded text-sm hover:bg-[var(--color-surface)] text-[var(--color-text)]"
-          >Aujourd'hui</button>
+          >{translate('todayButton')}</button>
         )}
       </div>
 
@@ -80,7 +82,7 @@ export default function ScheduleTab({ timetables }) {
               <div key={`hdr-${dayKey}`}
                 className={`text-center py-3 border-b border-l border-[var(--color-border)] ${isToday ? 'bg-[var(--color-primary)]/10' : 'bg-[var(--color-surface)]'}`}>
                 <div className={`text-xs font-semibold tracking-widest ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
-                  {SCH_DAY_LABELS[i]}
+                  {translate(SCH_DAY_TRANS_KEYS[i])}
                 </div>
                 <div className={`text-2xl font-light mt-0.5 ${isToday ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)]'}`}>
                   {date.getDate()}
@@ -134,7 +136,7 @@ export default function ScheduleTab({ timetables }) {
                       </div>
                       {heightPx > 52 && t.instructor && (
                         <div className="text-xs text-[var(--color-text-muted)] mt-0.5 leading-none">
-                          Prof. {t.instructor.first_name} {t.instructor.last_name}
+                          {translate('profAbbrev')} {t.instructor.first_name} {t.instructor.last_name}
                           {t.course?.course_type ? ` · ${t.course.course_type}` : ''}
                         </div>
                       )}

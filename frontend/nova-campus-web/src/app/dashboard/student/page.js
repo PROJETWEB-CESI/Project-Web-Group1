@@ -16,7 +16,7 @@ import NotificationsTab  from '@/components/student/NotificationsTab';
 
 export default function StudentDashboard() {
   const searchParams = useSearchParams();
-  const { clearNotifications } = useNotifications();
+  const { clearNotifications, markOneRead, setNotificationCount } = useNotifications();
   const { user } = useAuth();
 
   const currentTab = (searchParams?.get('tab') || 'dashboard').toLowerCase();
@@ -25,6 +25,7 @@ export default function StudentDashboard() {
   const [absences,         setAbsences]         = useState([]);
   const [enrollments,      setEnrollments]      = useState([]);
   const [payments,         setPayments]         = useState([]);
+  const [billingSummary,   setBillingSummary]   = useState(null);
   const [semesterAverages, setSemesterAverages] = useState(null);
   const [timetables,       setTimetables]       = useState([]);
   const [studentProfile,   setStudentProfile]   = useState(null);
@@ -61,14 +62,20 @@ export default function StudentDashboard() {
       fetchJson(`/api/attendance/student/${studentId}/stats?campusId=${campusId}`),
       fetchJson(`/api/students/${studentId}?campusId=${campusId}`),
       fetchJson(`/api/grades/student/${studentId}/stats?campusId=${campusId}`),
-    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats]) => {
+      fetchJson('/api/notifications'),
+    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats, notifications]) => {
       if (profile?.firstName) setStudentProfile(profile);
       if (stats?.rank != null) setGradeStats(stats);
       if (attStats) setAttStats(attStats);
       setGradesData(grades);
       setAbsences(att);
       setEnrollments(enr);
-      setPayments(Array.isArray(paymentSummary) ? paymentSummary : []);
+      if (paymentSummary && !Array.isArray(paymentSummary)) {
+        setBillingSummary(paymentSummary);
+        setPayments(Array.isArray(paymentSummary.payments) ? paymentSummary.payments : []);
+      } else {
+        setPayments([]);
+      }
 
       if (enr.length > 0 && grades.length > 0) {
         const semMap = new Map();
@@ -115,16 +122,23 @@ export default function StudentDashboard() {
 
       const enrolledIds = new Set(enr.map(e => e.courseId));
       setTimetables(allTimetables.filter(t => enrolledIds.has(t.course_id)));
+
+      if (Array.isArray(notifications)) {
+        setNotifs(notifications);
+        setNotificationCount(notifications.filter(n => !n.read).length);
+      }
     });
   }, [user]);
 
   const markNotifRead = (id) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    if (currentTab === 'notifications') clearNotifications();
+    apiFetch(`/api/notifications/${id}/read`, { method: 'PUT' }).catch(() => {});
+    markOneRead();
   };
 
   const markAllRead = () => {
     setNotifs(prev => prev.map(n => ({ ...n, read: true })));
+    apiFetch('/api/notifications/read-all', { method: 'PUT' }).catch(() => {});
     clearNotifications();
   };
 
@@ -133,7 +147,7 @@ export default function StudentDashboard() {
   };
 
   const payEcheance = (index) => {
-    setPayments(prev => prev.map((p, i) => i === index ? { ...p, status: 'Payé' } : p));
+    setPayments(prev => prev.map((p, i) => i === index ? { ...p, status: 'Paid' } : p));
   };
 
   const renderTab = () => {
@@ -142,7 +156,7 @@ export default function StudentDashboard() {
       case 'grades':        return <GradesTab        gradesData={gradesData} enrollments={enrollments} kpis={kpis} gradeStats={gradeStats} studentId={user?.studentId} campusId={user?.campusId} programName={studentProfile?.program?.programName} />;
       case 'absences':      return <AbsencesTab      absences={absences} timetables={timetables} attStats={attStats} studentProfile={studentProfile} kpis={kpis} justifyAbsence={justifyAbsence} />;
       case 'history':       return <HistoryTab       enrollments={enrollments} studentProfile={studentProfile} />;
-      case 'payment':       return <PaymentTab       payments={payments} payEcheance={payEcheance} />;
+      case 'payment':       return <PaymentTab       payments={payments} billingSummary={billingSummary} payEcheance={payEcheance} />;
       case 'notifications': return <NotificationsTab notifs={notifs} markNotifRead={markNotifRead} markAllRead={markAllRead} />;
       default:              return <DashboardTab     studentProfile={studentProfile} kpis={kpis} timetables={timetables} semesterAverages={semesterAverages} />;
     }
