@@ -43,7 +43,7 @@ export default function ScrollShadow({ children, className = '' }) {
         style={{
           background: 'linear-gradient(to right, var(--color-border), transparent)',
           width: showLeft ? '15px' : '0px',
-          opacity: showLeft ? 1 : 0,
+          opacity: showLeft ? 1 : 0
         }}
       />
       <div
@@ -51,7 +51,7 @@ export default function ScrollShadow({ children, className = '' }) {
         style={{
           background: 'linear-gradient(to left, var(--color-border), transparent)',
           width: showRight ? '15px' : '0px',
-          opacity: showRight ? 1 : 0,
+          opacity: showRight ? 1 : 0
         }}
       />
     </div>
