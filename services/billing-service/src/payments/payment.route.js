@@ -1,4 +1,5 @@
 const express = require('express');
+const { query, validationResult, matchedData } = require('express-validator');
 const router = express.Router();
 const service = require('./payment.service');
 const { authorize } = require('../middleware/auth.middleware');
@@ -74,16 +75,21 @@ router.get('/overdue', authorize(['admin']), async (req, res) => {
 
 // Admin : liste des paiements d'un campus avec filtres
 // GET /api/payments?campusId=CAMP001&status=Delay&academicYear=2023-2024&semester=1&search=dupont
-router.get('/', authorize(['admin']), async (req, res) => {
+router.get('/', authorize(['admin']), query('search').optional().isString(), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     try {
+        const { search } = matchedData(req, { locations: ['query'] });
         const payments = await service.getPaymentsByCampus(req.query.campusId, {
             status:       req.query.status,
             academicYear: req.query.academicYear,
             semester:     req.query.semester ? parseInt(req.query.semester, 10) : undefined,
-            search:       typeof req.query.search === 'string' ? req.query.search : undefined,
+            search,
         });
         res.json(payments);
     } catch (err) {

@@ -1,18 +1,24 @@
 const express = require('express');
+const { query, validationResult, matchedData } = require('express-validator');
 const router = express.Router();
 const service = require('./student.service');
 const { authorize } = require('../middleware/auth.middleware');
 
 // Admin : liste des étudiants d'un campus avec filtres optionnels
-router.get('/', authorize(['admin']), async (req, res) => {
+router.get('/', authorize(['admin']), query('search').optional().isString(), async (req, res) => {
     if (!req.query.campusId) {
         return res.status(400).json({ error: 'campusId est obligatoire' });
     }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     try {
+        const { search } = matchedData(req, { locations: ['query'] });
         const students = await service.getStudents(req.query.campusId, {
             programId: req.query.programId,
             status: req.query.status,
-            search: typeof req.query.search === 'string' ? req.query.search : undefined,
+            search,
         });
         res.json(students);
     } catch (err) {
