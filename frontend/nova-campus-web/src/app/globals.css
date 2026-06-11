@@ -205,6 +205,37 @@ body {
   font-family: var(--font-geist-sans);
 }
 
+/* Themed scrollbars (Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+/* Themed scrollbars (WebKit/Blink) */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-strong);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-stronger);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* Smooth color transitions everywhere by default, so theme switching
    (light/dark/high-contrast) animates consistently across the whole app. */
 *, *::before, *::after {

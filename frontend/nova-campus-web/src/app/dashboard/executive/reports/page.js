@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useApi } from '@/lib/api';
+import { useLanguage } from '@/context/LanguageContext';
 import { fetchCampusOverview, fetchEnrollmentTrend, average, sum } from '@/lib/executiveData';
 import { downloadCsv } from '@/lib/csv';
 
@@ -9,6 +10,7 @@ import StrategicReportsTab from '@/components/executive/StrategicReportsTab';
 
 export default function StrategicReports() {
   const { apiFetch } = useApi();
+  const { translate } = useLanguage();
 
   const [kpis, setKpis] = useState({ campusCount: null, programCount: null, overdueAmount: null, overdueCount: null });
   const dataRef = useRef([]);
@@ -46,7 +48,7 @@ export default function StrategicReports() {
         revenue: c.billing?.totalCollected ?? '',
       })),
       {
-        campus: 'Group average',
+        campus: translate('csvGroupAverage'),
         students: average(campuses.map((c) => c.totalStudents), 0),
         successRate: groupSuccess,
         averageGrade: groupGrade,
@@ -58,17 +60,17 @@ export default function StrategicReports() {
 
     return {
       columns: [
-        { label: 'Campus', value: 'campus' },
-        { label: 'Students', value: 'students' },
-        { label: 'Success rate (%)', value: 'successRate' },
-        { label: 'Average grade', value: 'averageGrade' },
-        { label: 'Attendance rate (%)', value: 'attendanceRate' },
-        { label: 'Dropout rate (%)', value: 'dropoutRate' },
-        { label: 'Revenue collected (EUR)', value: 'revenue' },
+        { label: translate('colCampus'), value: 'campus' },
+        { label: translate('csvColStudents'), value: 'students' },
+        { label: translate('csvColSuccessRatePct'), value: 'successRate' },
+        { label: translate('csvColAverageGrade'), value: 'averageGrade' },
+        { label: translate('csvColAttendanceRatePct'), value: 'attendanceRate' },
+        { label: translate('csvColDropoutRatePct'), value: 'dropoutRate' },
+        { label: translate('csvColRevenueCollected'), value: 'revenue' },
       ],
       rows,
     };
-  }, []);
+  }, [translate]);
 
   const buildProgramIndicators = useCallback(() => {
     const campuses = dataRef.current;
@@ -87,15 +89,15 @@ export default function StrategicReports() {
 
     return {
       columns: [
-        { label: 'Program', value: 'program' },
-        { label: 'Campus', value: 'campus' },
-        { label: 'Students', value: 'students' },
-        { label: 'Capacity', value: 'capacity' },
-        { label: 'Fill rate (%)', value: 'fillRate' },
+        { label: translate('colProgram'), value: 'program' },
+        { label: translate('colCampus'), value: 'campus' },
+        { label: translate('csvColStudents'), value: 'students' },
+        { label: translate('csvColCapacity'), value: 'capacity' },
+        { label: translate('csvColFillRatePct'), value: 'fillRate' },
       ],
       rows,
     };
-  }, []);
+  }, [translate]);
 
   const buildRetention = useCallback(async () => {
     const campuses = dataRef.current;
@@ -110,15 +112,15 @@ export default function StrategicReports() {
 
     return {
       columns: [
-        { label: 'Campus', value: 'campus' },
-        { label: 'Dropout rate (%)', value: 'dropoutRate' },
-        { label: 'Active students', value: 'activeStudents' },
-        { label: 'Total students', value: 'totalStudents' },
-        { label: 'Active students by entry year', value: 'entries' },
+        { label: translate('colCampus'), value: 'campus' },
+        { label: translate('csvColDropoutRatePct'), value: 'dropoutRate' },
+        { label: translate('csvColActiveStudents'), value: 'activeStudents' },
+        { label: translate('csvColTotalStudents'), value: 'totalStudents' },
+        { label: translate('csvColEntriesByYear'), value: 'entries' },
       ],
       rows,
     };
-  }, [apiFetch]);
+  }, [apiFetch, translate]);
 
   const buildOverduePayments = useCallback(() => {
     const campuses = dataRef.current;
@@ -130,13 +132,13 @@ export default function StrategicReports() {
 
     return {
       columns: [
-        { label: 'Campus', value: 'campus' },
-        { label: 'Overdue invoices', value: 'overdueCount' },
-        { label: 'Overdue amount (EUR)', value: 'overdueAmount' },
+        { label: translate('colCampus'), value: 'campus' },
+        { label: translate('csvColOverdueInvoices'), value: 'overdueCount' },
+        { label: translate('csvColOverdueAmount'), value: 'overdueAmount' },
       ],
       rows,
     };
-  }, []);
+  }, [translate]);
 
   const reports = [
     { key: 'campusComparison', titleKey: 'reportCampusComparison', descKey: 'reportCampusComparisonDesc', filename: 'campus-comparison.csv', build: buildCampusComparison },
