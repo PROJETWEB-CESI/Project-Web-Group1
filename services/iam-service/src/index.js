@@ -6,6 +6,7 @@ const authRoutes = require('./auth/auth.route');
 const userRoutes = require('./users/user.route');
 const notificationRoutes = require('./notifications/notification.route');
 require('./notifications/notification.model'); // register model for sequelize.sync
+require('./models/Session'); // register model for sequelize.sync
 const { csrfProtection } = require('./middleware/csrf.middleware');
 const { isTestCredentialsEnabled, seedTestUsersIfEnabled } = require('./seed/seedTestUsers');
 const { seedTestNotificationsIfEnabled } = require('./seed/seedTestNotifications');

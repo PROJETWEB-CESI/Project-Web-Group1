@@ -28,6 +28,7 @@ async def chat(request: Request, body: ChatRequest, user=Depends(require_auth)):
         history=body.history or [],
         user_role=user.get("role", "student"),
         token=token,
+        ui_language=body.ui_language,
     )
 
     asyncio.create_task(save_exchange(
@@ -61,6 +62,7 @@ async def chat_stream(request: Request, body: ChatRequest, user=Depends(require_
                 history=body.history or [],
                 user_role=user.get("role", "student"),
                 token=token,
+                ui_language=body.ui_language,
             ):
                 if event["type"] == "meta":
                     sources = event.get("sources", [])

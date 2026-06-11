@@ -1,6 +1,22 @@
+const crypto = require('crypto');
+const geoip = require('geoip-lite');
 const { hashPassword, comparePassword } = require('../common/utils/bcrypt.util');
 const { generateAccessToken, generateRefreshToken, verifyToken } = require('../common/utils/jwt.util');
 const User = require('../models/User');
+const { NOTIFICATION_CATEGORIES } = require('../models/User');
+const Session = require('../models/Session');
+
+function hashToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function locateIp(ip) {
+  if (!ip) return null;
+  const normalized = ip.replace('::ffff:', '');
+  const geo = geoip.lookup(normalized);
+  if (!geo) return null;
+  return [geo.city, geo.country].filter(Boolean).join(', ') || null;
+}
 
 async function register(email, password, opts = {}) {
   if (!email || !password) {
@@ -26,7 +42,7 @@ async function register(email, password, opts = {}) {
   return safe;
 }
 
-async function login(email, password) {
+async function login(email, password, meta = {}) {
   if (!email || !password) {
     throw new Error('email and password are required');
   }
@@ -51,11 +67,18 @@ async function login(email, password) {
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
+  await Session.create({
+    userId: user.id,
+    refreshTokenHash: hashToken(refreshToken),
+    userAgent: meta.userAgent || null,
+    ipAddress: meta.ip || null,
+  });
+
   const { passwordHash: _ph, ...safeUser } = user.toJSON();
   return { accessToken, refreshToken, user: safeUser };
 }
 
-async function refreshTokens(refreshToken) {
+async function refreshTokens(refreshToken, meta = {}) {
   if (!refreshToken) {
     throw new Error('No refresh token provided');
   }
@@ -65,7 +88,13 @@ async function refreshTokens(refreshToken) {
     throw new Error('Invalid refresh token');
   }
 
-  // Optionally, you could check against a stored list of refresh tokens for revocation (e.g. in Redis)
+  const session = await Session.findOne({
+    where: { userId: decoded.id, refreshTokenHash: hashToken(refreshToken) },
+  });
+  if (!session) {
+    throw new Error('Session has been revoked');
+  }
+
   const payload = {
     id: decoded.id,
     email: decoded.email,
@@ -76,7 +105,46 @@ async function refreshTokens(refreshToken) {
   const newAccessToken = generateAccessToken(payload);
   const newRefreshToken = generateRefreshToken(payload); // rotate for better security
 
+  await session.update({
+    refreshTokenHash: hashToken(newRefreshToken),
+    lastUsedAt: new Date(),
+    userAgent: meta.userAgent || session.userAgent,
+    ipAddress: meta.ip || session.ipAddress,
+  });
+
   return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+}
+
+async function revokeSessionByRefreshToken(refreshToken) {
+  if (!refreshToken) return;
+  await Session.destroy({ where: { refreshTokenHash: hashToken(refreshToken) } });
+}
+
+async function listSessions(userId, currentRefreshToken) {
+  const currentHash = currentRefreshToken ? hashToken(currentRefreshToken) : null;
+  const sessions = await Session.findAll({
+    where: { userId },
+    order: [['lastUsedAt', 'DESC']],
+  });
+
+  return sessions.map((session) => ({
+    id: session.id,
+    userAgent: session.userAgent,
+    ipAddress: session.ipAddress,
+    location: locateIp(session.ipAddress),
+    createdAt: session.createdAt,
+    lastUsedAt: session.lastUsedAt,
+    isCurrent: !!currentHash && session.refreshTokenHash === currentHash,
+  }));
+}
+
+async function revokeSession(userId, sessionId) {
+  const session = await Session.findOne({ where: { id: sessionId, userId } });
+  if (!session) {
+    throw new Error('Session not found');
+  }
+  await session.destroy();
+  return true;
 }
 
 async function getMe(payload) {
@@ -93,4 +161,71 @@ async function getMe(payload) {
   return user.toJSON();
 }
 
-module.exports = { register, login, refreshTokens, getMe };
+async function updateProfile(userId, data) {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const { firstName, lastName, email, phone, address, notificationPreferences } = data;
+
+  if (email && email !== user.email) {
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      throw new Error('Email already in use');
+    }
+  }
+
+  let mergedPreferences = user.notificationPreferences;
+  if (notificationPreferences && typeof notificationPreferences === 'object') {
+    mergedPreferences = { ...user.notificationPreferences };
+    for (const category of NOTIFICATION_CATEGORIES) {
+      if (notificationPreferences[category]) {
+        mergedPreferences[category] = {
+          ...mergedPreferences[category],
+          ...notificationPreferences[category],
+        };
+      }
+    }
+  }
+
+  await user.update({
+    firstName: firstName !== undefined ? firstName : user.firstName,
+    lastName: lastName !== undefined ? lastName : user.lastName,
+    email: email !== undefined ? email : user.email,
+    phone: phone !== undefined ? phone : user.phone,
+    address: address !== undefined ? address : user.address,
+    notificationPreferences: mergedPreferences,
+  });
+
+  const { passwordHash: _ph, ...safe } = user.toJSON();
+  return safe;
+}
+
+async function changePassword(userId, currentPassword, newPassword) {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isMatch = await comparePassword(currentPassword, user.passwordHash);
+  if (!isMatch) {
+    throw new Error('Current password is incorrect');
+  }
+
+  user.passwordHash = await hashPassword(newPassword);
+  await user.save();
+  return true;
+}
+
+module.exports = {
+  register,
+  login,
+  refreshTokens,
+  getMe,
+  updateProfile,
+  changePassword,
+  revokeSessionByRefreshToken,
+  listSessions,
+  revokeSession,
+};

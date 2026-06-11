@@ -27,6 +27,11 @@ const Grade = sequelize.define('Grade', {
         allowNull: false,
         field: 'evaluation_name',
     },
+    evaluationNameEn: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        field: 'evaluation_name_en',
+    },
     score: {
         type: DataTypes.DECIMAL(5, 2),
         allowNull: true,
