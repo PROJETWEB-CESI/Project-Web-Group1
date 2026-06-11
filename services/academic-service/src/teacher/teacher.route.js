@@ -6,6 +6,75 @@ const Enrollment = require('../students/enrollment.model');
 const Grade = require('../grades/grade.model');
 const Course = require('../courses/course.model');
 const { getCourseGradeStats } = require('../grades/grade.service');
+const Student = require('../students/student.model');
+const Program = require('../students/program.model');
+
+// Teacher/Admin: students enrolled in a course with attendance + grades
+router.get('/courses/:courseId/students', authorize(['teacher', 'admin']), async (req, res) => {
+  const { courseId } = req.params;
+  const { campusId } = req.query;
+  if (!campusId) return res.status(400).json({ error: 'campusId is required' });
+
+  try {
+    const enrollments = await Enrollment.findAll({
+      where: { courseId },
+      include: [{
+        model: Student,
+        as: 'student',
+        where: { campusId },
+        attributes: ['studentId', 'firstName', 'lastName', 'enrollmentYear'],
+        include: [{ model: Program, as: 'program', attributes: ['programName'] }],
+      }],
+    });
+
+    if (enrollments.length === 0) return res.json([]);
+
+    const studentIds = enrollments.map(e => e.studentId);
+    const grades = await Grade.findAll({
+      where: { courseId, campusId, studentId: { [Op.in]: studentIds } },
+      attributes: ['studentId', 'evaluationName', 'score', 'scoreMax', 'coefficient', 'publishedAt', 'evaluationDate'],
+      order: [['evaluationDate', 'ASC']],
+    });
+
+    const gradesByStudent = {};
+    for (const g of grades) {
+      if (!gradesByStudent[g.studentId]) gradesByStudent[g.studentId] = [];
+      gradesByStudent[g.studentId].push(g);
+    }
+
+    const result = enrollments.map(e => {
+      const s = e.student;
+      const studentGrades = gradesByStudent[e.studentId] || [];
+      const published = studentGrades.filter(g => g.publishedAt !== null);
+      const weightedSum = published.reduce((sum, g) => sum + parseFloat(g.score || 0) * g.coefficient, 0);
+      const totalCoeff  = published.reduce((sum, g) => sum + g.coefficient, 0);
+      const average = totalCoeff > 0 ? +(weightedSum / totalCoeff).toFixed(2) : null;
+
+      return {
+        studentId:      e.studentId,
+        firstName:      s?.firstName || null,
+        lastName:       s?.lastName  || null,
+        program:        s?.program?.programName || null,
+        enrollmentYear: s?.enrollmentYear || null,
+        attendanceRate: e.attendanceRate != null ? parseFloat(e.attendanceRate) : null,
+        average,
+        grades: studentGrades.map(g => ({
+          evaluationName: g.evaluationName,
+          score:          g.score != null ? parseFloat(g.score) : null,
+          scoreMax:       g.scoreMax,
+          coefficient:    g.coefficient,
+          publishedAt:    g.publishedAt,
+          evaluationDate: g.evaluationDate,
+        })),
+      };
+    });
+
+    result.sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Teacher/Admin: aggregate stats (student count + avg attendance) across a list of courses
 router.get('/courses/stats', authorize(['teacher', 'admin']), async (req, res) => {
