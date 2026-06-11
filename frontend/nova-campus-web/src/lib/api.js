@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
@@ -41,8 +42,7 @@ export function useApi() {
   const router = useRouter();
   const { logout } = useAuth();
 
-  const apiFetch = async (url, options = {}) => {
-    // Ensure credentials are included for cookies
+  const apiFetch = useCallback(async (url, options = {}) => {
     const defaultOptions = withCsrfHeader({
       credentials: 'include',
       ...options,
@@ -50,17 +50,14 @@ export function useApi() {
 
     const response = await fetch(url, defaultOptions);
 
-    // Handle authentication errors
     if (response.status === 401 || response.status === 403) {
-      // Clear auth state and redirect to login
       await logout();
       router.push('/login');
-      // Return a rejected promise to stop further processing
       return Promise.reject(new Error('Authentication required'));
     }
 
     return response;
-  };
+  }, [router, logout]);
 
   return { apiFetch };
 }
