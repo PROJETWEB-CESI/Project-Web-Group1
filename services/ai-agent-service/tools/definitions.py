@@ -75,12 +75,30 @@ _ALL_TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_profile",
+            "description": (
+                "Récupère le profil complet du compte de l'utilisateur connecté "
+                "(nom, email, téléphone, adresse, rôle, identifiants académiques, campus, "
+                "département, spécialité, préférences de notification, dates de création/mise à jour). "
+                "Utilise cet outil quand l'utilisateur demande des informations sur son compte, "
+                "son profil ou ses informations personnelles."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
 ]
 
 _ROLE_TOOLS: dict[str, list[str]] = {
-    "student": ["get_schedule", "get_grades", "get_absences", "get_billing"],
-    "teacher": ["get_schedule", "get_grades", "get_absences"],
-    "admin": ["get_schedule", "get_grades", "get_absences", "get_billing"],
+    "student": ["get_schedule", "get_grades", "get_absences", "get_billing", "get_profile"],
+    "teacher": ["get_schedule", "get_grades", "get_absences", "get_profile"],
+    "admin": ["get_schedule", "get_grades", "get_absences", "get_billing", "get_profile"],
 }
 
 

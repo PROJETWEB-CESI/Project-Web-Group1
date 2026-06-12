@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime, timezone
 from typing import AsyncGenerator
 
 import httpx
@@ -132,19 +133,31 @@ async def _fetch_user_profile(token: str) -> dict:
 _TOOL_TRIGGERS: dict[str, list[str]] = {
     "get_schedule": [
         "emploi du temps", "cours", "planning", "edt", "horaire",
-        "schedule", "classe", "aujourd'hui", "semaine", "demain",
-        "quel cours", "mes cours", "prochains cours",
+        "schedule", "timetable", "classe", "class", "aujourd'hui", "today",
+        "semaine", "week", "demain", "tomorrow",
+        "quel cours", "mes cours", "prochains cours", "next class", "my classes",
+        "calendar", "calendrier",
     ],
     "get_grades": [
         "note", "notes", "moyenne", "résultat", "résultats",
         "bulletin", "score", "obtenu", "eu en", "ma note", "mes notes",
+        "grade", "grades", "gpa", "average", "results", "marks", "transcript",
     ],
     "get_absences": [
         "absence", "absences", "absent", "absente", "manqu",
+        "attendance", "missed",
     ],
     "get_billing": [
         "facture", "facturation", "paiement", "payer", "frais",
         "solde", "dû", "montant", "billing", "scolarité",
+        "invoice", "payment", "balance", "due", "tuition", "fees",
+    ],
+    "get_profile": [
+        "profil", "profile", "mon compte", "my account", "mes informations",
+        "my information", "my info", "informations personnelles", "personal information",
+        "qui suis-je", "who am i", "mes coordonnées", "my details",
+        "mon adresse", "my address", "mon téléphone", "my phone",
+        "mon email", "my email",
     ],
 }
 
@@ -154,6 +167,7 @@ _TOOL_DEFAULT_ARGS: dict[str, dict] = {
     "get_grades": {},
     "get_absences": {},
     "get_billing": {},
+    "get_profile": {},
 }
 
 
@@ -261,7 +275,12 @@ async def _build_context(
         if specialty:
             details.append(f"spécialité : {specialty}")
         user_label = "Utilisateur connecté — " + ", ".join(details) + "."
-    system = base_prompt + f"\n{user_label}"
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    if lang == "english":
+        time_label = f"Current date and time: {now_utc}."
+    else:
+        time_label = f"Date et heure actuelles : {now_utc}."
+    system = base_prompt + f"\n{time_label}\n{user_label}"
     if chunks:
         system += "\n\nContexte documentaire NovaCampus :\n" + "\n\n".join(f"- {c}" for c in chunks)
     if tool_results:
