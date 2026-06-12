@@ -1,0 +1,76 @@
+const Attendance = require('./attendance.model');
+const Course = require('../courses/course.model');
+
+Attendance.belongsTo(Course, { foreignKey: 'courseId', as: 'course' });
+
+// Retourne toutes les présences d'une session (cours + date) — réservé prof/admin
+const getAttendanceByCourse = async (courseId, campusId, sessionDate) => {
+    if (!courseId || !campusId || !sessionDate) throw new Error('courseId, campusId et sessionDate sont obligatoires');
+    return Attendance.findAll({
+        where: { courseId, campusId, sessionDate },
+        order: [['studentId', 'ASC']],
+    });
+};
+
+// Retourne tout l'historique de présence d'un étudiant — réservé à l'étudiant concerné
+const getAttendanceByStudent = async (studentId, campusId) => {
+    if (!studentId || !campusId) throw new Error('studentId et campusId sont obligatoires');
+    return Attendance.findAll({
+        where: { studentId, campusId },
+        order: [['sessionDate', 'DESC']],
+        include: [{ model: Course, as: 'course', attributes: ['courseId', 'courseName'] }],
+    });
+};
+
+// Enregistre l'appel d'une session entière en une seule fois
+// updateOnDuplicate : si le prof refait l'appel, met à jour sans créer de doublons
+const markAttendance = async (records) => {
+    if (!Array.isArray(records) || records.length === 0) throw new Error('records doit être un tableau non vide');
+    return Attendance.bulkCreate(records, {
+        updateOnDuplicate: ['status', 'updatedAt'],
+    });
+};
+
+// Met à jour un enregistrement de présence par son id
+const updateAttendance = async (id, data) => {
+    const record = await Attendance.findByPk(id);
+    if (!record) return null;
+    return record.update(data);
+};
+
+// Justifie une absence ou un retard — impossible de justifier une présence
+const justifyAbsence = async (id, justificationNote) => {
+    if (!justificationNote) throw new Error('Une justification est obligatoire');
+    const record = await Attendance.findByPk(id);
+    if (!record) return null;
+    if (record.status === 'present') throw new Error('Impossible de justifier une présence');
+    return record.update({ justified: true, justificationNote });
+};
+
+// Calcule le taux de présence, total absences et non justifiées d'un étudiant
+const getStudentAttendanceStats = async (studentId, campusId, courseId) => {
+    if (!studentId || !campusId) throw new Error('studentId et campusId sont obligatoires');
+    const where = { studentId, campusId };
+    if (courseId) where.courseId = courseId;
+
+    const records = await Attendance.findAll({ where });
+    const total = records.length;
+    if (total === 0) return { total: 0, present: 0, absent: 0, late: 0, unjustified: 0, attendanceRate: null };
+
+    const present = records.filter(r => r.status === 'present').length;
+    const absent  = records.filter(r => r.status === 'absent').length;
+    const late    = records.filter(r => r.status === 'late').length;
+    const unjustified = records.filter(r => r.status !== 'present' && !r.justified).length;
+    const attendanceRate = +((present / total) * 100).toFixed(1);
+
+    return { total, present, absent, late, unjustified, attendanceRate };
+};
+
+module.exports = {
+    getAttendanceByCourse,
+    getAttendanceByStudent,
+    markAttendance,
+    updateAttendance,
+    justifyAbsence,
+    getStudentAttendanceStats,
+};

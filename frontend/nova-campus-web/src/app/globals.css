@@ -1,0 +1,378 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Light theme colors from mockup (academic modern palette) */
+  --color-bg: oklch(0.985 0.004 95);
+  --color-bg-elev: oklch(1 0 0);
+  --color-bg-sunken: oklch(0.97 0.005 95);
+  --color-surface: oklch(1 0 0);
+  --color-surface-hover: oklch(0.90 0.008 95);
+  --color-border: oklch(0.90 0.008 95);
+  --color-border-strong: oklch(0.80 0.01 95);
+  --color-border-stronger: oklch(0.65 0.01 95);
+  --color-surface-lighter: rgba(0, 0, 0, 0.10);
+  --color-bg-hover: oklch(0.90 0.008 95);
+  --color-bg-active: oklch(0.85 0.005 95);
+
+  --header-background: linear-gradient(0deg, oklch(0.20 0.004 95), var(--color-border-strong));
+
+  --color-text: oklch(0.20 0.02 250);
+  --color-text-muted: oklch(0.35 0.015 250);
+  --color-text-subtle: oklch(0.45 0.012 250);
+  --color-text-inverse: oklch(0.985 0.004 95);
+  --color-text-primary-on-primary: oklch(0.35 0.10 245);
+
+  --color-primary-unchanged: oklch(0.38 0.10 245);
+  --color-primary: oklch(0.38 0.10 245);
+  --color-primary-hover: oklch(0.42 0.11 245);
+  --color-primary-active: oklch(0.37 0.12 245);
+  --color-primary-soft: oklch(0.94 0.025 245);
+  --color-primary-soft-strong: oklch(0.88 0.04 245);
+  --color-on-primary: oklch(1 0 0);
+
+  --color-accent: oklch(0.55 0.10 165);
+  --color-accent-soft: oklch(0.93 0.035 165);
+
+  --color-link: oklch(0.38 0.10 245);
+  --color-link-hover: oklch(0.32 0.11 245);
+
+  --color-error: oklch(0.55 0.16 25);
+  --color-success: oklch(0.55 0.11 155);
+
+  --red-hoverlay: oklch(0.55 0.16 25 / 0.15);
+
+  /* Focus & accessibility */
+  --ring-color: oklch(0.38 0.10 245);
+  --ring-offset: oklch(0.985 0.004 95);
+
+  /* Course/timetable color palette - 8 distinct hues, theme-accurate.
+     Used by schedule/planning views so each course keeps a stable, distinguishable color. */
+  --color-course-1: oklch(0.45 0.12 30);
+  --color-course-1-soft: oklch(0.94 0.035 30);
+  --color-course-2: oklch(0.45 0.12 75);
+  --color-course-2-soft: oklch(0.94 0.035 75);
+  --color-course-3: oklch(0.45 0.12 120);
+  --color-course-3-soft: oklch(0.94 0.035 120);
+  --color-course-4: oklch(0.45 0.12 165);
+  --color-course-4-soft: oklch(0.94 0.035 165);
+  --color-course-5: oklch(0.45 0.12 210);
+  --color-course-5-soft: oklch(0.94 0.035 210);
+  --color-course-6: oklch(0.45 0.12 255);
+  --color-course-6-soft: oklch(0.94 0.035 255);
+  --color-course-7: oklch(0.45 0.12 300);
+  --color-course-7-soft: oklch(0.94 0.035 300);
+  --color-course-8: oklch(0.45 0.12 345);
+  --color-course-8-soft: oklch(0.94 0.035 345);
+}
+
+/* Dark theme */
+.dark {
+  --color-bg: oklch(0.16 0.012 250);
+  --color-bg-elev: oklch(0.20 0.015 250);
+  --color-bg-sunken: oklch(0.13 0.012 250);
+  --color-surface: oklch(0.20 0.015 250);
+  --color-surface-hover: oklch(0.24 0.018 250);
+  --color-border: oklch(0.28 0.018 250);
+  --color-border-strong: oklch(0.36 0.02 250);
+  --color-border-stronger: oklch(0.10 0.02 250);
+  --color-bg-hover: oklch(0.24 0.018 250);
+  --color-surface-lighter: rgba(255, 255, 255, 0.15);
+  --color-bg-active: oklch(0.29 0.018 250);
+
+  --header-background: linear-gradient(0deg, oklch(0.20 0.004 95), var(--color-border-strong));
+
+  --color-text: oklch(0.96 0.005 95);
+  --color-text-muted: oklch(0.81 0.012 250);
+  --color-text-subtle: oklch(0.71 0.015 250);
+  --color-text-inverse: oklch(0.16 0.012 250);
+  --color-text-primary-on-primary: oklch(0.85 0.10 245);
+
+  --color-primary: oklch(0.63 0.10 245);
+  --color-primary-hover: oklch(0.62 0.11 245);
+  --color-primary-active: oklch(0.57 0.12 245);
+  --color-primary-soft: oklch(0.43 0.075 245);
+  --color-primary-soft-strong: oklch(0.54 0.1 245);
+  --color-on-primary: oklch(1 0 0);
+
+  --color-accent: oklch(0.72 0.13 165);
+  --color-accent-soft: oklch(0.26 0.05 165);
+
+  --color-link: oklch(0.62 0.10 245);
+  --color-link-hover: oklch(0.68 0.11 245);
+
+  --color-error: oklch(0.70 0.16 25);
+  --color-success: oklch(0.72 0.13 155);
+
+  --ring-color: oklch(0.72 0.13 245);
+  --ring-offset: oklch(0.16 0.012 250);
+
+  /* Course/timetable color palette - 8 distinct hues, theme-accurate. */
+  --color-course-1: oklch(0.72 0.13 30);
+  --color-course-1-soft: oklch(0.27 0.05 30);
+  --color-course-2: oklch(0.72 0.13 75);
+  --color-course-2-soft: oklch(0.27 0.05 75);
+  --color-course-3: oklch(0.72 0.13 120);
+  --color-course-3-soft: oklch(0.27 0.05 120);
+  --color-course-4: oklch(0.72 0.13 165);
+  --color-course-4-soft: oklch(0.27 0.05 165);
+  --color-course-5: oklch(0.72 0.13 210);
+  --color-course-5-soft: oklch(0.27 0.05 210);
+  --color-course-6: oklch(0.72 0.13 255);
+  --color-course-6-soft: oklch(0.27 0.05 255);
+  --color-course-7: oklch(0.72 0.13 300);
+  --color-course-7-soft: oklch(0.27 0.05 300);
+  --color-course-8: oklch(0.72 0.13 345);
+  --color-course-8-soft: oklch(0.27 0.05 345);
+}
+
+/* High contrast */
+.high-contrast {
+  --color-bg: oklch(0.1 0 0);
+  --color-bg-elev: oklch(0.15 0 0);
+  --color-bg-sunken: oklch(0.075 0 0);
+  --color-surface: oklch(0.15 0 0);
+  --color-surface-hover: oklch(0.35 0 0);
+
+  --color-text: oklch(1 0 0);
+  --color-text-muted: oklch(0.9 0 0);
+  --color-border: oklch(0.8 0 0);
+  --color-text-primary-on-primary: oklch(0.09 0.22 90);
+
+  --color-primary: oklch(0.88 0.22 90);
+  --color-primary-soft: oklch(0.68 0.12 90);
+  --color-primary-hover: oklch(0.92 0.2 90);
+  --color-primary-active: oklch(0.87 0.25 90);
+  --color-on-primary: oklch(0 0 0);
+
+  --color-link: oklch(0.88 0.22 90);
+  --color-link-hover: oklch(0.95 0.15 90);
+
+  --color-bg-hover: var(--color-primary);
+
+  --color-accent: oklch(0.85 0.15 200);
+  --color-error: oklch(0.7 0.25 25);
+  --color-success: oklch(0.75 0.2 140);
+
+  --ring-color: oklch(0.88 0.22 90);
+  --ring-offset: oklch(0 0 0);
+  --color-surface-lighter: rgba(255, 255, 255, 0.50);
+  font-size: 1.05em;
+
+  hr {
+    border-top-width: 2px !important;
+  }
+
+  /* Course/timetable color palette - high-contrast: bright hues on dark soft backgrounds. */
+  --color-course-1: oklch(0.85 0.18 30);
+  --color-course-1-soft: oklch(0.30 0.08 30);
+  --color-course-2: oklch(0.85 0.18 75);
+  --color-course-2-soft: oklch(0.30 0.08 75);
+  --color-course-3: oklch(0.85 0.18 120);
+  --color-course-3-soft: oklch(0.30 0.08 120);
+  --color-course-4: oklch(0.85 0.18 165);
+  --color-course-4-soft: oklch(0.30 0.08 165);
+  --color-course-5: oklch(0.85 0.18 210);
+  --color-course-5-soft: oklch(0.30 0.08 210);
+  --color-course-6: oklch(0.85 0.18 255);
+  --color-course-6-soft: oklch(0.30 0.08 255);
+  --color-course-7: oklch(0.85 0.18 300);
+  --color-course-7-soft: oklch(0.30 0.08 300);
+  --color-course-8: oklch(0.85 0.18 345);
+  --color-course-8-soft: oklch(0.30 0.08 345);
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast a {
+  border-width: 2px !important;
+}
+
+.high-contrast a {
+  text-decoration-thickness: 3px;
+  font-weight: 500;
+}
+
+/* Tells the browser to render native form controls (number input spinners,
+   date/time pickers, etc.) using its dark UI variant to match the theme. */
+:root {
+  color-scheme: light;
+}
+
+.dark,
+.high-contrast {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-geist-sans);
+}
+
+/* Themed scrollbars (Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+/* Themed scrollbars (WebKit/Blink) */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-strong);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-stronger);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Smooth color transitions everywhere by default, so theme switching
+   (light/dark/high-contrast) animates consistently across the whole app. */
+*, *::before, *::after {
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Professional base form styles */
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring-color) 12%, transparent);
+}
+
+.high-contrast input[type="email"]:focus,
+.high-contrast input[type="password"]:focus,
+.high-contrast input[type="text"]:focus {
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring-color) 35%, transparent);
+}
+
+.high-contrast input[type="email"],
+.high-contrast input[type="password"],
+.high-contrast input[type="text"] {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ring-color);
+  outline-offset: 2px;
+}
+
+
+a {
+  position: relative;
+  text-decoration: none;
+  color: var(--color-link);
+  font-weight: 500;
+  /* padding-bottom: 2px; */
+  /* padding-top: 5px; */
+}
+
+a::after {
+  width: 0;
+  height: 0;
+}
+
+a:not(.fakeLink)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-link);
+  border-radius: 10px;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+a:not(.LogoLink):hover {
+  color: var(--color-link-hover);
+}
+
+a:not(.LogoLink):hover::after {
+  background: var(--color-link-hover);
+  transform: scaleX(1);
+  transform-origin: left center;
+  transition-duration: 0.4s;
+}
+
+/* Dark theme adjustments */
+.dark a:not(.LogoLink)::after {
+  background: var(--color-link);
+}
+
+.dark a:not(.LogoLink):hover::after {
+  background: var(--color-link-hover);
+}
+
+/* High-contrast adjustments */
+.high-contrast a::after {
+  height: 2.5px;
+}
+
+.high-contrast a:hover::after {
+  height: 3px;
+}
+
+/* Error message */
+.error-message {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Remove focus outline on Recharts SVG elements */
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-wrapper *:focus {
+  outline: none !important;
+}
