@@ -148,3 +148,10 @@ docs/*.md
 AGENT.md
 CLAUDE.md
 todo.md
+
+# ----------------------
+# security reports
+# ----------------------
+docs/security-report/*
+!docs/security-report/*.tex
+!docs/security-report/*.pdf

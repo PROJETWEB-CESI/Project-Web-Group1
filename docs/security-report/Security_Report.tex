@@ -1,0 +1,151 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=2.2cm]{geometry}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{seqsplit}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+
+\title{NovaCampus -- Security Vulnerability Remediation Report}
+\author{Project Web Group 1}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Overview}
+
+This report consolidates all security vulnerability fixes applied across the
+\texttt{fix/security-issues}, \texttt{fix/security-issues-clean}, and related
+branches, addressing findings reported by Snyk Open Source and Snyk Code. All
+changes listed below have been merged into \texttt{develop} via pull requests
+\#53, \#55, and \#71.
+
+\section{Dependency Vulnerabilities}
+
+\small
+\begin{longtable}{L{3.0cm}L{3.4cm}L{4.4cm}L{4.8cm}}
+\toprule
+\textbf{CVE / Snyk ID} & \textbf{Component} & \textbf{Issue} & \textbf{Fix} \\
+\midrule
+\endhead
+
+SNYK-JS-UUID-16133035 &
+\seqsplit{iam-service}, \seqsplit{academic-service}, \seqsplit{billing-service} (transitive via \texttt{sequelize}/\seqsplit{express-validator} $\rightarrow$ \texttt{uuid@8.3.2}) &
+Vulnerable \texttt{uuid} version with insecure \texttt{Math.random()}-based fallback &
+Pinned via \texttt{npm overrides} to \texttt{uuid@\^{}11.1.1} in all three services, which fully resolves the finding (no \texttt{.snyk} policy needed) \\
+\addlinespace
+
+Snyk -- \texttt{bcrypt} \(\rightarrow\) \texttt{tar} &
+\texttt{iam-service} &
+\texttt{bcrypt@\^{}5.1.1} pulled a vulnerable \texttt{tar} (arbitrary file write / DoS via crafted tarball) &
+Bumped \texttt{bcrypt} to \texttt{\^{}6.0.0} \\
+\addlinespace
+
+Snyk -- \texttt{geoip-lite} \(\rightarrow\) \texttt{inflight}, \texttt{ip-address} &
+\texttt{iam-service} &
+\texttt{geoip-lite@\^{}1.4.10} pulled vulnerable \texttt{inflight} (memory leak) and \texttt{ip-address} (ReDoS) &
+Bumped \texttt{geoip-lite} to \texttt{\^{}2.0.2} \\
+\addlinespace
+
+CVE-2026-41305 &
+All frontend / Next.js workspaces &
+Next.js vendors \texttt{postcss@8.4.31}, vulnerable to XSS via CSS stringify output &
+\texttt{npm overrides} forcing \texttt{postcss >=8.5.10}, deduping to patched \texttt{postcss@8.5.15} \\
+
+\bottomrule
+\end{longtable}
+
+\pagebreak
+\section{Code-Level (Snyk Code) Findings}
+
+\small
+\begin{longtable}{L{3.4cm}L{3.6cm}L{4.1cm}L{4.5cm}}
+\toprule
+\textbf{Snyk Rule} & \textbf{Location} & \textbf{Issue} & \textbf{Fix} \\
+\midrule
+\endhead
+
+\seqsplit{javascript/HardcodedSecret} (severity 8) &
+All services (JWT verification) &
+Hardcoded \texttt{'defaultSecret'} fallback for \texttt{JWT\_SECRET} &
+Removed fallback; services now require \texttt{JWT\_SECRET} env var and fail fast at startup if unset \\
+\addlinespace
+
+\seqsplit{javascript/UseCsurfForExpress} (severity 4) &
+\seqsplit{iam-service}, \seqsplit{academic-service} &
+No CSRF protection on cookie-authenticated mutating endpoints &
+Added double-submit CSRF: non-\texttt{httpOnly} \texttt{XSRF-TOKEN} cookie issued on login/refresh, validated against \texttt{X-CSRF-Token} header on mutating requests (bearer-token requests exempted) \\
+\addlinespace
+
+\seqsplit{javascript/HTTPSourceWithUncheckedType} (severity 2, multiple) &
+\seqsplit{academic-service/student.route.js}, \seqsplit{billing-service/payment.route.js} &
+Unchecked type of \texttt{req.query.search} &
+\seqsplit{express-validator}'s \seqsplit{query('search').optional().isString()} + \seqsplit{matchedData()} \\
+\addlinespace
+
+\seqsplit{javascript/HTTPSourceWithUncheckedType} (severity 2, $\times$4) &
+\seqsplit{academic-service/teacher.route.js} (\seqsplit{/courses/stats}, \seqsplit{/courses/pending-grades}, \seqsplit{/courses/distribution}, \seqsplit{/courses/performance}) &
+Unchecked \texttt{req.query.courseIds} passed to \texttt{.split(',')} &
+Added \seqsplit{typeof courseIds !== 'string'} guard before \seqsplit{.split()} on all 4 endpoints \\
+\addlinespace
+
+\seqsplit{javascript/XSS} (unsanitized \texttt{req.params.id} reaching \texttt{res.write} via SSE hub) &
+\seqsplit{iam-service/auth.controller.js} (\texttt{revokeSession}) &
+\seqsplit{req.params.id} used unvalidated in a session-revoke flow whose result is broadcast over SSE &
+Validate \seqsplit{req.params.id} against a UUID regex before use; reject with 400 if invalid \\
+\addlinespace
+
+\seqsplit{javascript/HTTPSourceWithUncheckedType} &
+\seqsplit{iam-service/auth.controller.js} (\texttt{changePassword}) &
+\seqsplit{req.body.newPassword.length} accessed without checking type &
+\texttt{typeof} checks on \seqsplit{currentPassword}/\seqsplit{newPassword} before length validation \\
+\addlinespace
+
+Information disclosure &
+All Express services &
+\seqsplit{X-Powered-By} header exposed Express framework &
+Disabled via \seqsplit{app.disable(\textquotesingle x-powered-by\textquotesingle)} \\
+\addlinespace
+
+Insecure crypto (dead-code taint) &
+\texttt{auth.service.js} / JWT handling &
+Unused \texttt{decodeToken} helper decoded JWTs without verifying signature &
+Removed dead code \\
+\addlinespace
+
+Insecure hashing &
+seed script &
+\texttt{sha1}/\texttt{md5} used for demo session tokens and offline embedding hashes &
+Replaced with \texttt{sha256} \\
+\addlinespace
+
+Cookie attribute static analysis &
+\seqsplit{iam-service/auth.controller.js} &
+\texttt{res.cookie} options built via a shared helper function (not statically verifiable by Snyk) &
+Inlined \texttt{httpOnly}/\texttt{secure}/\texttt{sameSite} attributes at each \texttt{res.cookie()} call site \\
+
+\bottomrule
+\end{longtable}
+
+\pagebreak
+\section{Summary}
+
+\begin{itemize}
+  \item \textbf{18 distinct findings} addressed across \texttt{iam-service},
+        \texttt{academic-service}, \texttt{billing-service}, and the frontend
+        (Next.js / postcss).
+  \item All changes are merged into \texttt{develop} via pull requests
+        \textbf{\#53}, \textbf{\#55}, and \textbf{\#71}.
+\end{itemize}
+
+\end{document}
