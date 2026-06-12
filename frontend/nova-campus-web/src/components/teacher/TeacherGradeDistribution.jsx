@@ -2,6 +2,7 @@
 
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 const BUCKET_COLORS = {
   '0–5':   '#ef4444',
@@ -11,16 +12,22 @@ const BUCKET_COLORS = {
 };
 
 const CustomTooltip = ({ active, payload, label }) => {
+  const { translate } = useLanguage();
   if (!active || !payload?.length) return null;
+  const n = payload[0].value;
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] px-3 py-2 text-xs shadow-md">
       <div className="font-semibold text-[var(--color-text)] mb-0.5">{label}</div>
-      <div className="text-[var(--color-text-muted)]">{payload[0].value} note{payload[0].value > 1 ? 's' : ''}</div>
+      <div className="text-[var(--color-text-muted)]">
+        {translate(n === 1 ? 'pendingUnpublishedSingular' : 'pendingUnpublishedPlural', { n }).replace(' non publiée', '').replace(' non publiées', '').replace(' unpublished', '')}
+        {n} {n === 1 ? translate('evalGradeCol').toLowerCase() : translate('evalGradeCol').toLowerCase() + 's'}
+      </div>
     </div>
   );
 };
 
 export default function TeacherGradeDistribution({ distribution }) {
+  const { translate } = useLanguage();
   const [activeCourse, setActiveCourse] = useState(0);
 
   if (!distribution?.length) return null;
@@ -33,11 +40,10 @@ export default function TeacherGradeDistribution({ distribution }) {
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-4 h-4 text-[var(--color-text-muted)]">
           <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
         </svg>
-        <span className="text-sm font-semibold text-[var(--color-text)]">Distribution des notes</span>
+        <span className="text-sm font-semibold text-[var(--color-text)]">{translate('gradeDistTitle')}</span>
       </div>
 
       <div className="p-4">
-        {/* Course tabs */}
         {distribution.length > 1 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {distribution.map((c, i) => (
@@ -56,7 +62,6 @@ export default function TeacherGradeDistribution({ distribution }) {
           </div>
         )}
 
-        {/* Summary badges */}
         <div className="flex flex-wrap gap-2 mb-4">
           {current.distribution.map(({ range, count }) => (
             <div key={range} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -67,7 +72,6 @@ export default function TeacherGradeDistribution({ distribution }) {
           ))}
         </div>
 
-        {/* Chart */}
         <ResponsiveContainer width="100%" height={180}>
           <AreaChart data={current.distribution} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
             <defs>
