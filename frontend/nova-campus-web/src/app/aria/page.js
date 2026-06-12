@@ -7,6 +7,7 @@ import { useApi } from '@/lib/api';
 import { useLanguage } from '@/context/LanguageContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { PanelLeftOpen, X, Trash2 } from 'lucide-react';
 
 const AI = '/api/ai';
 
@@ -66,9 +67,9 @@ function ConvItem({ conv, active, onLoad, onDelete, deleteLabel }) {
         tabIndex={0}
         onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onDelete(conv.id); } }}
-        className="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-[var(--color-error)] px-0.5 transition-opacity"
+        className="p-1.5 -m-1.5 rounded-lg hover:bg-[var(--color-error)]/10 text-[var(--color-error)] transition-colors flex items-center justify-center"
         title={deleteLabel}
-      >✕</span>
+      ><Trash2 size={14} /></span>
     </button>
   );
 }
@@ -117,9 +118,23 @@ export default function AriaPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [convSidebarOpen, setConvSidebarOpen] = useState(false);
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const mainRef = useRef(null);
+  const [maxInputHeight, setMaxInputHeight] = useState(120);
+
+  // Keep the input's max height at 1/3 of the chat area's height
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    const update = () => setMaxInputHeight(Math.max(40, Math.floor(el.clientHeight / 3)));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Auth guard and redirect to dashboard/assistant
   useEffect(() => {
@@ -158,12 +173,14 @@ export default function AriaPage() {
       const data = await r.json();
       setActiveId(data.id);
       setMessages(data.messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources || [] })));
+      setConvSidebarOpen(false);
     } catch { /* ignore */ }
   };
 
   const newConv = () => {
     setActiveId(null);
     setMessages([]);
+    setConvSidebarOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 50);
   };
 
@@ -179,7 +196,10 @@ export default function AriaPage() {
     const msg = (text ?? input).trim();
     if (!msg || sending) return;
     setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.overflowY = 'hidden';
+    }
     setSending(true);
 
     const convId = activeId || uid();
@@ -265,12 +285,18 @@ export default function AriaPage() {
   };
 
   const onKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    const isMobile = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+    if (isMobile) return; // let Enter insert a newline on touch devices
+    e.preventDefault();
+    send();
   };
 
   const onInput = (e) => {
     e.target.style.height = 'auto';
-    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+    const next = Math.min(e.target.scrollHeight, maxInputHeight);
+    e.target.style.height = next + 'px';
+    e.target.style.overflowY = e.target.scrollHeight > maxInputHeight ? 'auto' : 'hidden';
   };
 
   // Render guard (after all hooks)
@@ -288,54 +314,92 @@ export default function AriaPage() {
     { label: translate('ariaOlder'),    items: groups.older },
   ];
 
-  return (
-    <div className="flex-1 flex h-full overflow-hidden">
-
-      {/* ── Sidebar gauche ── */}
-      <aside className="w-60 flex-shrink-0 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-surface)]">
-        <div className="p-3 border-b border-[var(--color-border)]">
-          <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 px-1">
+  const renderConvSidebar = (onClose) => (
+    <>
+      <div className="p-3 border-b border-[var(--color-border)]">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
             {translate('ariaConversations')}
           </p>
-          <button
-            onClick={newConv}
-            className="w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center gap-1.5"
-          >
-            {translate('ariaNewConv')}
-          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-2.5 -m-1 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 transition-colors flex items-center justify-center"
+              aria-label={translate('ariaClose')}
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
+        <button
+          onClick={newConv}
+          className="w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center gap-1.5"
+        >
+          {translate('ariaNewConv')}
+        </button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto py-1">
-          {convGroups.map(({ label, items }) =>
-            items.length > 0 && (
-              <div key={label}>
-                <p className="text-[10px] font-semibold text-[var(--color-text-muted)] px-4 pt-3 pb-1 uppercase tracking-wider">{label}</p>
-                {items.map((c) => (
-                  <ConvItem
-                    key={c.id}
-                    conv={c}
-                    active={activeId === c.id}
-                    onLoad={loadConv}
-                    onDelete={deleteConv}
-                    deleteLabel={translate('ariaDelete')}
-                  />
-                ))}
-              </div>
-            )
-          )}
-          {convs.length === 0 && (
-            <p className="text-xs text-[var(--color-text-muted)] text-center px-4 py-8">
-              {translate('ariaNoConv')}
-            </p>
-          )}
-        </div>
+      <div className="flex-1 overflow-y-auto py-1">
+        {convGroups.map(({ label, items }) =>
+          items.length > 0 && (
+            <div key={label}>
+              <p className="text-[10px] font-semibold text-[var(--color-text-muted)] px-4 pt-3 pb-1 uppercase tracking-wider">{label}</p>
+              {items.map((c) => (
+                <ConvItem
+                  key={c.id}
+                  conv={c}
+                  active={activeId === c.id}
+                  onLoad={loadConv}
+                  onDelete={deleteConv}
+                  deleteLabel={translate('ariaDelete')}
+                />
+              ))}
+            </div>
+          )
+        )}
+        {convs.length === 0 && (
+          <p className="text-xs text-[var(--color-text-muted)] text-center px-4 py-8">
+            {translate('ariaNoConv')}
+          </p>
+        )}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex-1 flex h-full min-h-[500px] overflow-hidden">
+
+      {/* ── Sidebar gauche (desktop) ── */}
+      <aside className="hidden xl:flex w-60 flex-shrink-0 border-r border-[var(--color-border)] flex-col bg-[var(--color-surface)]">
+        {renderConvSidebar(null)}
       </aside>
 
+      {/* ── Sidebar gauche (overlay mobile/tablette) ── */}
+      <div className={`xl:hidden fixed inset-0 z-50 flex ${convSidebarOpen ? '' : 'pointer-events-none'}`}>
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${convSidebarOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setConvSidebarOpen(false)}
+        />
+        <aside
+          className="relative w-72 max-w-[80vw] h-full flex flex-col bg-[var(--color-surface)] border-r border-[var(--color-border)] shadow-xl transition-transform duration-300 ease-out"
+          style={{ transform: convSidebarOpen ? 'translateX(0)' : 'translateX(-100%)' }}
+        >
+          {renderConvSidebar(() => setConvSidebarOpen(false))}
+        </aside>
+      </div>
+
       {/* ── Zone de chat ── */}
-      <main className="flex-1 flex flex-col min-w-0 min-h-0">
+      <main ref={mainRef} className="flex-1 flex flex-col min-w-0 min-h-0">
 
         {/* Header */}
         <div className="px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg)] flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => setConvSidebarOpen(true)}
+            className="xl:hidden p-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 transition-colors flex-shrink-0"
+            aria-label={translate('ariaConversations')}
+          >
+            <PanelLeftOpen size={18} />
+          </button>
           <Avatar initials="Ar" size={9} />
           <div>
             <p className="font-semibold text-sm text-[var(--color-text)] leading-tight">Assistant IA · Aria</p>
@@ -369,9 +433,9 @@ export default function AriaPage() {
           ) : (
             <>
               {messages.map((m, i) => (
-                <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={i} className={`flex gap-2.5 min-w-0 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {m.role === 'assistant' && <Avatar initials="Ar" size={8} />}
-                  <div className={`flex flex-col gap-1 max-w-[70%] ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col gap-1 max-w-[70%] min-w-0 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
                     <div className={`px-4 py-2.5 rounded-2xl ${
                       m.role === 'user'
                         ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-tr-sm text-sm leading-relaxed whitespace-pre-wrap break-words'
@@ -405,8 +469,8 @@ export default function AriaPage() {
               disabled={sending}
               rows={1}
               placeholder={translate('ariaAskAria')}
-              className="flex-1 resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors disabled:opacity-60"
-              style={{ maxHeight: 120 }}
+              className="flex-1 resize-none overflow-y-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors disabled:opacity-60"
+              style={{ maxHeight: maxInputHeight }}
             />
             <button
               onClick={() => send()}
