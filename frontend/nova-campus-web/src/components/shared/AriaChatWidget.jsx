@@ -10,6 +10,7 @@ import { useApi } from '@/lib/api';
 import { useLanguage } from '@/context/LanguageContext';
 
 const AI = '/api/ai';
+const WIDGET_HEIGHT = 460;
 
 function uid() {
   return crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
@@ -82,6 +83,10 @@ export default function AriaChatWidget() {
     const msg = (text ?? input).trim();
     if (!msg || sending) return;
     setInput('');
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.overflowY = 'hidden';
+    }
     setSending(true);
 
     if (!convIdRef.current) convIdRef.current = uid();
@@ -163,7 +168,11 @@ export default function AriaChatWidget() {
   }, [input, sending, messages, apiFetch, language, translate]);
 
   const onKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    const isMobile = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+    if (isMobile) return; // let Enter insert a newline on touch devices
+    e.preventDefault();
+    send();
   };
 
   // Don't render on the full Aria page (it already has the full chat UI)
@@ -175,7 +184,7 @@ export default function AriaChatWidget() {
       {/* ── Chat window ── */}
       {open && (
         <div className="w-[360px] flex flex-col rounded-2xl shadow-2xl border border-[var(--color-border)] bg-[var(--color-bg)] overflow-hidden"
-          style={{ height: 460 }}>
+          style={{ height: WIDGET_HEIGHT }}>
 
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] flex-shrink-0">
@@ -189,15 +198,15 @@ export default function AriaChatWidget() {
             <Link
               href="/dashboard/assistant"
               title={translate('ariaOpenFull')}
-              className="p-1.5 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors"
+              className="fakeLink p-1.5 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors"
             >
               <Maximize2 size={13} />
             </Link>
             <button
               onClick={() => setOpen(false)}
-              className="p-1.5 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors"
+              className="fakeLink p-1.5 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors"
             >
-              <X size={13} />
+              <X size={15} />
             </button>
           </div>
 
@@ -214,13 +223,13 @@ export default function AriaChatWidget() {
               </div>
             ) : (
               messages.map((m, i) => (
-                <div key={i} className={`flex gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={i} className={`flex gap-2 min-w-0 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {m.role === 'assistant' && (
                     <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0 mt-0.5">
                       Ar
                     </div>
                   )}
-                  <div className={`max-w-[78%] px-3 py-2 rounded-xl text-xs ${
+                  <div className={`max-w-[78%] min-w-0 px-3 py-2 rounded-xl text-xs ${
                     m.role === 'user'
                       ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-tr-sm leading-relaxed whitespace-pre-wrap break-words'
                       : 'bg-[var(--color-surface)] text-[var(--color-text)] border border-[var(--color-border)] rounded-tl-sm'
@@ -248,13 +257,15 @@ export default function AriaChatWidget() {
               onKeyDown={onKeyDown}
               onInput={(e) => {
                 e.target.style.height = 'auto';
-                e.target.style.height = Math.min(e.target.scrollHeight, 80) + 'px';
+                const maxH = Math.floor(WIDGET_HEIGHT / 3);
+                e.target.style.height = Math.min(e.target.scrollHeight, maxH) + 'px';
+                e.target.style.overflowY = e.target.scrollHeight > maxH ? 'auto' : 'hidden';
               }}
               disabled={sending}
               rows={1}
               placeholder={translate('ariaAskAria')}
-              className="flex-1 resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors disabled:opacity-60"
-              style={{ maxHeight: 80 }}
+              className="flex-1 resize-none overflow-y-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors disabled:opacity-60"
+              style={{ maxHeight: Math.floor(WIDGET_HEIGHT / 3) }}
             />
             <button
               onClick={() => send()}
