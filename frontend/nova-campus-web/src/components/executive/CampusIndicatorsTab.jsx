@@ -162,13 +162,13 @@ export default function CampusIndicatorsTab({ campuses, groupAverages, trendYear
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[var(--color-bg-sunken)] text-left border-b border-[var(--color-border)]">
-                <th className="px-5 py-3 text-xs font-semibold text-[var(--color-text-muted)] whitespace-nowrap">
+                <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-semibold text-[var(--color-text-muted)] whitespace-nowrap">
                   {translate('colIndicator')}
                 </th>
                 {campuses.map((c, i) => {
                   const theme = CAMPUS_THEME[i % CAMPUS_THEME.length];
                   return (
-                    <th key={c.campusId} className="px-5 py-3 text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">
+                    <th key={c.campusId} className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: theme.dot }} />
                         {c.campusName}
@@ -176,7 +176,7 @@ export default function CampusIndicatorsTab({ campuses, groupAverages, trendYear
                     </th>
                   );
                 })}
-                <th className="px-5 py-3 text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap italic">
+                <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap italic">
                   {translate('colGroupAverage')}
                 </th>
               </tr>
@@ -189,18 +189,18 @@ export default function CampusIndicatorsTab({ campuses, groupAverages, trendYear
                     idx % 2 !== 0 ? 'bg-[var(--color-bg-sunken)]' : ''
                   }`}
                 >
-                  <td className="px-5 py-3 font-semibold text-[var(--color-text)] whitespace-nowrap text-xs">
+                  <td className="px-3 py-1.5 sm:px-5 sm:py-3 font-semibold text-[var(--color-text)] whitespace-nowrap text-xs">
                     {translate(row.key)}
                   </td>
                   {campuses.map((c) => (
                     <td
                       key={c.campusId}
-                      className={`px-5 py-3 whitespace-nowrap ${cellClass(row.field, c[row.field], groupAverages[row.field])}`}
+                      className={`px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap ${cellClass(row.field, c[row.field], groupAverages[row.field])}`}
                     >
                       {row.format(c[row.field])}
                     </td>
                   ))}
-                  <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)] italic">
+                  <td className="px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap text-[var(--color-text-muted)] italic">
                     {row.format(groupAverages[row.field])}
                   </td>
                 </tr>
@@ -220,13 +220,13 @@ export default function CampusIndicatorsTab({ campuses, groupAverages, trendYear
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[var(--color-bg-sunken)] text-left border-b border-[var(--color-border)]">
-                  <th className="px-5 py-3 text-xs font-semibold text-[var(--color-text-muted)]">
+                  <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-semibold text-[var(--color-text-muted)]">
                     {translate('colIndicator')}
                   </th>
                   {campuses.map((c, i) => {
                     const theme = CAMPUS_THEME[i % CAMPUS_THEME.length];
                     return (
-                      <th key={c.campusId} className="px-5 py-3 text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">
+                      <th key={c.campusId} className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: theme.dot }} />
                           {c.campusName}
@@ -244,9 +244,9 @@ export default function CampusIndicatorsTab({ campuses, groupAverages, trendYear
                       idx % 2 !== 0 ? 'bg-[var(--color-bg-sunken)]' : ''
                     }`}
                   >
-                    <td className="px-5 py-3 font-semibold text-[var(--color-text)] whitespace-nowrap">{year}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 font-semibold text-[var(--color-text)] whitespace-nowrap">{year}</td>
                     {campuses.map((c) => (
-                      <td key={c.campusId} className="px-5 py-3 whitespace-nowrap font-medium">
+                      <td key={c.campusId} className="px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap font-medium">
                         {trendByCampus[c.campusId]?.[year] ?? <Dash />}
                       </td>
                     ))}

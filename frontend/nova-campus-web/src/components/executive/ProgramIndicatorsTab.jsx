@@ -62,10 +62,10 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[var(--color-bg-sunken)] text-left border-b border-[var(--color-border)]">
-                  <th className="px-5 py-3 text-xs font-semibold text-[var(--color-text-muted)]">{translate('colProgram')}</th>
-                  <th className="px-5 py-3 text-xs font-medium text-[var(--color-text-muted)]">{translate('colCampus')}</th>
-                  <th className="px-5 py-3 text-xs font-medium text-[var(--color-text-muted)]">{translate('colStudentsCapacity')}</th>
-                  <th className="px-5 py-3 text-xs font-medium text-[var(--color-text-muted)]">{translate('colFillRate')}</th>
+                  <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-semibold text-[var(--color-text-muted)]">{translate('colProgram')}</th>
+                  <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-medium text-[var(--color-text-muted)]">{translate('colCampus')}</th>
+                  <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-medium text-[var(--color-text-muted)]">{translate('colStudentsCapacity')}</th>
+                  <th className="px-3 py-1.5 sm:px-5 sm:py-3 text-xs font-medium text-[var(--color-text-muted)]">{translate('colFillRate')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -76,12 +76,12 @@ export default function ProgramIndicatorsTab({ kpis, programs, topFilled, needsR
                       i % 2 !== 0 ? 'bg-[var(--color-bg-sunken)]' : ''
                     }`}
                   >
-                    <td className="px-5 py-3 font-medium text-[var(--color-text)]">{p.programName}</td>
-                    <td className="px-5 py-3 text-[var(--color-text-muted)]">{p.campusName}</td>
-                    <td className="px-5 py-3 whitespace-nowrap font-medium">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 font-medium text-[var(--color-text)]">{p.programName}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)]">{p.campusName}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap font-medium">
                       {p.studentCount}{p.maxStudents ? ` / ${p.maxStudents}` : ''}
                     </td>
-                    <td className={`px-5 py-3 whitespace-nowrap font-semibold ${
+                    <td className={`px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap font-semibold ${
                       p.fillRate !== null
                         ? p.fillRate >= 80
                           ? 'text-[var(--color-success)]'

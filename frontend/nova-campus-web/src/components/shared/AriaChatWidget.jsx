@@ -283,7 +283,7 @@ export default function AriaChatWidget() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 p-1.5 sm:px-4 sm:py-2.5 rounded-full shadow-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-all duration-200 text-sm font-medium"
       >
-        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+        <div className="h-8 w-8 sm:h-6 sm:w-6 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white text-[15px] font-bold flex-shrink-0">
           Ar
         </div>
         <span className="hidden sm:inline">{translate('ariaAskAria')}</span>

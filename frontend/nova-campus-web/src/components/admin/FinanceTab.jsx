@@ -146,15 +146,15 @@ export default function FinanceTab({ payments, billingStats }) {
               </thead>
               <tbody>
                 {filtered.map((p) => (
-                  <tr key={p.payment_id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-bg-hover)] transition-colors">
-                    <td className="px-5 py-3 text-[var(--color-text-muted)] font-mono text-xs">{p.payment_id}</td>
-                    <td className="px-5 py-3">
+                  <tr key={p.payment_id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-hover)] transition-colors">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)] font-mono text-xs">{p.payment_id}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <div className="font-medium text-[var(--color-text)]">{p.first_name} {p.last_name}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{p.email}</div>
                     </td>
-                    <td className="px-5 py-3 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
-                    <td className="px-5 py-3 font-medium whitespace-nowrap">{formatEuro(p.amount)}</td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 font-medium whitespace-nowrap">{formatEuro(p.amount)}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <span className={`text-xs font-semibold rounded-full px-2.5 py-1 ${STATUS_STYLES[statusLabel(p)] || STATUS_STYLES.PENDING}`}>
                         {statusLabel(p)}
                       </span>
