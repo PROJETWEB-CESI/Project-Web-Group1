@@ -109,6 +109,63 @@ const deleteEvaluationGrades = async (courseId, campusId, evaluationName) => {
     return Grade.destroy({ where: { courseId, campusId, evaluationName } });
 };
 
+// Retourne la moyenne de classe par semestre pour l'étudiant donné
+// "classe" = tous les étudiants ayant des notes publiées dans les mêmes cours / campus
+const getStudentSemesterClassAverages = async (studentId, campusId) => {
+    const Enrollment = require('../students/enrollment.model');
+
+    const enrollments = await Enrollment.findAll({
+        where: { studentId },
+        order: [['academicYear', 'ASC'], ['semester', 'ASC']],
+        raw: true,
+    });
+    if (!enrollments.length) return [];
+
+    const semMap = new Map();
+    for (const e of enrollments) {
+        const key = `${e.academic_year || e.academicYear}-S${e.semester}`;
+        if (!semMap.has(key)) {
+            semMap.set(key, {
+                label: `S${e.semester}`,
+                courseIds: [],
+            });
+        }
+        semMap.get(key).courseIds.push(e.course_id || e.courseId);
+    }
+
+    const results = [];
+    for (const [, sem] of semMap) {
+        const grades = await Grade.findAll({
+            where: {
+                courseId: { [Op.in]: sem.courseIds },
+                campusId,
+                publishedAt: { [Op.not]: null },
+                score: { [Op.not]: null },
+            },
+            raw: true,
+        });
+        if (!grades.length) continue;
+
+        const byStudent = new Map();
+        for (const g of grades) {
+            if (!byStudent.has(g.student_id || g.studentId)) byStudent.set(g.student_id || g.studentId, []);
+            byStudent.get(g.student_id || g.studentId).push(g);
+        }
+
+        const studentAvgs = [];
+        for (const [, sg] of byStudent) {
+            const wSum = sg.reduce((s, g) => s + parseFloat(g.score || 0) * (g.coefficient || 1), 0);
+            const wCoeff = sg.reduce((s, g) => s + (g.coefficient || 1), 0);
+            if (wCoeff > 0) studentAvgs.push(wSum / wCoeff);
+        }
+        if (!studentAvgs.length) continue;
+
+        const classAvg = studentAvgs.reduce((s, v) => s + v, 0) / studentAvgs.length;
+        results.push({ label: sem.label, classAverage: +classAvg.toFixed(2) });
+    }
+    return results;
+};
+
 module.exports = {
     getGradesByStudent,
     getGradesByCourse,
@@ -120,4 +177,5 @@ module.exports = {
     deleteGrade,
     getStudentGradeStats,
     getCourseGradeStats,
+    getStudentSemesterClassAverages,
 };
