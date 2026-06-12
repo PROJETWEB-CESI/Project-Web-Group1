@@ -151,8 +151,7 @@ export default function ProfileMenu() {
         { label: translate('myCourses') || 'My Courses', href: '/dashboard/teacher/courses', icon: <BookOpen className={iconClass} /> },
         { label: translate('gradeEntry') || 'Grade Entry', href: '/dashboard/teacher/grades', icon: <FileText className={iconClass} /> },
         { label: translate('attendance') || 'Attendance & Absences', href: '/dashboard/teacher/attendance', icon: <Users className={iconClass} /> },
-        { label: translate('roomReservations') || 'Room Reservations', href: '/dashboard/teacher/rooms', icon: <Building className={iconClass} /> },
-        { label: translate('studentHistory') || 'Student History', href: '/dashboard/teacher/history', icon: <Users className={iconClass} /> }
+        { label: translate('roomReservations') || 'Room Reservations', href: '/dashboard/teacher/rooms', icon: <Building className={iconClass} /> }
       );
     } else if (role === 'admin') {
       items.push(
