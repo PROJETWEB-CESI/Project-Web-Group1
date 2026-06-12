@@ -7,6 +7,7 @@ from agent.config import (
     SCHEDULING_SERVICE_URL,
     ACADEMIC_SERVICE_URL,
     BILLING_SERVICE_URL,
+    IAM_SERVICE_URL,
     JWT_SECRET,
     JWT_ALGORITHM,
 )
@@ -20,6 +21,7 @@ _SERVICE_TOOLS: dict[str, list[str]] = {
     SCHEDULING_SERVICE_URL: ["get_schedule"],
     ACADEMIC_SERVICE_URL:   ["get_grades", "get_absences"],
     BILLING_SERVICE_URL:    ["get_billing"],
+    IAM_SERVICE_URL:        ["get_profile"],
 }
 
 _health_cache: tuple[float, set[str]] | None = None
@@ -74,6 +76,8 @@ async def execute_tool(name: str, args: dict, token: str) -> str:
             return await _get_absences(user_id, campus_id, headers)
         if name == "get_billing":
             return await _get_billing(user_id, campus_id, headers)
+        if name == "get_profile":
+            return await _get_profile(headers)
         return f"Outil inconnu : {name}"
     except httpx.HTTPStatusError as e:
         logger.warning(f"[Tool] {name} HTTP {e.response.status_code}: {e.response.text[:200]}")
@@ -171,6 +175,47 @@ def _format_billing(data: dict) -> str:
                 f" (S{p.get('semester','?')} {p.get('academicYear','?')}, éch. {due})"
             )
     return "\n".join(lines)
+
+
+def _format_profile(data: dict) -> str:
+    """Formate le profil complet de l'utilisateur (réponse /me de l'IAM) en texte lisible."""
+    if not data:
+        return "Profil utilisateur indisponible."
+    lines = ["Profil du compte :"]
+    full_name = " ".join(p for p in (data.get("firstName"), data.get("lastName")) if p)
+    if full_name:
+        lines.append(f"  Nom complet      : {full_name}")
+    for label, key in [
+        ("Email", "email"),
+        ("Téléphone", "phone"),
+        ("Adresse", "address"),
+        ("Rôle", "role"),
+        ("Numéro étudiant", "studentId"),
+        ("Identifiant enseignant", "instructorId"),
+        ("Campus", "campusId"),
+        ("Département", "department"),
+        ("Spécialité", "specialty"),
+        ("Statut", "status"),
+        ("Créé le", "createdAt"),
+        ("Mis à jour le", "updatedAt"),
+    ]:
+        value = data.get(key)
+        if value:
+            lines.append(f"  {label:<17}: {value}")
+    prefs = data.get("notificationPreferences")
+    if prefs:
+        lines.append(f"  Préférences de notification : {prefs}")
+    return "\n".join(lines)
+
+
+async def _get_profile(headers: dict) -> str:
+    async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+        r = await client.get(f"{IAM_SERVICE_URL}/me", headers=headers)
+        r.raise_for_status()
+        try:
+            return _format_profile(r.json().get("user", {}))
+        except Exception:
+            return r.text
 
 
 async def _get_billing(user_id: str, campus_id: str, headers: dict) -> str:
