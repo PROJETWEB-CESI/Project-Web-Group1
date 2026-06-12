@@ -56,7 +56,8 @@ export function StudentDashboardProvider({ children }) {
       fetchJson(`/api/students/${studentId}?campusId=${campusId}`),
       fetchJson(`/api/grades/student/${studentId}/stats?campusId=${campusId}`),
       fetchJson('/api/notifications'),
-    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats, notifications]) => {
+      fetchJson(`/api/grades/student/${studentId}/semester-class-averages?campusId=${campusId}`),
+    ]).then(([grades, att, enr, paymentSummary, allTimetables, attStats, profile, stats, notifications, semClassAvgs]) => {
       if (profile?.firstName) setStudentProfile(profile);
       if (stats?.rank != null) setGradeStats(stats);
       if (attStats) setAttStats(attStats);
@@ -81,13 +82,24 @@ export function StudentDashboardProvider({ children }) {
           if (a.year !== b.year) return (a.year || '').localeCompare(b.year || '');
           return (a.semester || 0) - (b.semester || 0);
         });
+
+        const classAvgByLabel = Array.isArray(semClassAvgs)
+          ? Object.fromEntries(semClassAvgs.map(s => [s.label, s.classAverage]))
+          : {};
+
         const points = sorted.map(sem => {
           const sg = grades.filter(g => sem.courseIds.includes(g.courseId));
           if (!sg.length) return null;
           const wSum   = sg.reduce((s, g) => s + parseFloat(g.score || 0) * (g.coefficient || 1), 0);
           const wCoeff = sg.reduce((s, g) => s + (g.coefficient || 1), 0);
-          return { label: sem.label, value: wCoeff > 0 ? Math.round((wSum / wCoeff) * 10) / 10 : null };
-        }).filter(p => p !== null && p.value !== null);
+          const value = wCoeff > 0 ? Math.round((wSum / wCoeff) * 10) / 10 : null;
+          if (value === null) return null;
+          return {
+            label: sem.label,
+            value,
+            classAverage: classAvgByLabel[sem.label] ?? null,
+          };
+        }).filter(p => p !== null);
         if (points.length > 0) setSemesterAverages(points);
       }
 
