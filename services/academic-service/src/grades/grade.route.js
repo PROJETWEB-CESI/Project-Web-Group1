@@ -104,6 +104,21 @@ router.get('/course/:courseId', authorize(['teacher', 'admin']), async (req, res
     }
 });
 
+// Étudiant : moyenne de classe par semestre (vraies données DB)
+router.get('/student/:studentId/semester-class-averages', authorize(['student', 'teacher', 'admin']), async (req, res) => {
+    if (!req.query.campusId) {
+        return res.status(400).json({ error: 'campusId est obligatoire' });
+    }
+    try {
+        const { resolveStudentId } = require('../common/utils/student.util');
+        const studentId = await resolveStudentId(req.params.studentId);
+        const data = await service.getStudentSemesterClassAverages(studentId, req.query.campusId);
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Étudiant : moyenne pondérée, rang dans la promo, moyenne de classe
 router.get('/student/:studentId/stats', authorize(['student', 'teacher', 'admin']), async (req, res) => {
     if (!req.query.campusId) {
