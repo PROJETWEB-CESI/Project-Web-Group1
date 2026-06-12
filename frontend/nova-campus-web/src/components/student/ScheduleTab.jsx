@@ -18,7 +18,7 @@ const schToMin = (ts) => {
 };
 
 export default function ScheduleTab({ timetables }) {
-  const { translate } = useLanguage();
+  const { translate, language } = useLanguage();
   const [weekOffset, setWeekOffset] = useState(0);
 
   const schByDay = {};
@@ -42,7 +42,7 @@ export default function ScheduleTab({ timetables }) {
   const schSOY     = new Date(schTarget.getFullYear(), 0, 1);
   const schWeekNum = Math.ceil(((schTarget - schSOY) / 86400000 + schSOY.getDay() + 1) / 7);
 
-  const schFmt  = (d, opts) => d.toLocaleDateString('fr-FR', opts);
+  const schFmt  = (d, opts) => d.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', opts);
   const schStart = schWeekDays[0];
   const schEnd   = schWeekDays[4];
   const schDateRange = schStart.getMonth() === schEnd.getMonth()

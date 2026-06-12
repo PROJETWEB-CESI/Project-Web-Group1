@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useApi } from '@/lib/api';
+import { useLanguage } from '@/context/LanguageContext';
 
 const AVATAR_PALETTES = [
   'bg-blue-500/15 text-blue-700',
@@ -29,7 +30,6 @@ function StudentAvatar({ firstName, lastName }) {
   );
 }
 
-/* ── Score input with auto-save on blur ── */
 function ScoreCell({ grade, student, evalMeta, courseId, campusId, apiFetch, onSaved }) {
   const [value, setValue] = useState(grade?.score != null ? String(parseFloat(grade.score)) : '');
   const [status, setStatus] = useState('idle');
@@ -137,12 +137,13 @@ function ScoreCell({ grade, student, evalMeta, courseId, campusId, apiFetch, onS
   );
 }
 
-/* ── One evaluation block ── */
 function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGradeSaved, onPublish, onUnpublish, onDelete, publishing, defaultOpen }) {
+  const { translate, language } = useLanguage();
+  const locale = language === 'fr' ? 'fr-FR' : 'en-US';
   const [isOpen, setIsOpen] = useState(defaultOpen ?? false);
   const [showMenu, setShowMenu] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [actioning, setActioning] = useState(null); // 'unpublish' | 'delete'
+  const [actioning, setActioning] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -183,24 +184,25 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
     : status === 'pending'
     ? 'bg-amber-500/10 text-amber-700 border-amber-500/20'
     : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--color-border)]';
-  const badgeLabel = status === 'published' ? 'Publiée' : status === 'pending' ? 'En attente' : 'Vide';
+  const badgeLabel = status === 'published'
+    ? translate('evalBadgePublished')
+    : status === 'pending'
+    ? translate('evalBadgePending')
+    : translate('evalBadgeEmpty');
 
   const dateStr = evalData.date
-    ? new Date(evalData.date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? new Date(evalData.date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
     : null;
 
   return (
     <div className="relative rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] flex shadow-sm">
-      {/* Left status strip */}
       <div className={`w-1 flex-shrink-0 rounded-l-xl ${stripColor}`} />
 
       <div className="flex-1 min-w-0">
-        {/* Header row — div instead of button so we can nest a real button inside */}
         <div
           onClick={() => setIsOpen(o => !o)}
           className="w-full flex items-center gap-4 px-4 py-4 hover:bg-[var(--color-surface)] transition-colors cursor-pointer select-none"
         >
-          {/* Name + meta */}
           <div className="flex-1 min-w-0">
             <div className="text-base font-bold text-[var(--color-text)] truncate">{evalData.name}</div>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -219,9 +221,7 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
             </div>
           </div>
 
-          {/* Right: progress + status badge + ⋮ menu + chevron */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Progress */}
             <div className="flex flex-col items-end gap-1.5 w-24">
               <div className="text-sm">
                 <span className="font-extrabold text-[var(--color-text)]">{gradedCount}</span>
@@ -232,12 +232,10 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
               </div>
             </div>
 
-            {/* Status badge */}
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${badgeCls}`}>
               {badgeLabel}
             </span>
 
-            {/* ⋮ Actions menu — stops propagation so it doesn't toggle the accordion */}
             <div className="relative" ref={menuRef} onClick={e => e.stopPropagation()}>
               <button
                 onClick={() => { setShowMenu(o => !o); setConfirmDelete(false); }}
@@ -260,7 +258,7 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-amber-500 flex-shrink-0">
                         <path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" />
                       </svg>
-                      {actioning === 'unpublish' ? 'Dépublication…' : 'Dépublier les notes'}
+                      {actioning === 'unpublish' ? translate('evalUnpublishing') : translate('evalUnpublishGrades')}
                     </button>
                   ) : null}
 
@@ -274,24 +272,27 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 flex-shrink-0">
                         <path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.712Z" clipRule="evenodd" />
                       </svg>
-                      Supprimer l'évaluation
+                      {translate('evalDeleteEval')}
                     </button>
                   ) : (
                     <div className="px-3 py-2.5">
-                      <p className="text-xs font-semibold text-red-600 mb-2">Supprimer toutes les notes ?<br /><span className="font-normal text-[var(--color-text-muted)]">Cette action est irréversible.</span></p>
+                      <p className="text-xs font-semibold text-red-600 mb-2">
+                        {translate('evalDeleteAllGrades')}<br />
+                        <span className="font-normal text-[var(--color-text-muted)]">{translate('evalDeleteIrreversible')}</span>
+                      </p>
                       <div className="flex gap-2">
                         <button
                           onClick={handleDelete}
                           disabled={actioning === 'delete'}
                           className="flex-1 text-xs font-semibold py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
                         >
-                          {actioning === 'delete' ? 'Suppression…' : 'Confirmer'}
+                          {actioning === 'delete' ? translate('evalDeleting') : translate('evalConfirm')}
                         </button>
                         <button
                           onClick={() => setConfirmDelete(false)}
                           className="flex-1 text-xs font-semibold py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-elev)] transition-colors"
                         >
-                          Annuler
+                          {translate('cancel')}
                         </button>
                       </div>
                     </div>
@@ -300,7 +301,6 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
               )}
             </div>
 
-            {/* Chevron */}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
               className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -310,34 +310,32 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
 
         {isOpen && (
           <div className="border-t border-[var(--color-border)]">
-            {/* Publish banner */}
             {anyUnpublished && (
               <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-amber-500/5 border-b border-amber-500/10">
                 <div className="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 text-amber-600 flex-shrink-0">
                     <path fillRule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 0 1-1.299 2.25H2.804a1.5 1.5 0 0 1-1.3-2.25l5.197-9ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-xs font-medium text-amber-700">Notes non encore visibles par les étudiants</span>
+                  <span className="text-xs font-medium text-amber-700">{translate('evalGradesNotVisible')}</span>
                 </div>
                 <button
                   onClick={e => { e.stopPropagation(); onPublish(); }}
                   disabled={publishing}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
-                  {publishing ? 'Publication…' : 'Publier tout'}
+                  {publishing ? translate('evalPublishing') : translate('gradesPublishAll')}
                 </button>
               </div>
             )}
 
-            {/* Column headers */}
             <div className="flex items-center gap-3 px-4 py-2.5 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
               <div className="w-8 flex-shrink-0" />
-              <div className="flex-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Étudiant</div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] pr-5">Note</div>
+              <div className="flex-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('evalStudentCol')}</div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] pr-5">{translate('evalGradeCol')}</div>
             </div>
 
             {students.length === 0 ? (
-              <div className="py-8 text-center text-sm text-[var(--color-text-muted)]">Aucun étudiant inscrit</div>
+              <div className="py-8 text-center text-sm text-[var(--color-text-muted)]">{translate('evalNoStudents')}</div>
             ) : (
               <div className="divide-y divide-[var(--color-border)]">
                 {students.map((student, idx) => {
@@ -354,7 +352,7 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
                         </div>
                         <div className="text-xs text-[var(--color-text-muted)] truncate">
                           {student.program
-                            ? <>{student.program}{student.enrollmentYear ? ` · Promo ${student.enrollmentYear}` : ''}</>
+                            ? <>{student.program}{student.enrollmentYear ? ` · ${translate('classOf', { year: student.enrollmentYear })}` : ''}</>
                             : student.studentId}
                         </div>
                       </div>
@@ -384,10 +382,10 @@ function EvaluationCard({ evalData, students, courseId, campusId, apiFetch, onGr
   );
 }
 
-/* ── Main page ── */
 export default function TeacherGradesPage() {
   const { user } = useAuth();
   const { apiFetch } = useApi();
+  const { translate } = useLanguage();
   const searchParams = useSearchParams();
 
   const [courses, setCourses]               = useState([]);
@@ -410,7 +408,6 @@ export default function TeacherGradesPage() {
     } catch { return null; }
   }, [apiFetch]);
 
-  /* Load courses from timetables */
   useEffect(() => {
     if (!user?.instructorId) return;
     fetchJson(`/api/timetables/?instructor_id=${user.instructorId}`).then(timetables => {
@@ -430,7 +427,6 @@ export default function TeacherGradesPage() {
     });
   }, [user, fetchJson, searchParams]);
 
-  /* Load grades + students for selected course */
   useEffect(() => {
     if (!selectedCourseId || !user?.campusId) return;
     let cancelled = false;
@@ -451,7 +447,6 @@ export default function TeacherGradesPage() {
     return () => { cancelled = true; };
   }, [selectedCourseId, user, fetchJson]);
 
-  /* Derive evaluations from grades */
   const evaluations = useMemo(() => {
     const map = {};
     for (const g of grades) {
@@ -541,18 +536,16 @@ export default function TeacherGradesPage() {
   const unpublishedCount = grades.filter(g => !g.publishedAt && g.score != null).length;
 
   if (loading) return (
-    <div className="flex items-center justify-center h-48 text-sm text-[var(--color-text-muted)]">Chargement…</div>
+    <div className="flex items-center justify-center h-48 text-sm text-[var(--color-text-muted)]">{translate('loading')}</div>
   );
 
   return (
     <div>
-      {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Saisie des notes</h1>
-        <p className="text-[var(--color-text-muted)] mt-1">Créez des évaluations et renseignez les notes par étudiant</p>
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">{translate('gradeEntry')}</h1>
+        <p className="text-[var(--color-text-muted)] mt-1">{translate('gradesSubtitle')}</p>
       </div>
 
-      {/* Course tabs */}
       {courses.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-1 mb-6 -mx-0.5 px-0.5">
           {courses.map(c => (
@@ -571,12 +564,10 @@ export default function TeacherGradesPage() {
         </div>
       )}
 
-      {/* No courses */}
       {courses.length === 0 && (
-        <div className="py-16 text-center text-sm text-[var(--color-text-muted)]">Aucun cours trouvé.</div>
+        <div className="py-16 text-center text-sm text-[var(--color-text-muted)]">{translate('attNoCoursesFound')}</div>
       )}
 
-      {/* Course content */}
       {selectedCourseId && (
         courseLoading ? (
           <div className="flex items-center justify-center gap-2 py-12 text-sm text-[var(--color-text-muted)]">
@@ -584,47 +575,48 @@ export default function TeacherGradesPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
             </svg>
-            Chargement du cours…
+            {translate('gradesLoadingCourse')}
           </div>
         ) : (
           <>
-            {/* Stats mini-cards */}
             <div className="grid grid-cols-3 gap-3 mb-5">
               {[
                 {
-                  label: 'Étudiants',
+                  labelKey: 'gradesStatStudents',
                   value: students.length,
                   icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-blue-500"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"/></svg>,
                   iconBg: 'bg-blue-500/10',
                 },
                 {
-                  label: 'Évaluations',
+                  labelKey: 'gradesStatEvals',
                   value: allEvaluations.length,
                   icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-violet-500"><path fillRule="evenodd" d="M5.25 1A2.25 2.25 0 0 0 3 3.25v9.5A2.25 2.25 0 0 0 5.25 15h5.5A2.25 2.25 0 0 0 13 12.75v-9.5A2.25 2.25 0 0 0 10.75 1h-5.5ZM8 10a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 10Zm2.28-5.22a.75.75 0 0 1 0 1.06l-2 2a.75.75 0 0 1-1.06 0l-1-1a.75.75 0 0 1 1.06-1.06l.47.47 1.47-1.47a.75.75 0 0 1 1.06 0Z" clipRule="evenodd"/></svg>,
                   iconBg: 'bg-violet-500/10',
                 },
                 {
-                  label: 'À publier',
+                  labelKey: 'gradesStatToPublish',
                   value: unpublishedCount,
                   icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-amber-500"><path fillRule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 0 1-1.299 2.25H2.804a1.5 1.5 0 0 1-1.3-2.25l5.197-9ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd"/></svg>,
                   iconBg: 'bg-amber-500/10',
                   valueColor: unpublishedCount > 0 ? 'text-amber-600' : undefined,
                 },
-              ].map(({ label, value, icon, iconBg, valueColor }) => (
-                <div key={label} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)]">
+              ].map(({ labelKey, value, icon, iconBg, valueColor }) => (
+                <div key={labelKey} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)]">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBg}`}>{icon}</div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{label}</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate(labelKey)}</div>
                     <div className={`text-lg font-extrabold mt-0.5 ${valueColor || 'text-[var(--color-text)]'}`}>{value}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Action bar */}
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="text-xs text-[var(--color-text-muted)]">
-                {allEvaluations.length > 0 && `${allEvaluations.filter(e => Object.keys(e.gradeById).length > 0 && students.every(s => !e.gradeById[s.studentId] || e.gradeById[s.studentId]?.publishedAt)).length} publiée${allEvaluations.length > 1 ? 's' : ''} sur ${allEvaluations.length}`}
+                {allEvaluations.length > 0 && translate('gradesPublishedOf', {
+                  published: allEvaluations.filter(e => Object.keys(e.gradeById).length > 0 && students.every(s => !e.gradeById[s.studentId] || e.gradeById[s.studentId]?.publishedAt)).length,
+                  total: allEvaluations.length,
+                })}
               </div>
               <div className="flex gap-2 flex-shrink-0">
                 {unpublishedCount > 0 && (
@@ -636,7 +628,7 @@ export default function TeacherGradesPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
                       <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
                     </svg>
-                    Tout publier
+                    {translate('gradesPublishAll')}
                   </button>
                 )}
                 <button
@@ -650,21 +642,20 @@ export default function TeacherGradesPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
                     <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
                   </svg>
-                  Nouvelle évaluation
+                  {translate('gradesNewEval')}
                 </button>
               </div>
             </div>
 
-            {/* New evaluation form */}
             {showNewEval && (
               <div className="mb-5 rounded-xl border border-[var(--color-primary)]/25 bg-[var(--color-primary)]/5 p-4">
-                <h3 className="text-sm font-bold text-[var(--color-text)] mb-3">Nouvelle évaluation</h3>
+                <h3 className="text-sm font-bold text-[var(--color-text)] mb-3">{translate('gradesNewEval')}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">Intitulé *</label>
+                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">{translate('gradesTitleLabel')}</label>
                     <input
                       type="text"
-                      placeholder="ex. Partiel S1, Quiz 2…"
+                      placeholder={translate('gradesTitlePlaceholder')}
                       value={newEval.name}
                       onChange={e => setNewEval(p => ({ ...p, name: e.target.value }))}
                       onKeyDown={e => e.key === 'Enter' && handleCreateEval()}
@@ -672,7 +663,7 @@ export default function TeacherGradesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">Date *</label>
+                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">{translate('gradesDateLabel')}</label>
                     <input
                       type="date"
                       value={newEval.date}
@@ -681,7 +672,7 @@ export default function TeacherGradesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">Note max</label>
+                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">{translate('gradesMaxScore')}</label>
                     <input
                       type="number"
                       min={1} max={100}
@@ -691,7 +682,7 @@ export default function TeacherGradesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">Coefficient</label>
+                    <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">{translate('gradesWeight')}</label>
                     <input
                       type="number"
                       min={1} max={10}
@@ -706,20 +697,19 @@ export default function TeacherGradesPage() {
                     onClick={() => setShowNewEval(false)}
                     className="px-3 py-2 text-xs font-semibold rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-elev)] transition-colors"
                   >
-                    Annuler
+                    {translate('cancel')}
                   </button>
                   <button
                     onClick={handleCreateEval}
                     disabled={!newEval.name.trim() || !newEval.date}
                     className="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity disabled:opacity-40"
                   >
-                    Créer l'évaluation
+                    {translate('gradesCreateEval')}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Evaluations list */}
             {allEvaluations.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center">
@@ -728,8 +718,8 @@ export default function TeacherGradesPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[var(--color-text)]">Aucune évaluation pour ce cours</p>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-1">Cliquez sur "Nouvelle évaluation" pour commencer la saisie</p>
+                  <p className="text-sm font-semibold text-[var(--color-text)]">{translate('gradesNoEvals')}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-1">{translate('gradesNoEvalsHint')}</p>
                 </div>
                 <button
                   onClick={() => setShowNewEval(true)}
@@ -738,7 +728,7 @@ export default function TeacherGradesPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
                     <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
                   </svg>
-                  Nouvelle évaluation
+                  {translate('gradesNewEval')}
                 </button>
               </div>
             ) : (

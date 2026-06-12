@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useApi } from '@/lib/api';
+import { useLanguage } from '@/context/LanguageContext';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const DAY_FR = { Monday: 'Lundi', Tuesday: 'Mardi', Wednesday: 'Mercredi', Thursday: 'Jeudi', Friday: 'Vendredi' };
 
 function dayNameOf(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -48,6 +48,7 @@ function EquipmentPills({ equipment }) {
 }
 
 function RoomCard({ room, isAvailable, isSelected, onClick, timetableSlots, reservationSlots }) {
+  const { translate } = useLanguage();
   const tc = typeConfig(room.room_type);
   const allSlots = [...timetableSlots, ...reservationSlots];
 
@@ -69,7 +70,7 @@ function RoomCard({ room, isAvailable, isSelected, onClick, timetableSlots, rese
             <div className="text-sm font-bold text-[var(--color-text)] truncate leading-tight">{room.room_name || room.room_id}</div>
             {(room.building || room.floor != null) && (
               <div className="text-xs text-[var(--color-text-muted)] truncate mt-0.5">
-                {[room.building, room.floor != null && `Étage ${room.floor}`].filter(Boolean).join(' · ')}
+                {[room.building, room.floor != null && translate('roomFloor', { n: room.floor })].filter(Boolean).join(' · ')}
               </div>
             )}
           </div>
@@ -78,7 +79,7 @@ function RoomCard({ room, isAvailable, isSelected, onClick, timetableSlots, rese
               ? 'bg-emerald-500/12 text-emerald-700 border border-emerald-500/20'
               : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)]'
           }`}>
-            {isAvailable ? '✓ Libre' : '✕ Occupée'}
+            {isAvailable ? translate('roomAvailableBadge') : translate('roomOccupiedBadge')}
           </span>
         </div>
 
@@ -89,7 +90,7 @@ function RoomCard({ room, isAvailable, isSelected, onClick, timetableSlots, rese
                 <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
               </svg>
               <span className="text-xs font-semibold text-[var(--color-text)]">{room.capacity}</span>
-              <span className="text-xs text-[var(--color-text-muted)]">places</span>
+              <span className="text-xs text-[var(--color-text-muted)]">{translate('roomSeats')}</span>
             </div>
           )}
           {room.room_type && (
@@ -107,8 +108,14 @@ function RoomCard({ room, isAvailable, isSelected, onClick, timetableSlots, rese
                   <path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" />
                 </svg>
                 <span className="font-mono text-[var(--color-text-muted)] whitespace-nowrap flex-shrink-0">{slot.start_time?.slice(0,5)}–{slot.end_time?.slice(0,5)}</span>
-                <span className="truncate text-[var(--color-text)] font-medium">{slot._isReservation ? (slot.purpose || 'Réservé') : (slot.course?.course_name || slot.course_id)}</span>
-                {slot._isReservation && <span className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-700">Réservation</span>}
+                <span className="truncate text-[var(--color-text)] font-medium">
+                  {slot._isReservation ? (slot.purpose || translate('roomReservedLabel')) : (slot.course?.course_name || slot.course_id)}
+                </span>
+                {slot._isReservation && (
+                  <span className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-700">
+                    {translate('roomReservationBadge')}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -121,6 +128,8 @@ function RoomCard({ room, isAvailable, isSelected, onClick, timetableSlots, rese
 export default function TeacherRoomsPage() {
   const { user } = useAuth();
   const { apiFetch } = useApi();
+  const { translate, language } = useLanguage();
+  const locale = language === 'fr' ? 'fr-FR' : 'en-US';
   const today = new Date().toISOString().slice(0, 10);
 
   const [rooms, setRooms] = useState([]);
@@ -135,7 +144,6 @@ export default function TeacherRoomsPage() {
   const [roomTypeFilter, setRoomTypeFilter] = useState('');
   const [selectedRoom, setSelectedRoom] = useState(null);
 
-  // Reservation form state
   const [showReserveForm, setShowReserveForm] = useState(false);
   const [reservePurpose, setReservePurpose] = useState('');
   const [reserving, setReserving] = useState(false);
@@ -161,7 +169,6 @@ export default function TeacherRoomsPage() {
     });
   }, [user, fetchJson]);
 
-  // Reset form when room or search params change
   useEffect(() => {
     setShowReserveForm(false);
     setReserveError('');
@@ -173,7 +180,6 @@ export default function TeacherRoomsPage() {
   const isWeekend = dayName === 'Saturday' || dayName === 'Sunday';
   const timeValid = useMemo(() => timeToMin(startTime) < timeToMin(endTime), [startTime, endTime]);
 
-  // Occupancy: timetable entries (by day_of_week) + reservations (by specific date)
   const roomOccupancy = useMemo(() => {
     const map = {};
     for (const room of rooms) {
@@ -220,7 +226,6 @@ export default function TeacherRoomsPage() {
     return s;
   }, [selectedRoom, timetables]);
 
-  // My own reservations for selected room
   const myReservations = useMemo(() => {
     if (!selectedRoom || !user?.instructorId) return [];
     return reservations
@@ -252,7 +257,7 @@ export default function TeacherRoomsPage() {
       });
       if (!res.ok) {
         const err = await res.json();
-        setReserveError(err.error || 'Erreur lors de la réservation');
+        setReserveError(err.error || 'Booking error');
       } else {
         const saved = await res.json();
         setReservations(prev => [...prev, saved]);
@@ -261,7 +266,7 @@ export default function TeacherRoomsPage() {
         setReservePurpose('');
       }
     } catch {
-      setReserveError('Erreur réseau');
+      setReserveError('Network error');
     }
     setReserving(false);
   }, [selectedRoom, user, date, startTime, endTime, reservePurpose, apiFetch]);
@@ -277,36 +282,37 @@ export default function TeacherRoomsPage() {
   }, [apiFetch]);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-48 text-sm text-[var(--color-text-muted)]">Chargement…</div>
+    <div className="flex items-center justify-center h-48 text-sm text-[var(--color-text-muted)]">{translate('loading')}</div>
   );
+
+  const searchFields = [
+    { labelKey: 'roomDateLabel', type: 'date', value: date, onChange: e => setDate(e.target.value),
+      icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M4 1.75a.75.75 0 0 1 1.5 0V3h5V1.75a.75.75 0 0 1 1.5 0V3A2 2 0 0 1 14 5v7.5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2V1.75Z" clipRule="evenodd" /></svg> },
+    { labelKey: 'roomStartLabel', type: 'time', value: startTime, onChange: e => setStartTime(e.target.value),
+      icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" /></svg> },
+    { labelKey: 'roomEndLabel', type: 'time', value: endTime, onChange: e => setEndTime(e.target.value), invalid: !timeValid,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm4.03 2.47a.75.75 0 0 0 1.06 1.06l2.5-2.5a.75.75 0 0 0 0-1.06l-2.5-2.5a.75.75 0 0 0-1.06 1.06L6.44 7.5H4.5a.75.75 0 0 0 0 1.5h1.94l-1.41 1.47Z" clipRule="evenodd" /></svg> },
+  ];
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">Salles & Disponibilités</h1>
-        <p className="text-[var(--color-text-muted)] mt-1">Trouvez une salle libre pour votre créneau et réservez-la en un clic</p>
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">{translate('roomsTitle')}</h1>
+        <p className="text-[var(--color-text-muted)] mt-1">{translate('roomsSubtitle')}</p>
       </div>
 
-      {/* Search panel */}
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-5 mb-6 shadow-sm">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: 'Date', type: 'date', value: date, onChange: e => setDate(e.target.value),
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M4 1.75a.75.75 0 0 1 1.5 0V3h5V1.75a.75.75 0 0 1 1.5 0V3A2 2 0 0 1 14 5v7.5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2V1.75Z" clipRule="evenodd" /></svg> },
-            { label: 'Début', type: 'time', value: startTime, onChange: e => setStartTime(e.target.value),
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" /></svg> },
-            { label: 'Fin', type: 'time', value: endTime, onChange: e => setEndTime(e.target.value), invalid: !timeValid,
-              icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm4.03 2.47a.75.75 0 0 0 1.06 1.06l2.5-2.5a.75.75 0 0 0 0-1.06l-2.5-2.5a.75.75 0 0 0-1.06 1.06L6.44 7.5H4.5a.75.75 0 0 0 0 1.5h1.94l-1.41 1.47Z" clipRule="evenodd" /></svg> },
-          ].map(({ label, type, value, onChange, icon, invalid }) => (
-            <div key={label}>
+          {searchFields.map(({ labelKey, type, value, onChange, icon, invalid }) => (
+            <div key={labelKey}>
               <label className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">
-                <span className="opacity-70">{icon}</span>{label}
+                <span className="opacity-70">{icon}</span>{translate(labelKey)}
               </label>
               <input type={type} value={value} onChange={onChange}
                 className={`w-full px-3 py-2.5 text-sm font-medium rounded-xl border bg-[var(--color-surface)] text-[var(--color-text)] outline-none transition-colors
                   ${invalid ? 'border-red-400' : 'border-[var(--color-border)] focus:border-[var(--color-primary)]'}`}
               />
-              {invalid && <p className="text-xs text-red-500 mt-1">Doit être après le début</p>}
+              {invalid && <p className="text-xs text-red-500 mt-1">{translate('roomEndError')}</p>}
             </div>
           ))}
           <div>
@@ -314,7 +320,7 @@ export default function TeacherRoomsPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70">
                 <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
               </svg>
-              Capacité min.
+              {translate('roomMinCapacity')}
             </label>
             <input type="number" min={1} placeholder="—" value={minCapacity} onChange={e => setMinCapacity(e.target.value)}
               className="w-full px-3 py-2.5 text-sm font-medium rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] outline-none focus:border-[var(--color-primary)] transition-colors"
@@ -324,8 +330,8 @@ export default function TeacherRoomsPage() {
 
         {roomTypes.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-[var(--color-border)]">
-            <span className="text-xs font-bold text-[var(--color-text-muted)] mr-1">Type :</span>
-            {[{ label: 'Tous', value: '' }, ...roomTypes.map(t => ({ label: t, value: t }))].map(({ label, value }) => {
+            <span className="text-xs font-bold text-[var(--color-text-muted)] mr-1">{translate('roomTypeLabel')}</span>
+            {[{ label: translate('roomTypeAll'), value: '' }, ...roomTypes.map(t => ({ label: t, value: t }))].map(({ label, value }) => {
               const active = roomTypeFilter === value;
               const tc = value ? typeConfig(value) : null;
               return (
@@ -344,7 +350,6 @@ export default function TeacherRoomsPage() {
         )}
       </div>
 
-      {/* Weekend notice */}
       {isWeekend && (
         <div className="flex items-center gap-3 px-4 py-3.5 mb-5 rounded-xl bg-amber-500/5 border border-amber-500/20">
           <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
@@ -353,8 +358,8 @@ export default function TeacherRoomsPage() {
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-amber-800">Week-end sélectionné</p>
-            <p className="text-xs text-amber-700 mt-0.5">Aucune séance planifiée — seules les réservations ponctuelles apparaissent</p>
+            <p className="text-sm font-semibold text-amber-800">{translate('roomWeekendTitle')}</p>
+            <p className="text-xs text-amber-700 mt-0.5">{translate('roomWeekendSubtitle')}</p>
           </div>
         </div>
       )}
@@ -362,16 +367,15 @@ export default function TeacherRoomsPage() {
       {timeValid && (
         <div className={`grid gap-6 ${selectedRoom ? 'lg:grid-cols-[1fr_380px]' : 'grid-cols-1'}`}>
           <div>
-            {/* Stats */}
             <div className="grid grid-cols-2 gap-3 mb-5">
               {[
-                { label: 'Libres', value: available.length, color: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/15', dot: 'bg-emerald-500' },
-                { label: 'Occupées', value: occupied.length, color: 'text-red-500', bg: 'bg-red-500/5', border: 'border-red-500/10', dot: 'bg-red-400' },
-              ].map(({ label, value, color, bg, border, dot }) => (
-                <div key={label} className={`rounded-xl border ${border} ${bg} px-4 py-3 flex items-center gap-3`}>
+                { labelKey: 'roomAvailable', value: available.length, color: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/15', dot: 'bg-emerald-500' },
+                { labelKey: 'roomOccupied',  value: occupied.length,  color: 'text-red-500',    bg: 'bg-red-500/5',     border: 'border-red-500/10',    dot: 'bg-red-400' },
+              ].map(({ labelKey, value, color, bg, border, dot }) => (
+                <div key={labelKey} className={`rounded-xl border ${border} ${bg} px-4 py-3 flex items-center gap-3`}>
                   <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot}`} />
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{label}</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate(labelKey)}</div>
                     <div className={`text-xl font-extrabold ${color}`}>{value}</div>
                   </div>
                 </div>
@@ -382,8 +386,12 @@ export default function TeacherRoomsPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 opacity-50">
                 <path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" />
               </svg>
-              Créneau {startTime}–{endTime} · {DAY_FR[dayName] || dayName}
-              {date === today && <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-semibold">Aujourd'hui</span>}
+              {translate('roomSlotLabel', { start: startTime, end: endTime, day: dayName || '' })}
+              {date === today && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-semibold">
+                  {translate('roomToday')}
+                </span>
+              )}
             </div>
 
             {available.length === 0 && occupied.length === 0 && (
@@ -393,8 +401,8 @@ export default function TeacherRoomsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                   </svg>
                 </div>
-                <p className="text-sm font-semibold text-[var(--color-text)]">Aucune salle trouvée</p>
-                <p className="text-xs text-[var(--color-text-muted)]">Réduisez la capacité minimale ou retirez le filtre de type</p>
+                <p className="text-sm font-semibold text-[var(--color-text)]">{translate('roomNoRooms')}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">{translate('roomNoRoomsHint')}</p>
               </div>
             )}
 
@@ -402,7 +410,7 @@ export default function TeacherRoomsPage() {
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                  <h2 className="text-sm font-bold text-[var(--color-text)]">Disponibles</h2>
+                  <h2 className="text-sm font-bold text-[var(--color-text)]">{translate('roomAvailableSection')}</h2>
                   <span className="ml-auto text-xs font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">{available.length}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -421,7 +429,7 @@ export default function TeacherRoomsPage() {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
-                  <h2 className="text-sm font-bold text-[var(--color-text-muted)]">Occupées sur ce créneau</h2>
+                  <h2 className="text-sm font-bold text-[var(--color-text-muted)]">{translate('roomOccupiedSection')}</h2>
                   <span className="ml-auto text-xs font-semibold text-[var(--color-text-muted)] bg-[var(--color-surface)] px-2 py-0.5 rounded-full border border-[var(--color-border)]">{occupied.length}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -438,20 +446,18 @@ export default function TeacherRoomsPage() {
             )}
           </div>
 
-          {/* Detail panel */}
           {selectedRoom && (() => {
             const tc = typeConfig(selectedRoom.room_type);
             return (
               <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden h-fit sticky top-4 shadow-md">
                 <div className={`h-1.5 w-full ${selectedIsAvailable ? tc.strip : 'bg-red-400'}`} />
 
-                {/* Header */}
                 <div className="px-5 pt-4 pb-4 border-b border-[var(--color-border)]">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="text-base font-extrabold text-[var(--color-text)] leading-tight truncate">{selectedRoom.room_name || selectedRoom.room_id}</div>
                       <div className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                        {[selectedRoom.building, selectedRoom.floor != null && `Étage ${selectedRoom.floor}`].filter(Boolean).join(' · ')}
+                        {[selectedRoom.building, selectedRoom.floor != null && translate('roomFloor', { n: selectedRoom.floor })].filter(Boolean).join(' · ')}
                       </div>
                     </div>
                     <button onClick={() => setSelectedRoom(null)}
@@ -463,7 +469,7 @@ export default function TeacherRoomsPage() {
                   </div>
                   <div className="flex items-center gap-2 mt-3">
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${selectedIsAvailable ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20' : 'bg-red-500/10 text-red-600 border-red-500/20'}`}>
-                      {selectedIsAvailable ? '✓ Libre sur ce créneau' : '✕ Occupée sur ce créneau'}
+                      {selectedIsAvailable ? translate('roomAvailableOnSlot') : translate('roomOccupiedOnSlot')}
                     </span>
                     {selectedRoom.room_type && (
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tc.badge}`}>{selectedRoom.room_type}</span>
@@ -471,29 +477,26 @@ export default function TeacherRoomsPage() {
                   </div>
                 </div>
 
-                {/* Capacity + building */}
                 <div className="grid grid-cols-2 divide-x divide-[var(--color-border)] border-b border-[var(--color-border)]">
                   <div className="px-4 py-3 text-center">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Capacité</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('roomCapacityLabel')}</div>
                     <div className="text-2xl font-extrabold text-[var(--color-text)] mt-0.5">{selectedRoom.capacity ?? '—'}</div>
-                    {selectedRoom.capacity && <div className="text-[10px] text-[var(--color-text-muted)]">places</div>}
+                    {selectedRoom.capacity && <div className="text-[10px] text-[var(--color-text-muted)]">{translate('roomSeats')}</div>}
                   </div>
                   <div className="px-4 py-3 text-center">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Bâtiment</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('roomBuildingLabel')}</div>
                     <div className="text-lg font-extrabold text-[var(--color-text)] mt-0.5 truncate">{selectedRoom.building || '—'}</div>
-                    {selectedRoom.floor != null && <div className="text-[10px] text-[var(--color-text-muted)]">Étage {selectedRoom.floor}</div>}
+                    {selectedRoom.floor != null && <div className="text-[10px] text-[var(--color-text-muted)]">{translate('roomFloor', { n: selectedRoom.floor })}</div>}
                   </div>
                 </div>
 
-                {/* Equipment */}
                 {selectedRoom.equipment && (
                   <div className="px-5 py-3 border-b border-[var(--color-border)]">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2">Équipements</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2">{translate('roomEquipmentLabel')}</div>
                     <EquipmentPills equipment={selectedRoom.equipment} />
                   </div>
                 )}
 
-                {/* ── RESERVATION SECTION ── */}
                 {selectedIsAvailable && (
                   <div className="px-5 py-4 border-b border-[var(--color-border)] bg-emerald-500/3">
                     {reserveSuccess ? (
@@ -501,7 +504,7 @@ export default function TeacherRoomsPage() {
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 flex-shrink-0">
                           <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
                         </svg>
-                        Salle réservée pour {startTime}–{endTime}
+                        {translate('roomReservedFor', { start: startTime, end: endTime })}
                       </div>
                     ) : !showReserveForm ? (
                       <button
@@ -511,11 +514,16 @@ export default function TeacherRoomsPage() {
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
                           <path fillRule="evenodd" d="M4 1.75a.75.75 0 0 1 1.5 0V3h5V1.75a.75.75 0 0 1 1.5 0V3A2 2 0 0 1 14 5v7.5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2V1.75ZM4.5 7a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7Zm0 3a.75.75 0 0 0 0 1.5h4a.75.75 0 0 0 0-1.5h-4Z" clipRule="evenodd" />
                         </svg>
-                        Réserver · {startTime}–{endTime}
+                        {translate('roomReserveBtn', { start: startTime, end: endTime })}
                       </button>
                     ) : (
                       <div>
-                        <div className="text-xs font-bold text-[var(--color-text)] mb-2">Réserver le {new Date(...date.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v)).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+                        <div className="text-xs font-bold text-[var(--color-text)] mb-2">
+                          {translate('roomReserveOnDate', {
+                            date: new Date(...date.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v))
+                              .toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }),
+                          })}
+                        </div>
                         <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mb-3">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
                             <path fillRule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clipRule="evenodd" />
@@ -523,32 +531,32 @@ export default function TeacherRoomsPage() {
                           {startTime} – {endTime}
                         </div>
                         <div className="mb-3">
-                          <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">Motif <span className="font-normal">(facultatif)</span></label>
+                          <label className="block text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">
+                            {translate('roomReasonLabel')} <span className="font-normal">{translate('roomReasonOptional')}</span>
+                          </label>
                           <input
                             type="text"
-                            placeholder="ex. Cours de rattrapage, Réunion pédagogique…"
+                            placeholder={translate('roomReasonPlaceholder')}
                             value={reservePurpose}
                             onChange={e => setReservePurpose(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && !reserving && handleReserve()}
                             className="w-full px-3 py-2 text-sm rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] outline-none focus:border-emerald-500 transition-colors"
                           />
                         </div>
-                        {reserveError && (
-                          <p className="text-xs text-red-600 font-medium mb-2">{reserveError}</p>
-                        )}
+                        {reserveError && <p className="text-xs text-red-600 font-medium mb-2">{reserveError}</p>}
                         <div className="flex gap-2">
                           <button
                             onClick={handleReserve}
                             disabled={reserving}
                             className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50"
                           >
-                            {reserving ? 'Réservation…' : 'Confirmer'}
+                            {reserving ? translate('roomReserving') : translate('roomConfirm')}
                           </button>
                           <button
                             onClick={() => { setShowReserveForm(false); setReserveError(''); }}
                             className="px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] text-sm font-semibold hover:bg-[var(--color-bg-elev)] transition-colors"
                           >
-                            Annuler
+                            {translate('cancel')}
                           </button>
                         </div>
                       </div>
@@ -556,10 +564,9 @@ export default function TeacherRoomsPage() {
                   </div>
                 )}
 
-                {/* My reservations for this room */}
                 {myReservations.length > 0 && (
                   <div className="px-5 py-3 border-b border-[var(--color-border)]">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2">Mes réservations</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-2">{translate('roomMyReservations')}</div>
                     <div className="space-y-1.5">
                       {myReservations.map(r => (
                         <div key={r.id} className="flex items-center gap-2 text-xs bg-violet-500/5 border border-violet-500/15 rounded-lg px-2.5 py-2">
@@ -567,12 +574,14 @@ export default function TeacherRoomsPage() {
                           <div className="flex-1 min-w-0">
                             <span className="font-mono text-[var(--color-text-muted)]">{r.start_time?.slice(0,5)}–{r.end_time?.slice(0,5)}</span>
                             <span className="mx-1.5 text-[var(--color-text-muted)]">·</span>
-                            <span className="text-[var(--color-text)] font-medium">{new Date(r.date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                            <span className="text-[var(--color-text)] font-medium">
+                              {new Date(r.date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
+                            </span>
                             {r.purpose && <span className="block text-[var(--color-text-muted)] truncate mt-0.5">{r.purpose}</span>}
                           </div>
                           <button onClick={() => handleCancel(r.id)}
                             className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                            title="Annuler la réservation">
+                            title={translate('roomCancelReservation')}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
                               <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
                             </svg>
@@ -583,22 +592,25 @@ export default function TeacherRoomsPage() {
                   </div>
                 )}
 
-                {/* Weekly schedule */}
                 <div className="px-5 py-4">
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-3">Planning de la semaine</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-3">{translate('roomWeeklySchedule')}</div>
                   <div className="space-y-3">
                     {Object.entries(selectedRoomSchedule).map(([day, slots]) => {
                       const isSelectedDay = day === dayName;
                       return (
                         <div key={day} className={`rounded-xl p-3 ${isSelectedDay ? 'bg-[var(--color-primary)]/5 border border-[var(--color-primary)]/15' : 'bg-[var(--color-surface)]'}`}>
                           <div className={`text-xs font-bold mb-1.5 flex items-center gap-1.5 ${isSelectedDay ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
-                            {DAY_FR[day]}
-                            {isSelectedDay && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/15">sélectionné</span>}
+                            {day}
+                            {isSelectedDay && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/15">
+                                {translate('roomSelectedLabel')}
+                              </span>
+                            )}
                           </div>
                           {slots.length === 0 ? (
                             <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                              Libre toute la journée
+                              {translate('roomFreeAllDay')}
                             </div>
                           ) : (
                             <div className="space-y-1">
