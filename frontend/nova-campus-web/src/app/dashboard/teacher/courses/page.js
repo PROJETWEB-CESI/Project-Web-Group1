@@ -100,18 +100,18 @@ function StudentRow({ student, onExpand, expanded }) {
               {student.program
                 ? <>{student.program}{student.enrollmentYear ? <span className="opacity-60"> · {translate('classOf', { year: student.enrollmentYear })}</span> : null}</>
                 : student.studentId}
+              {student.grades.length > 0 && (
+                <span className="opacity-60"> · {translate(student.grades.length === 1 ? 'courseEvalSingular' : 'courseEvalPlural', { n: student.grades.length })}</span>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="w-16 flex justify-center flex-shrink-0">
           <AttBadge rate={student.attendanceRate} />
+        </div>
+        <div className="w-16 flex justify-center flex-shrink-0">
           <AvgBadge average={student.average} />
-          {student.grades.length > 0 && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] whitespace-nowrap">
-              {translate(student.grades.length === 1 ? 'courseEvalSingular' : 'courseEvalPlural', { n: student.grades.length })}
-            </span>
-          )}
         </div>
 
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
@@ -208,7 +208,7 @@ function CourseStudents({ students, loading }) {
         <div className="flex-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('courseStudentCol')}</div>
         <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('courseAttendanceCol')}</div>
         <div className="w-16 text-center text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">{translate('courseAverageCol')}</div>
-        <div className="w-6" />
+        <div className="w-4" />
       </div>
       <div className="divide-y divide-[var(--color-border)]">
         {students.map(s => (
