@@ -6,6 +6,7 @@ import jwt as PyJWT
 from agent.config import (
     OLLAMA_HOST, OLLAMA_MODEL, OLLAMA_OPTIONS,
     GROQ_API_KEY, GROQ_MODEL,
+    LLM_BASE_URL, LLM_API_KEY, LLM_MODEL,
     JWT_SECRET, JWT_ALGORITHM,
 )
 from agent.models import ChatMessage
@@ -224,10 +225,19 @@ async def _build_context(
     return system, msgs, chunks
 
 
-# ─── LLM backend (Groq si clé présente, Ollama sinon) ────────────────────────
+# ─── LLM backend (generic OpenAI-compatible si configuré, sinon Groq, sinon Ollama) ─
 
 
 async def _llm_chat(messages: list[dict]) -> str:
+    if LLM_BASE_URL:
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+        resp = await client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=messages,
+            max_tokens=OLLAMA_OPTIONS["num_predict"],
+        )
+        return resp.choices[0].message.content or ""
     if GROQ_API_KEY:
         from groq import AsyncGroq
         client = AsyncGroq(api_key=GROQ_API_KEY)
@@ -244,6 +254,20 @@ async def _llm_chat(messages: list[dict]) -> str:
 
 
 async def _llm_stream(messages: list[dict]) -> AsyncGenerator[str, None]:
+    if LLM_BASE_URL:
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+        stream = await client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=messages,
+            stream=True,
+            max_tokens=OLLAMA_OPTIONS["num_predict"],
+        )
+        async for chunk in stream:
+            text = chunk.choices[0].delta.content or ""
+            if text:
+                yield text
+        return
     if GROQ_API_KEY:
         from groq import AsyncGroq
         client = AsyncGroq(api_key=GROQ_API_KEY)

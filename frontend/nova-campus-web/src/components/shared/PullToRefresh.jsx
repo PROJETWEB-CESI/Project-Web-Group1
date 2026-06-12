@@ -96,7 +96,10 @@ export default function PullToRefresh({ children, className = '' }) {
           always-on `transform` (even translateY(0px)) creates a CSS containing
           block, which would break `position: fixed` modals rendered inside
           `children` (they'd be positioned relative to this div instead of the viewport). */}
-      <div style={pullDistance !== 0 ? { transform: `translateY(${pullDistance}px)`, transition: refreshing ? 'none' : 'transform 0.5s' } : undefined}>
+      <div
+        className="h-full"
+        style={pullDistance !== 0 ? { transform: `translateY(${pullDistance}px)`, transition: refreshing ? 'none' : 'transform 0.5s' } : undefined}
+      >
         {children}
       </div>
     </div>

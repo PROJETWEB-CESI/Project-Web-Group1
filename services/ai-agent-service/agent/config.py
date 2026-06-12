@@ -15,6 +15,12 @@ OLLAMA_OPTIONS = {
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
+# Generic OpenAI-compatible backend (LM Studio, vLLM, llama.cpp server,
+# Mistral's OpenAI-compatible endpoint, etc.)
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "not-needed")
+LLM_MODEL = os.getenv("LLM_MODEL", "")
+
 JWT_SECRET = os.getenv("JWT_SECRET", "secret")
 JWT_ALGORITHM = "HS256"
 

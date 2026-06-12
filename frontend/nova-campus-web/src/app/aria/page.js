@@ -7,6 +7,7 @@ import { useApi } from '@/lib/api';
 import { useLanguage } from '@/context/LanguageContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { PanelLeftOpen, X } from 'lucide-react';
 
 const AI = '/api/ai';
 
@@ -117,6 +118,7 @@ export default function AriaPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [convSidebarOpen, setConvSidebarOpen] = useState(false);
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -158,12 +160,14 @@ export default function AriaPage() {
       const data = await r.json();
       setActiveId(data.id);
       setMessages(data.messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources || [] })));
+      setConvSidebarOpen(false);
     } catch { /* ignore */ }
   };
 
   const newConv = () => {
     setActiveId(null);
     setMessages([]);
+    setConvSidebarOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 50);
   };
 
@@ -288,54 +292,87 @@ export default function AriaPage() {
     { label: translate('ariaOlder'),    items: groups.older },
   ];
 
-  return (
-    <div className="flex-1 flex h-full overflow-hidden">
+  const convSidebarBody = (
+    <>
+      <div className="p-3 border-b border-[var(--color-border)]">
+        <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 px-1">
+          {translate('ariaConversations')}
+        </p>
+        <button
+          onClick={newConv}
+          className="w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center gap-1.5"
+        >
+          {translate('ariaNewConv')}
+        </button>
+      </div>
 
-      {/* ── Sidebar gauche ── */}
-      <aside className="w-60 flex-shrink-0 border-r border-[var(--color-border)] flex flex-col bg-[var(--color-surface)]">
-        <div className="p-3 border-b border-[var(--color-border)]">
-          <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 px-1">
-            {translate('ariaConversations')}
+      <div className="flex-1 overflow-y-auto py-1">
+        {convGroups.map(({ label, items }) =>
+          items.length > 0 && (
+            <div key={label}>
+              <p className="text-[10px] font-semibold text-[var(--color-text-muted)] px-4 pt-3 pb-1 uppercase tracking-wider">{label}</p>
+              {items.map((c) => (
+                <ConvItem
+                  key={c.id}
+                  conv={c}
+                  active={activeId === c.id}
+                  onLoad={loadConv}
+                  onDelete={deleteConv}
+                  deleteLabel={translate('ariaDelete')}
+                />
+              ))}
+            </div>
+          )
+        )}
+        {convs.length === 0 && (
+          <p className="text-xs text-[var(--color-text-muted)] text-center px-4 py-8">
+            {translate('ariaNoConv')}
           </p>
-          <button
-            onClick={newConv}
-            className="w-full text-left text-xs px-3 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors flex items-center gap-1.5"
-          >
-            {translate('ariaNewConv')}
-          </button>
-        </div>
+        )}
+      </div>
+    </>
+  );
 
-        <div className="flex-1 overflow-y-auto py-1">
-          {convGroups.map(({ label, items }) =>
-            items.length > 0 && (
-              <div key={label}>
-                <p className="text-[10px] font-semibold text-[var(--color-text-muted)] px-4 pt-3 pb-1 uppercase tracking-wider">{label}</p>
-                {items.map((c) => (
-                  <ConvItem
-                    key={c.id}
-                    conv={c}
-                    active={activeId === c.id}
-                    onLoad={loadConv}
-                    onDelete={deleteConv}
-                    deleteLabel={translate('ariaDelete')}
-                  />
-                ))}
-              </div>
-            )
-          )}
-          {convs.length === 0 && (
-            <p className="text-xs text-[var(--color-text-muted)] text-center px-4 py-8">
-              {translate('ariaNoConv')}
-            </p>
-          )}
-        </div>
+  return (
+    <div className="flex-1 flex h-full min-h-[500px] overflow-hidden">
+
+      {/* ── Sidebar gauche (desktop) ── */}
+      <aside className="hidden xl:flex w-60 flex-shrink-0 border-r border-[var(--color-border)] flex-col bg-[var(--color-surface)]">
+        {convSidebarBody}
       </aside>
+
+      {/* ── Sidebar gauche (overlay mobile/tablette) ── */}
+      {convSidebarOpen && (
+        <div className="xl:hidden fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setConvSidebarOpen(false)}
+          />
+          <aside className="relative w-72 max-w-[80vw] h-full flex flex-col bg-[var(--color-surface)] border-r border-[var(--color-border)] shadow-xl">
+            <button
+              onClick={() => setConvSidebarOpen(false)}
+              className="absolute top-3 right-3 p-1.5 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 transition-colors"
+              aria-label={translate('ariaClose')}
+            >
+              <X size={16} />
+            </button>
+            {convSidebarBody}
+          </aside>
+        </div>
+      )}
 
       {/* ── Zone de chat ── */}
       <main className="flex-1 flex flex-col min-w-0 min-h-0">
 
         {/* Header */}
         <div className="px-5 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg)] flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => setConvSidebarOpen(true)}
+            className="xl:hidden p-1.5 -ml-1 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 transition-colors flex-shrink-0"
+            aria-label={translate('ariaConversations')}
+          >
+            <PanelLeftOpen size={18} />
+          </button>
           <Avatar initials="Ar" size={9} />
           <div>
             <p className="font-semibold text-sm text-[var(--color-text)] leading-tight">Assistant IA · Aria</p>
