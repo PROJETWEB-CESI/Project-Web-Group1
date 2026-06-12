@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Receipt, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import ScrollShadow from '@/components/shared/ScrollShadow';
 
@@ -20,6 +21,24 @@ function formatEuro(value) {
 function statusLabel(p) {
   if (p.status === 'Paid') return 'Paid';
   return p.dunningStage || 'PENDING';
+}
+
+function KpiCard({ label, value, icon: Icon, accent, valueClass = '' }) {
+  return (
+    <div className="relative rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4 overflow-hidden hover:shadow-sm transition-shadow">
+      <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: `var(--color-${accent})` }} />
+      <div className="flex items-start justify-between mb-3">
+        <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide leading-tight pr-2">{label}</div>
+        <div
+          className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: `color-mix(in oklch, var(--color-${accent}) 12%, transparent)` }}
+        >
+          <Icon className="w-4 h-4" style={{ color: `var(--color-${accent})` }} />
+        </div>
+      </div>
+      <div className={`text-3xl font-bold ${valueClass}`}>{value}</div>
+    </div>
+  );
 }
 
 export default function FinanceTab({ payments, billingStats }) {
@@ -50,28 +69,38 @@ export default function FinanceTab({ payments, billingStats }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">{translate('adminFinanceTitle')}</h1>
-      <p className="text-[var(--color-text-muted)] mb-6">{translate('adminFinanceSubtitle')}</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">{translate('adminFinanceTitle')}</h1>
+        <p className="text-[var(--color-text-muted)] mt-1">{translate('adminFinanceSubtitle')}</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiInvoiced')}</div>
-          <div className="text-3xl font-semibold mt-1">{formatEuro(billingStats?.totalInvoiced)}</div>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiCollected')}</div>
-          <div className="text-3xl font-semibold mt-1 text-[var(--color-success)]">{formatEuro(billingStats?.totalCollected)}</div>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiPending')}</div>
-          <div className="text-3xl font-semibold mt-1 text-[var(--color-error)]">{formatEuro(billingStats?.totalOverdue)}</div>
-        </div>
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-2 sm:p-4">
-          <div className="text-xs text-[var(--color-text-muted)]">{translate('kpiAvgRecovery')}</div>
-          <div className="text-3xl font-semibold mt-1">
-            {billingStats?.avgRecoveryDays !== null && billingStats?.avgRecoveryDays !== undefined ? `${billingStats.avgRecoveryDays} ${translate('daysSuffix')}` : '—'}
-          </div>
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <KpiCard
+          label={translate('kpiInvoiced')}
+          value={formatEuro(billingStats?.totalInvoiced)}
+          icon={Receipt}
+          accent="primary"
+        />
+        <KpiCard
+          label={translate('kpiCollected')}
+          value={formatEuro(billingStats?.totalCollected)}
+          icon={CheckCircle2}
+          accent="success"
+          valueClass="text-[var(--color-success)]"
+        />
+        <KpiCard
+          label={translate('kpiPending')}
+          value={formatEuro(billingStats?.totalOverdue)}
+          icon={AlertCircle}
+          accent="error"
+          valueClass="text-[var(--color-error)]"
+        />
+        <KpiCard
+          label={translate('kpiAvgRecovery')}
+          value={billingStats?.avgRecoveryDays != null ? `${billingStats.avgRecoveryDays} ${translate('daysSuffix')}` : '—'}
+          icon={Clock}
+          accent="accent"
+        />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -91,7 +120,7 @@ export default function FinanceTab({ payments, billingStats }) {
               className={`text-xs font-medium rounded-full px-3 py-1.5 border transition-colors ${
                 statusFilter === f.id
                   ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                  : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                  : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)]'
               }`}
             >
               {f.label}
@@ -107,26 +136,26 @@ export default function FinanceTab({ payments, billingStats }) {
           <ScrollShadow>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
-                  <th className="px-4 py-2 font-normal">{translate('colInvoiceNumber')}</th>
-                  <th className="px-4 py-2 font-normal">{translate('colStudent')}</th>
-                  <th className="px-4 py-2 font-normal">{translate('colDueDate')}</th>
-                  <th className="px-4 py-2 font-normal">{translate('colAmount')}</th>
-                  <th className="px-4 py-2 font-normal">{translate('colStatus')}</th>
+                <tr className="text-left text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-sunken)] border-b border-[var(--color-border)]">
+                  <th className="px-5 py-2.5 font-medium">{translate('colInvoiceNumber')}</th>
+                  <th className="px-5 py-2.5 font-medium">{translate('colStudent')}</th>
+                  <th className="px-5 py-2.5 font-medium">{translate('colDueDate')}</th>
+                  <th className="px-5 py-2.5 font-medium">{translate('colAmount')}</th>
+                  <th className="px-5 py-2.5 font-medium">{translate('colStatus')}</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((p) => (
-                  <tr key={p.payment_id} className="border-b border-[var(--color-border)] last:border-0">
-                    <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{p.payment_id}</td>
-                    <td className="px-4 py-2.5">
+                  <tr key={p.payment_id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-bg-hover)] transition-colors">
+                    <td className="px-5 py-3 text-[var(--color-text-muted)] font-mono text-xs">{p.payment_id}</td>
+                    <td className="px-5 py-3">
                       <div className="font-medium text-[var(--color-text)]">{p.first_name} {p.last_name}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{p.email}</div>
                     </td>
-                    <td className="px-4 py-2.5 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
-                    <td className="px-4 py-2.5 whitespace-nowrap">{formatEuro(p.amount)}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${STATUS_STYLES[statusLabel(p)] || STATUS_STYLES.PENDING}`}>
+                    <td className="px-5 py-3 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
+                    <td className="px-5 py-3 font-medium whitespace-nowrap">{formatEuro(p.amount)}</td>
+                    <td className="px-5 py-3">
+                      <span className={`text-xs font-semibold rounded-full px-2.5 py-1 ${STATUS_STYLES[statusLabel(p)] || STATUS_STYLES.PENDING}`}>
                         {statusLabel(p)}
                       </span>
                     </td>

@@ -371,7 +371,6 @@ export default function ProfilePage() {
   const tabs = [
     { key: 'informations', label: translate('tabInformations') || 'Information' },
     { key: 'securite', label: translate('tabSecurity') || 'Security' },
-    { key: 'notifications', label: translate('tabNotifications') || 'Notifications' },
     { key: 'affichage', label: translate('tabDisplay') || 'Display' },
     { key: 'sessions', label: translate('tabSessions') || 'Sessions' },
   ];
@@ -564,62 +563,6 @@ export default function ProfilePage() {
                 {passwordMessage && (
                   <span className={`text-sm ${passwordMessage.type === 'success' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
                     {passwordMessage.text}
-                  </span>
-                )}
-              </div>
-            </form>
-          )}
-
-          {activeTab === 'notifications' && (
-            <form onSubmit={handleSaveNotifPrefs} className="space-y-4">
-              <h2 className="text-sm font-medium text-[var(--color-text)]">
-                {translate('notificationsPreferencesTitle') || 'Notification preferences'}
-              </h2>
-
-              <ScrollShadow>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[var(--color-border)]">
-                      <th className="text-left font-normal text-[var(--color-text-muted)] py-2 whitespace-nowrap"></th>
-                      {NOTIFICATION_CHANNELS.map((channel) => (
-                        <th key={channel} className="text-center font-medium text-xs uppercase tracking-wide text-[var(--color-text-muted)] py-2 px-3 whitespace-nowrap">
-                          {translate(`channel_${channel}`) || channel}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {NOTIFICATION_CATEGORIES.map((category) => (
-                      <tr key={category} className="border-b border-[var(--color-border)] last:border-0">
-                        <td className="py-3 pr-3 text-[var(--color-text)] whitespace-nowrap">
-                          {translate(`notifCategory_${category}`) || category}
-                        </td>
-                        {NOTIFICATION_CHANNELS.map((channel) => (
-                          <td key={channel} className="py-3 px-3 text-center whitespace-nowrap">
-                            <ToggleSwitch
-                              checked={!!notifPrefs[category]?.[channel]}
-                              onChange={() => handleNotifToggle(category, channel)}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </ScrollShadow>
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button type="submit" loading={savingNotifPrefs}>
-                  {translate('save') || 'Save'}
-                </Button>
-                {notifSaved && (
-                  <span className="text-sm text-[var(--color-success)]">
-                    {translate('preferencesSaved') || 'Preferences saved.'}
-                  </span>
-                )}
-                {notifMessage && (
-                  <span className="text-sm text-[var(--color-error)]">
-                    {notifMessage.text}
                   </span>
                 )}
               </div>

@@ -155,7 +155,6 @@ export default function DashboardSidebar() {
         { label: translate('gradeEntry') || 'Grade Entry', href: '/dashboard/teacher/grades', icon: FileText },
         { label: translate('attendance') || 'Attendance & Absences', href: '/dashboard/teacher/attendance', icon: Users },
         { label: translate('roomReservations') || 'Room Reservations', href: '/dashboard/teacher/rooms', icon: Building },
-        { label: translate('studentHistory') || 'Student History', href: '/dashboard/teacher/history', icon: Users },
       ];
       toolsItems = [
         { label: ariaLabel, href: '/dashboard/assistant', icon: Sparkles },
