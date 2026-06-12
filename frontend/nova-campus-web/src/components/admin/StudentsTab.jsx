@@ -161,8 +161,8 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
               </thead>
               <tbody>
                 {filtered.map((s) => (
-                  <tr key={s.studentId} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-bg-hover)] transition-colors">
-                    <td className="px-5 py-3">
+                  <tr key={s.studentId} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-hover)] transition-colors">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <div className="flex items-center gap-3">
                         <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${avatarColor(s.studentId)}`}>
                           {initials(s.firstName, s.lastName)}
@@ -173,20 +173,20 @@ export default function StudentsTab({ students, campusId, allPrograms = [], onSt
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-[var(--color-text-muted)]">{s.studentId}</td>
-                    <td className="px-5 py-3 text-[var(--color-text-muted)]">{s.program?.programName || s.programId}</td>
-                    <td className="px-5 py-3 text-[var(--color-text-muted)] whitespace-nowrap">{s.enrollmentYear || '—'}</td>
-                    <td className="px-5 py-3 whitespace-nowrap">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)]">{s.studentId}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)]">{s.program?.programName || s.programId}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)] whitespace-nowrap">{s.enrollmentYear || '—'}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap">
                       <span className={`text-xs font-medium rounded-full px-2.5 py-1 whitespace-nowrap ${PAYMENT_STYLES[s.paymentStatus] || 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
                         {PAYMENT_LABELS[s.paymentStatus] ? translate(PAYMENT_LABELS[s.paymentStatus]) : (s.paymentStatus || '—')}
                       </span>
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <span className={`text-xs font-medium rounded-full px-2.5 py-1 ${STATUS_STYLES[s.status] || 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
                         {STATUS_LABELS[s.status] ? translate(STATUS_LABELS[s.status]) : (s.status || '—')}
                       </span>
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <Button
                         type="button"
                         variant="secondary"

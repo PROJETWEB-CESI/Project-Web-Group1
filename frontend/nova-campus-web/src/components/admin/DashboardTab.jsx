@@ -171,7 +171,7 @@ export default function DashboardTab({ campus, kpis, byProgram, overduePayments,
       </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-[var(--color-border)] flex items-center gap-2.5">
+        <div className="px-3 py-1.5 sm:px-5 sm:py-3.5 border-b border-[var(--color-border)] flex items-center gap-2.5">
           <AlertTriangle className="w-4 h-4 text-[var(--color-error)]" />
           <span className="text-sm font-semibold text-[var(--color-text)]">{translate('paymentsToProcessTitle')}</span>
         </div>
@@ -191,19 +191,19 @@ export default function DashboardTab({ campus, kpis, byProgram, overduePayments,
               </thead>
               <tbody>
                 {overduePayments.map((p) => (
-                  <tr key={p.payment_id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-bg-hover)] transition-colors">
-                    <td className="px-5 py-3">
+                  <tr key={p.payment_id} className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-hover)] transition-colors">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <div className="font-medium text-[var(--color-text)]">{p.first_name} {p.last_name}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{p.payment_id}</div>
                     </td>
-                    <td className="px-5 py-3 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
-                    <td className="px-5 py-3 font-medium whitespace-nowrap">{formatEuro(p.amount)}</td>
-                    <td className="px-5 py-3 whitespace-nowrap">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 text-[var(--color-text-muted)] whitespace-nowrap">{p.due_date}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 font-medium whitespace-nowrap">{formatEuro(p.amount)}</td>
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3 whitespace-nowrap">
                       <span className={`text-xs font-semibold ${p.daysOverdue > 30 ? 'text-[var(--color-error)]' : 'text-[var(--color-text-muted)]'}`}>
                         {p.daysOverdue} {translate('daysSuffix')}
                       </span>
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-1.5 sm:px-5 sm:py-3">
                       <span className={`text-xs font-semibold rounded-full px-2.5 py-1 ${STAGE_STYLES[p.dunningStage] || STAGE_STYLES.PENDING}`}>
                         {p.dunningStage || 'PENDING'}
                       </span>

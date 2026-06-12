@@ -66,8 +66,10 @@ export default function DashboardLayout({ children }) {
 
       {/* Main content area (role pages render here). Guard above ensures only matching role content stays. */}
       <main className="flex-1 overflow-hidden bg-[var(--color-bg)]">
-        <PullToRefresh className={`h-full p-2 sm:p-6 ${pathname === '/dashboard/assistant' ? '' : 'pb-24 sm:pb-24'}`}>
+        <PullToRefresh className="h-full p-2 sm:p-6">
           {children}
+          {/* Spacer so the floating Aria widget never covers the last bit of content */}
+          {pathname !== '/dashboard/assistant' && <div className="h-24 sm:h-28" aria-hidden="true" />}
         </PullToRefresh>
       </main>
 
